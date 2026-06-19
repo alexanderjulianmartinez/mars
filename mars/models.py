@@ -66,6 +66,9 @@ class EvalCase(BaseModel):
     name: str
     description: str = ""
     repo: str = ""
+    # GitHub issue / Jira ticket backing this case. Required for real AutoDev
+    # agentic runs (autodev_start_run consumes an issue URL); optional otherwise.
+    issue_url: str | None = None
     task_prompt: str
     context_profile: str = "default"
     setup_commands: list[str] = Field(default_factory=list)

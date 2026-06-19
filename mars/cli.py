@@ -19,7 +19,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from mars.agents import known_agents, make_autodev
+from mars.agents import known_agents, make_autodev, using_real_autodev
 from mars.apollo.experiment import ExperimentRunner
 from mars.apollo.registry import get_experiment, list_experiments
 from mars.engine.regression import detect_regression
@@ -98,6 +98,8 @@ def run(
     s = load_suite(suite)
     cases = [s.case(case)] if case else s.cases
     repo = _repo(db)
+    backend = "AutoDev MCP" if using_real_autodev() else "mock"
+    console.print(f"[dim]AutoDev backend: {backend}[/]")
     runner = EvalRunner(MockCortexProvider(), make_autodev(agent), repository=repo)
 
     table = Table(title=f"Run — {s.name} / {agent}")

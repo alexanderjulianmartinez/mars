@@ -65,6 +65,13 @@ Ship `MockCortexProvider` and `MockAutoDevProvider` that simulate realistic resu
 pipeline runs end-to-end without real Cortex/AutoDev. Real MCP implementations must be drop-in
 replacements for the mocks.
 
+The real AutoDev side exists: `AutoDevMCPProvider` (`mars/providers/autodev_mcp.py`) speaks the
+AutoDev tool contract over MCP via the shared transport seam in `mars/providers/mcp_client.py`
+(a sync `ToolCaller` protocol + SDK-backed `MCPToolCaller` that bridges async MCP on a background
+loop). `make_autodev` auto-selects it when `MARS_AUTODEV_MCP_URL`/`MARS_AUTODEV_MCP_COMMAND` is set,
+else falls back to the mock. The `mcp` package is an **optional** dependency, imported lazily — do not
+import it at module load. The Cortex MCP provider is the symmetric next step (reuse `mcp_client.py`).
+
 ### Scoring
 Scorers are pluggable. Initial set: `TestPassScorer`, `RuntimeScorer`, `CostScorer`, `DiffScorer`,
 combined into a `CompositeScore` on a 0–100 scale. Add new scorers by implementing the scorer

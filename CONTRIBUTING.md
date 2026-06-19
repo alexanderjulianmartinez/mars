@@ -22,6 +22,27 @@ mars replay --run-id RUN_ID
 
 Runs persist to a local SQLite file (`mars.db` by default; override with `--db`).
 
+## Using a real AutoDev (MCP)
+
+By default `mars run` uses the mock AutoDev. To drive a real AutoDev MCP server,
+install the optional transport and point Mars at the server — no code changes,
+the provider is selected from the environment:
+
+```bash
+uv pip install -e ".[mcp]"
+
+# HTTP (streamable-http by default; set ..._TRANSPORT=sse for SSE):
+export MARS_AUTODEV_MCP_URL="http://localhost:9000/mcp"
+
+# …or stdio (spawn a local server process):
+export MARS_AUTODEV_MCP_COMMAND="autodev-mcp"
+export MARS_AUTODEV_MCP_ARGS="--workspace /tmp"
+
+mars run --suite backend-api --agent claude-code   # banner shows "AutoDev backend: AutoDev MCP"
+```
+
+The expected MCP tool contract is documented in `mars/providers/autodev_mcp.py`.
+
 ## Tests
 
 ```bash

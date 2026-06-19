@@ -1,6 +1,6 @@
 # Mars Roadmap
 
-## Phase 0 — Foundations (current)
+## Phase 0 — Foundations (done)
 
 - Domain model, YAML suites, repository storage.
 - Provider interfaces + deterministic mocks.
@@ -9,11 +9,13 @@
 - Markdown/JSON reporting.
 - CLI: `list-suites`, `list-cases`, `run`, `report`, `compare`, `replay`.
 
-## Phase 1 — Real integrations
+## Phase 1 — Real integrations (in progress)
 
-- MCP-backed `CortexProvider` and `AutoDevProvider` (drop-in for the mocks).
-- Real workspace lifecycle, diff capture, and test execution via AutoDev.
-- Context versioning surfaced in reports and replay.
+- [x] MCP-backed `AutoDevProvider` (drop-in for the mock; env-configured).
+- [ ] MCP-backed `CortexProvider` (symmetric; reuse the shared MCP client).
+- [ ] Real workspace lifecycle, diff capture, and test execution verified
+      against a reference AutoDev MCP server.
+- [ ] Context versioning surfaced in reports and replay.
 
 ## Phase 2 — Scale & rigor
 

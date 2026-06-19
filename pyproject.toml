@@ -17,6 +17,11 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
+    "mcp>=1.2",
+]
+# Real AutoDev/Cortex MCP transport. Optional: Mars runs on mocks without it.
+mcp = [
+    "mcp>=1.2",
 ]
 
 [project.scripts]

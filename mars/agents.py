@@ -10,9 +10,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from mars.providers.autodev_mcp import AutoDevMCPProvider, config_from_env
-from mars.providers.base import AutoDevProvider
-from mars.providers.mock import MockAutoDevProvider
+from mars.providers.autodev_mcp import AutoDevMCPProvider
+from mars.providers.autodev_mcp import config_from_env as autodev_config_from_env
+from mars.providers.base import AutoDevProvider, CortexProvider
+from mars.providers.cortex_mcp import CortexMCPProvider
+from mars.providers.cortex_mcp import config_from_env as cortex_config_from_env
+from mars.providers.mock import MockAutoDevProvider, MockCortexProvider
 
 
 @dataclass(frozen=True)
@@ -32,7 +35,7 @@ PRESETS: dict[str, AgentPreset] = {
 
 def make_autodev(agent: str) -> AutoDevProvider:
     preset = PRESETS.get(agent) or AgentPreset(agent, f"{agent}-model", 0.75, 0.05)
-    config = config_from_env()
+    config = autodev_config_from_env()
     if config is not None:
         return AutoDevMCPProvider.from_config(config, agent=preset.agent, model=preset.model)
     return MockAutoDevProvider(
@@ -43,9 +46,22 @@ def make_autodev(agent: str) -> AutoDevProvider:
     )
 
 
+def make_cortex() -> CortexProvider:
+    """Return the real Cortex MCP provider when configured, else the mock."""
+    config = cortex_config_from_env()
+    if config is not None:
+        return CortexMCPProvider.from_config(config)
+    return MockCortexProvider()
+
+
 def using_real_autodev() -> bool:
     """True when an AutoDev MCP server is configured via the environment."""
-    return config_from_env() is not None
+    return autodev_config_from_env() is not None
+
+
+def using_real_cortex() -> bool:
+    """True when a Cortex MCP server is configured via the environment."""
+    return cortex_config_from_env() is not None
 
 
 def known_agents() -> list[str]:

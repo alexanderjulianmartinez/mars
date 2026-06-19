@@ -12,7 +12,7 @@
 ## Phase 1 — Real integrations (in progress)
 
 - [x] MCP-backed `AutoDevProvider` (drop-in for the mock; env-configured).
-- [ ] MCP-backed `CortexProvider` (symmetric; reuse the shared MCP client).
+- [x] MCP-backed `CortexProvider` (symmetric; shares the MCP client).
 - [ ] Real workspace lifecycle, diff capture, and test execution verified
       against a reference AutoDev MCP server.
 - [ ] Context versioning surfaced in reports and replay.

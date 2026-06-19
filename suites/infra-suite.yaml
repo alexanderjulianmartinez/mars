@@ -1,0 +1,37 @@
+id: infra
+name: Infrastructure Suite
+description: Benchmark tasks for infrastructure debugging and IaC changes.
+tags: [infra, terraform, ops]
+
+cases:
+  - id: debug-service-failure
+    name: Debug service failure
+    description: A service is crash-looping; identify and fix the root cause.
+    repo: example/infra
+    task_prompt: |
+      The `payments` service is crash-looping on startup. Inspect the logs and
+      configuration, find the root cause, and apply a fix so the service starts
+      cleanly. Add a regression test or healthcheck where appropriate.
+    context_profile: infra
+    test_commands:
+      - ./scripts/healthcheck.sh payments
+    success_criteria:
+      - tests_pass
+      - within_timeout
+    timeout_seconds: 900
+
+  - id: update-terraform-variable
+    name: Update Terraform variable
+    description: Change an instance size variable and keep the plan clean.
+    repo: example/infra
+    task_prompt: |
+      Update the `instance_type` variable for the staging environment from
+      t3.small to t3.medium. Ensure `terraform validate` passes and the plan
+      shows only the intended change.
+    context_profile: infra
+    test_commands:
+      - terraform validate
+    success_criteria:
+      - tests_pass
+      - no_unrelated_changes
+    timeout_seconds: 600

@@ -1,0 +1,59 @@
+# Mars Evaluation Report
+
+**Run:** `{{ run.id }}`
+**Suite / Case:** `{{ run.suite_id }}` / `{{ run.case_id }}`
+**Agent / Model:** {{ run.agent }} / {{ run.model }}
+**Context package:** `{{ run.context_package_id or "n/a" }}`
+**Created:** {{ run.created_at }}
+
+## Result
+
+| Metric | Value |
+| --- | --- |
+| Status | **{{ run.status.value | upper }}** |
+| Composite score | **{{ "%.1f"|format(run.score) }}** / 100 |
+| Runtime | {{ run.duration_ms }} ms |
+| Cost | ${{ "%.4f"|format(run.cost_usd) }} |
+{% if run.failure_reason %}| Failure reason | {{ run.failure_reason }} |
+{% endif %}
+
+## Score breakdown
+
+| Scorer | Value | Weight | Detail |
+| --- | --- | --- | --- |
+{% for c in run.score_components -%}
+| {{ c.scorer }} | {{ "%.1f"|format(c.value) }} | {{ "%.2f"|format(c.weight) }} | {{ c.detail }} |
+{% endfor %}
+
+## Success criteria
+
+{% if run.criteria_met -%}
+{% for name, met in run.criteria_met.items() -%}
+- [{{ "x" if met else " " }}] {{ name }}
+{% endfor %}
+{%- else -%}
+_No criteria declared._
+{%- endif %}
+
+## Tests
+
+{% if run.test_results -%}
+| Test | Passed | Duration |
+| --- | --- | --- |
+{% for t in run.test_results -%}
+| `{{ t.name }}` | {{ "✅" if t.passed else "❌" }} | {{ t.duration_ms }} ms |
+{% endfor %}
+{%- else -%}
+_No tests reported._
+{%- endif %}
+{% if regression %}
+## Regression vs baseline
+
+{% if regression.has_regression -%}
+{% for w in regression.warnings -%}
+- ⚠️ {{ w }}
+{% endfor %}
+{%- else -%}
+{{ regression.summary }}
+{%- endif %}
+{% endif %}

@@ -1,0 +1,38 @@
+id: backend-api
+name: Backend API Suite
+description: Benchmark tasks for backend HTTP API engineering.
+tags: [backend, api, http]
+
+cases:
+  - id: add-health-endpoint
+    name: Add health endpoint
+    description: 'Add a GET /health endpoint returning {"ok": true}.'
+    repo: example/backend-service
+    task_prompt: |
+      Add a `/health` endpoint that returns the JSON body {"ok": true}
+      with a 200 status code. Include a test that asserts the response.
+    context_profile: backend
+    setup_commands:
+      - pip install -r requirements.txt
+    test_commands:
+      - pytest tests/test_health.py
+    success_criteria:
+      - tests_pass
+      - endpoint_exists
+      - no_unrelated_changes
+    timeout_seconds: 600
+
+  - id: fix-failing-test
+    name: Fix failing test
+    description: A unit test is failing; make it pass without weakening it.
+    repo: example/backend-service
+    task_prompt: |
+      The test `tests/test_orders.py::test_total` is failing. Find and fix the
+      bug in the order-total calculation so the test passes. Do not edit the test.
+    context_profile: backend
+    test_commands:
+      - pytest tests/test_orders.py
+    success_criteria:
+      - tests_pass
+      - no_unrelated_changes
+    timeout_seconds: 480

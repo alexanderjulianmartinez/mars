@@ -38,10 +38,16 @@ export MARS_AUTODEV_MCP_URL="http://localhost:9000/mcp"
 export MARS_AUTODEV_MCP_COMMAND="autodev-mcp"
 export MARS_AUTODEV_MCP_ARGS="--workspace /tmp"
 
-mars run --suite backend-api --agent claude-code   # banner shows "AutoDev backend: AutoDev MCP"
+# Real Cortex is symmetric (MARS_CORTEX_MCP_URL / MARS_CORTEX_MCP_COMMAND):
+export MARS_CORTEX_MCP_URL="http://localhost:8800/mcp"
+
+mars run --suite backend-api --agent claude-code
+# banner: "Cortex backend: Cortex MCP  |  AutoDev backend: AutoDev MCP"
 ```
 
-The expected MCP tool contract is documented in `mars/providers/autodev_mcp.py`.
+Each backend is independent — enable either, both, or neither (mock fallback).
+The expected MCP tool contracts are documented in `mars/providers/autodev_mcp.py`
+and `mars/providers/cortex_mcp.py`.
 
 ## Tests
 

@@ -6,8 +6,8 @@ Prioritized work, highest first. Items map to roadmap phases.
 
 - [x] MCP `AutoDevProvider`: real workspace create/run/test/diff/cleanup.
       (`mars/providers/autodev_mcp.py`; env-configured, mock fallback.)
-- [ ] MCP `CortexProvider`: real context packages + metadata. (Symmetric to AutoDev;
-      reuse `mars/providers/mcp_client.py`.)
+- [x] MCP `CortexProvider`: real context packages + metadata.
+      (`mars/providers/cortex_mcp.py`; env-configured, mock fallback, per-case retrieval.)
 - [ ] Integration-test `AutoDevMCPProvider` against a reference AutoDev MCP server.
 - [ ] Replace `mars/agents.py` mock presets with a real agent registry.
 - [ ] Persist suites/cases to storage for a run explorer (not just YAML on disk).

@@ -7,6 +7,7 @@ replacements selected at the edge of the system, never imported by the engine.
 
 from mars.providers.autodev_mcp import AutoDevMCPProvider
 from mars.providers.base import AutoDevProvider, CortexProvider
+from mars.providers.cortex_mcp import CortexMCPProvider
 from mars.providers.mcp_client import MCPServerConfig, MCPToolCaller, ToolCaller
 from mars.providers.mock import MockAutoDevProvider, MockCortexProvider
 
@@ -16,6 +17,7 @@ __all__ = [
     "MockCortexProvider",
     "MockAutoDevProvider",
     "AutoDevMCPProvider",
+    "CortexMCPProvider",
     "MCPServerConfig",
     "MCPToolCaller",
     "ToolCaller",

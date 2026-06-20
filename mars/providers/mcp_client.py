@@ -32,6 +32,20 @@ class ToolCaller(Protocol):
     def close(self) -> None: ...
 
 
+def parse_kv_env(value: str | None) -> dict[str, str]:
+    """Parse ``KEY=VALUE`` tokens (whitespace-separated) into a dict.
+
+    Used to forward extra environment to a stdio MCP child, e.g.
+    ``MARS_CORTEX_MCP_ENV="CORTEX_DATABASE_URL=... CORTEX_PROJECT=mars"``.
+    """
+    env: dict[str, str] = {}
+    for token in (value or "").split():
+        key, sep, val = token.partition("=")
+        if sep and key:
+            env[key] = val
+    return env
+
+
 @dataclass
 class MCPServerConfig:
     """How to reach an MCP server.
@@ -45,6 +59,7 @@ class MCPServerConfig:
     command: str | None = None
     args: list[str] = field(default_factory=list)
     env: dict[str, str] = field(default_factory=dict)
+    cwd: str | None = None  # stdio child working dir (so it can load its own .env)
     url: str | None = None
     transport: str = "streamable-http"  # "streamable-http" | "sse" (url only)
     headers: dict[str, str] = field(default_factory=dict)
@@ -140,7 +155,14 @@ class MCPToolCaller:
                     streamablehttp_client(cfg.url, headers=cfg.headers or None)
                 )
         else:
-            params = StdioServerParameters(command=cfg.command, args=cfg.args, env=cfg.env or None)
+            from mcp.client.stdio import get_default_environment
+
+            # Merge any explicit env onto the SDK's safe default child env so
+            # PATH/HOME survive while still forwarding e.g. CORTEX_DATABASE_URL.
+            child_env = {**get_default_environment(), **cfg.env} if cfg.env else None
+            params = StdioServerParameters(
+                command=cfg.command, args=cfg.args, env=child_env, cwd=cfg.cwd
+            )
             read, write = await self._stack.enter_async_context(stdio_client(params))
 
         self._session = await self._stack.enter_async_context(ClientSession(read, write))

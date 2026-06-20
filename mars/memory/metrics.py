@@ -7,6 +7,8 @@ quality alone.
 
 from __future__ import annotations
 
+from math import log2
+
 
 def recall_at_k(ranked_ids: list[str], relevant_ids: set[str], k: int) -> float:
     if not relevant_ids:
@@ -39,3 +41,22 @@ def context_efficiency(ranked_ids: list[str], relevant_ids: set[str], k: int) ->
     if not top:
         return 0.0
     return sum(1 for i in top if i in relevant_ids) / len(top)
+
+
+def ndcg_at_k(ranked_ids: list[str], relevant_ids: set[str], k: int) -> float:
+    """Normalized discounted cumulative gain @k with binary relevance.
+
+    Rewards placing relevant memories higher in the ranking. DCG sums
+    ``1 / log2(rank + 1)`` over relevant hits in the top-k; the ideal DCG packs
+    all relevant items into the top positions. Returns 0 when nothing is relevant.
+    """
+    if not relevant_ids or k <= 0:
+        return 0.0
+    dcg = sum(
+        1.0 / log2(rank + 1)
+        for rank, i in enumerate(ranked_ids[:k], start=1)
+        if i in relevant_ids
+    )
+    ideal_hits = min(len(relevant_ids), k)
+    idcg = sum(1.0 / log2(rank + 1) for rank in range(1, ideal_hits + 1))
+    return dcg / idcg if idcg else 0.0

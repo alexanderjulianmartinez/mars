@@ -1,0 +1,4451 @@
+project: mars
+name: salience-memory-v1-expanded
+queries:
+- query: how should database schema migrations be rolled back safely in production
+  domain: database
+  target_memories:
+  - db-migration-rollback-target-0
+  relevant_memories:
+  - db-migration-rollback-relevant-0
+  - db-migration-rollback-relevant-1
+  - db-migration-rollback-relevant-2
+  - db-migration-rollback-relevant-3
+  - db-migration-rollback-relevant-4
+  memories:
+  - id: db-migration-rollback-target-0
+    content: Every schema migration must ship with a tested down-migration; the March prod incident was
+      an irreversible ALTER with no recovery path that forced a 40-minute outage.
+    category: target
+    importance: 0.999
+    novelty: 0.91
+    urgency: 0.685
+    confidence: 0.919
+  - id: db-migration-rollback-relevant-0
+    content: 'Expand-and-contract is mandatory for column changes: add the new column, dual-write, backfill,
+      switch reads, then drop the old column in a later release.'
+    category: relevant
+    importance: 0.734
+    novelty: 0.473
+    urgency: 0.446
+    confidence: 0.791
+  - id: db-migration-rollback-relevant-1
+    content: Migrations run against a staging clone of prod data with a rehearsed rollback before promotion.
+    category: relevant
+    importance: 0.804
+    novelty: 0.483
+    urgency: 0.714
+    confidence: 0.739
+  - id: db-migration-rollback-relevant-2
+    content: Long backfills are chunked and run out-of-band so the migration transaction stays short.
+    category: relevant
+    importance: 0.756
+    novelty: 0.6
+    urgency: 0.607
+    confidence: 0.793
+  - id: db-migration-rollback-relevant-3
+    content: A migration that can't be reversed cleanly is gated behind a feature flag so reads can switch
+      back instantly.
+    category: relevant
+    importance: 0.624
+    novelty: 0.675
+    urgency: 0.681
+    confidence: 0.855
+  - id: db-migration-rollback-relevant-4
+    content: We snapshot the affected tables immediately before a high-risk migration as a last-resort
+      recovery point.
+    category: relevant
+    importance: 0.692
+    novelty: 0.561
+    urgency: 0.328
+    confidence: 0.713
+  - id: db-migration-rollback-distractor-0
+    content: The migration job runner's connection pool was tuned to 20 connections to speed up CI.
+    category: distractor
+    importance: 0.228
+    novelty: 0.442
+    urgency: 0.476
+    confidence: 0.891
+  - id: db-migration-rollback-distractor-1
+    content: Our ORM auto-generates migration files, but the generated names are hard to read in review.
+    category: distractor
+    importance: 0.234
+    novelty: 0.558
+    urgency: 0.343
+    confidence: 0.878
+  - id: db-migration-rollback-distractor-2
+    content: Schema diagrams are regenerated nightly and posted to the wiki for onboarding.
+    category: distractor
+    importance: 0.243
+    novelty: 0.34
+    urgency: 0.48
+    confidence: 0.727
+  - id: db-migration-rollback-distractor-3
+    content: A rollback of the cursor pagination token happens automatically when a listing query errors.
+    category: distractor
+    importance: 0.165
+    novelty: 0.588
+    urgency: 0.283
+    confidence: 0.883
+  - id: db-migration-rollback-distractor-4
+    content: A separate change to migration touched the same area but addressed schema rather than the
+      question of how to how should database schema migrations be rolled .
+    category: distractor
+    importance: 0.146
+    novelty: 0.38
+    urgency: 0.193
+    confidence: 0.61
+  - id: db-migration-rollback-distractor-5
+    content: A separate change to schema touched the same area but addressed rollback rather than the
+      question of how to how should database schema migrations be rolled .
+    category: distractor
+    importance: 0.072
+    novelty: 0.285
+    urgency: 0.283
+    confidence: 0.881
+  - id: db-migration-rollback-distractor-6
+    content: A separate change to rollback touched the same area but addressed downtime rather than the
+      question of how to how should database schema migrations be rolled .
+    category: distractor
+    importance: 0.143
+    novelty: 0.481
+    urgency: 0.448
+    confidence: 0.759
+  - id: db-migration-rollback-stale-0
+    content: '[2022] We block all writes during migrations by taking the service offline for a maintenance
+      window.'
+    category: stale
+    importance: 0.155
+    novelty: 0.216
+    urgency: 0.282
+    confidence: 0.634
+  - id: db-migration-rollback-stale-1
+    content: '[archived] The earlier migration approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.166
+    novelty: 0.062
+    urgency: 0.179
+    confidence: 0.781
+  - id: db-migration-rollback-stale-2
+    content: '[archived] The earlier schema approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.11
+    novelty: 0.124
+    urgency: 0.094
+    confidence: 0.675
+  - id: db-migration-rollback-contradictory-0
+    content: Down-migrations are optional; if a change breaks we just roll forward with a hotfix and never
+      revert schema.
+    category: contradictory
+    importance: 0.556
+    novelty: 0.524
+    urgency: 0.526
+    confidence: 0.353
+  - id: db-migration-rollback-low_confidence-0
+    content: I think Postgres can roll back a DROP COLUMN instantly from the WAL, but I never tested it.
+    category: low_confidence
+    importance: 0.418
+    novelty: 0.656
+    urgency: 0.403
+    confidence: 0.253
+  - id: db-migration-rollback-low_confidence-1
+    content: 'Unverified note: someone suggested migration might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.364
+    novelty: 0.578
+    urgency: 0.467
+    confidence: 0.179
+  - id: db-migration-rollback-low_confidence-2
+    content: 'Unverified note: someone suggested schema might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.415
+    novelty: 0.34
+    urgency: 0.537
+    confidence: 0.318
+- query: how do we decide which database indexes to add for a slow query
+  domain: database
+  target_memories:
+  - db-indexing-decision-target-0
+  relevant_memories:
+  - db-indexing-decision-relevant-0
+  - db-indexing-decision-relevant-1
+  - db-indexing-decision-relevant-2
+  memories:
+  - id: db-indexing-decision-target-0
+    content: 'Add indexes from the query plan, not by guessing: run EXPLAIN ANALYZE, index the columns
+      in the WHERE/JOIN that show sequential scans, and order composite indexes by selectivity.'
+    category: target
+    importance: 0.892
+    novelty: 0.607
+    urgency: 0.621
+    confidence: 0.96
+  - id: db-indexing-decision-relevant-0
+    content: Every new index is justified by a measured plan improvement and weighed against write amplification,
+      since each index slows inserts and updates.
+    category: relevant
+    importance: 0.564
+    novelty: 0.652
+    urgency: 0.437
+    confidence: 0.747
+  - id: db-indexing-decision-relevant-1
+    content: Composite index column order follows the equality-then-range rule for the target query.
+    category: relevant
+    importance: 0.531
+    novelty: 0.589
+    urgency: 0.642
+    confidence: 0.943
+  - id: db-indexing-decision-relevant-2
+    content: Unused indexes are dropped quarterly based on pg_stat_user_indexes scan counts.
+    category: relevant
+    importance: 0.834
+    novelty: 0.519
+    urgency: 0.493
+    confidence: 0.7
+  - id: db-indexing-decision-distractor-0
+    content: The search box uses a client-side index of recent items for instant autocomplete.
+    category: distractor
+    importance: 0.15
+    novelty: 0.476
+    urgency: 0.147
+    confidence: 0.793
+  - id: db-indexing-decision-distractor-1
+    content: Our documentation site is indexed by the internal search crawler every hour.
+    category: distractor
+    importance: 0.086
+    novelty: 0.314
+    urgency: 0.202
+    confidence: 0.736
+  - id: db-indexing-decision-distractor-2
+    content: The build cache is keyed by a content hash index to avoid recompiling unchanged modules.
+    category: distractor
+    importance: 0.225
+    novelty: 0.547
+    urgency: 0.418
+    confidence: 0.751
+  - id: db-indexing-decision-distractor-3
+    content: A covering index was added once for a report, but the report was later deleted.
+    category: distractor
+    importance: 0.236
+    novelty: 0.339
+    urgency: 0.386
+    confidence: 0.789
+  - id: db-indexing-decision-distractor-4
+    content: A separate change to index touched the same area but addressed query plan rather than the
+      question of how to how do we decide which database indexes to add f.
+    category: distractor
+    importance: 0.227
+    novelty: 0.545
+    urgency: 0.438
+    confidence: 0.836
+  - id: db-indexing-decision-distractor-5
+    content: A separate change to query plan touched the same area but addressed cardinality rather than
+      the question of how to how do we decide which database indexes to add f.
+    category: distractor
+    importance: 0.188
+    novelty: 0.484
+    urgency: 0.122
+    confidence: 0.874
+  - id: db-indexing-decision-distractor-6
+    content: A separate change to cardinality touched the same area but addressed composite index rather
+      than the question of how to how do we decide which database indexes to add f.
+    category: distractor
+    importance: 0.238
+    novelty: 0.571
+    urgency: 0.142
+    confidence: 0.647
+  - id: db-indexing-decision-stale-0
+    content: '[2021] We add an index on every foreign key by default as a blanket policy.'
+    category: stale
+    importance: 0.25
+    novelty: 0.21
+    urgency: 0.109
+    confidence: 0.662
+  - id: db-indexing-decision-stale-1
+    content: '[archived] The earlier index approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.229
+    novelty: 0.184
+    urgency: 0.186
+    confidence: 0.774
+  - id: db-indexing-decision-stale-2
+    content: '[archived] The earlier query plan approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.237
+    novelty: 0.209
+    urgency: 0.232
+    confidence: 0.641
+  - id: db-indexing-decision-contradictory-0
+    content: Indexes never hurt; add one on every column that appears in any query to be safe.
+    category: contradictory
+    importance: 0.615
+    novelty: 0.672
+    urgency: 0.356
+    confidence: 0.499
+  - id: db-indexing-decision-low_confidence-0
+    content: Someone mentioned a partial index might help the dashboard query, but it was never benchmarked.
+    category: low_confidence
+    importance: 0.468
+    novelty: 0.611
+    urgency: 0.434
+    confidence: 0.144
+  - id: db-indexing-decision-low_confidence-1
+    content: 'Unverified note: someone suggested index might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.394
+    novelty: 0.421
+    urgency: 0.404
+    confidence: 0.126
+  - id: db-indexing-decision-low_confidence-2
+    content: 'Unverified note: someone suggested query plan might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.367
+    novelty: 0.521
+    urgency: 0.34
+    confidence: 0.221
+- query: what is our policy for evolving a shared table schema without breaking consumers
+  domain: database
+  target_memories:
+  - db-schema-evolution-target-0
+  relevant_memories:
+  - db-schema-evolution-relevant-0
+  - db-schema-evolution-relevant-1
+  - db-schema-evolution-relevant-2
+  memories:
+  - id: db-schema-evolution-target-0
+    content: 'Shared-table changes must be backward compatible for one release: new columns are nullable
+      or defaulted, and no column is renamed or dropped until all consumers stop referencing it.'
+    category: target
+    importance: 0.945
+    novelty: 0.761
+    urgency: 0.782
+    confidence: 0.929
+  - id: db-schema-evolution-relevant-0
+    content: Consumers of a shared table are tracked in the service registry so a deprecation can be announced
+      to every owning team before a breaking change.
+    category: relevant
+    importance: 0.797
+    novelty: 0.766
+    urgency: 0.6
+    confidence: 0.825
+  - id: db-schema-evolution-relevant-1
+    content: Breaking schema changes go through a two-phase deprecation with a logged-usage grace period.
+    category: relevant
+    importance: 0.646
+    novelty: 0.545
+    urgency: 0.573
+    confidence: 0.94
+  - id: db-schema-evolution-relevant-2
+    content: Each shared table has a documented owner who reviews proposed schema changes.
+    category: relevant
+    importance: 0.752
+    novelty: 0.712
+    urgency: 0.776
+    confidence: 0.786
+  - id: db-schema-evolution-distractor-0
+    content: The GraphQL schema is versioned separately and stitched at the gateway.
+    category: distractor
+    importance: 0.129
+    novelty: 0.276
+    urgency: 0.471
+    confidence: 0.594
+  - id: db-schema-evolution-distractor-1
+    content: Our protobuf schemas are linted for field-number reuse in CI.
+    category: distractor
+    importance: 0.24
+    novelty: 0.543
+    urgency: 0.472
+    confidence: 0.662
+  - id: db-schema-evolution-distractor-2
+    content: The JSON config schema is validated on startup and rejects unknown keys.
+    category: distractor
+    importance: 0.128
+    novelty: 0.288
+    urgency: 0.372
+    confidence: 0.681
+  - id: db-schema-evolution-distractor-3
+    content: A shared table once stored both users and audit rows, but those were split last year.
+    category: distractor
+    importance: 0.063
+    novelty: 0.507
+    urgency: 0.4
+    confidence: 0.713
+  - id: db-schema-evolution-distractor-4
+    content: A separate change to schema touched the same area but addressed backward compatible rather
+      than the question of how to what is our policy for evolving a shared table s.
+    category: distractor
+    importance: 0.15
+    novelty: 0.532
+    urgency: 0.253
+    confidence: 0.654
+  - id: db-schema-evolution-distractor-5
+    content: A separate change to backward compatible touched the same area but addressed nullable rather
+      than the question of how to what is our policy for evolving a shared table s.
+    category: distractor
+    importance: 0.135
+    novelty: 0.462
+    urgency: 0.47
+    confidence: 0.835
+  - id: db-schema-evolution-distractor-6
+    content: A separate change to nullable touched the same area but addressed consumer rather than the
+      question of how to what is our policy for evolving a shared table s.
+    category: distractor
+    importance: 0.225
+    novelty: 0.343
+    urgency: 0.491
+    confidence: 0.647
+  - id: db-schema-evolution-stale-0
+    content: '[2020] Any team can alter a shared table directly as long as they post in the channel afterward.'
+    category: stale
+    importance: 0.168
+    novelty: 0.068
+    urgency: 0.203
+    confidence: 0.688
+  - id: db-schema-evolution-stale-1
+    content: '[archived] The earlier schema approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.299
+    novelty: 0.062
+    urgency: 0.283
+    confidence: 0.773
+  - id: db-schema-evolution-stale-2
+    content: '[archived] The earlier backward compatible approach was the accepted answer before the last
+      replatform; it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.254
+    novelty: 0.145
+    urgency: 0.259
+    confidence: 0.579
+  - id: db-schema-evolution-contradictory-0
+    content: Just rename the column and fix the consumers in the same PR; coordinating deprecations is
+      overkill.
+    category: contradictory
+    importance: 0.677
+    novelty: 0.663
+    urgency: 0.673
+    confidence: 0.544
+  - id: db-schema-evolution-low_confidence-0
+    content: I believe two services still read the legacy column, but I'm not certain which ones.
+    category: low_confidence
+    importance: 0.49
+    novelty: 0.51
+    urgency: 0.318
+    confidence: 0.377
+  - id: db-schema-evolution-low_confidence-1
+    content: 'Unverified note: someone suggested schema might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.395
+    novelty: 0.612
+    urgency: 0.32
+    confidence: 0.145
+  - id: db-schema-evolution-low_confidence-2
+    content: 'Unverified note: someone suggested backward compatible might be relevant here, but it was
+      never confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.444
+    novelty: 0.658
+    urgency: 0.319
+    confidence: 0.367
+- query: when should we partition or shard a large and growing table
+  domain: database
+  target_memories:
+  - db-partitioning-target-0
+  relevant_memories:
+  - db-partitioning-relevant-0
+  - db-partitioning-relevant-1
+  - db-partitioning-relevant-2
+  memories:
+  - id: db-partitioning-target-0
+    content: Partition by time-range once a table passes ~100M rows and queries are time-bounded; reach
+      for sharding only when a single node can't hold the working set, and pick a shard key that spreads
+      load to avoid hot partitions.
+    category: target
+    importance: 0.873
+    novelty: 0.673
+    urgency: 0.627
+    confidence: 0.864
+  - id: db-partitioning-relevant-0
+    content: The shard key must match the dominant access pattern or every query becomes a scatter-gather.
+    category: relevant
+    importance: 0.505
+    novelty: 0.561
+    urgency: 0.598
+    confidence: 0.857
+  - id: db-partitioning-relevant-1
+    content: Range partitions are created ahead of time by a scheduled job so inserts never hit a missing
+      partition.
+    category: relevant
+    importance: 0.651
+    novelty: 0.409
+    urgency: 0.534
+    confidence: 0.892
+  - id: db-partitioning-relevant-2
+    content: Before sharding we exhaust vertical scaling and read replicas, since sharding is hard to
+      reverse.
+    category: relevant
+    importance: 0.772
+    novelty: 0.426
+    urgency: 0.343
+    confidence: 0.738
+  - id: db-partitioning-distractor-0
+    content: The frontend partitions the feed into tabs so users can filter by category.
+    category: distractor
+    importance: 0.162
+    novelty: 0.577
+    urgency: 0.455
+    confidence: 0.696
+  - id: db-partitioning-distractor-1
+    content: Log files are partitioned by day and shipped to cold storage after 30 days.
+    category: distractor
+    importance: 0.219
+    novelty: 0.584
+    urgency: 0.472
+    confidence: 0.549
+  - id: db-partitioning-distractor-2
+    content: The CI matrix is sharded across runners to keep test wall-time under ten minutes.
+    category: distractor
+    importance: 0.244
+    novelty: 0.482
+    urgency: 0.126
+    confidence: 0.894
+  - id: db-partitioning-distractor-3
+    content: We sharded a Redis cache once but consolidated it back when traffic dropped.
+    category: distractor
+    importance: 0.121
+    novelty: 0.282
+    urgency: 0.294
+    confidence: 0.87
+  - id: db-partitioning-distractor-4
+    content: A separate change to partition touched the same area but addressed shard rather than the
+      question of how to when should we partition or shard a large and gr.
+    category: distractor
+    importance: 0.154
+    novelty: 0.522
+    urgency: 0.268
+    confidence: 0.603
+  - id: db-partitioning-distractor-5
+    content: A separate change to shard touched the same area but addressed hot partition rather than
+      the question of how to when should we partition or shard a large and gr.
+    category: distractor
+    importance: 0.196
+    novelty: 0.376
+    urgency: 0.322
+    confidence: 0.641
+  - id: db-partitioning-distractor-6
+    content: A separate change to hot partition touched the same area but addressed range partition rather
+      than the question of how to when should we partition or shard a large and gr.
+    category: distractor
+    importance: 0.146
+    novelty: 0.316
+    urgency: 0.187
+    confidence: 0.577
+  - id: db-partitioning-stale-0
+    content: '[2019] Our standard is one giant table per entity; partitioning is premature optimization.'
+    category: stale
+    importance: 0.126
+    novelty: 0.229
+    urgency: 0.14
+    confidence: 0.619
+  - id: db-partitioning-stale-1
+    content: '[archived] The earlier partition approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.236
+    novelty: 0.147
+    urgency: 0.168
+    confidence: 0.677
+  - id: db-partitioning-stale-2
+    content: '[archived] The earlier shard approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.16
+    novelty: 0.053
+    urgency: 0.213
+    confidence: 0.521
+  - id: db-partitioning-contradictory-0
+    content: Always shard from day one; designing for a single database is a rookie mistake regardless
+      of size.
+    category: contradictory
+    importance: 0.254
+    novelty: 0.679
+    urgency: 0.423
+    confidence: 0.342
+  - id: db-partitioning-low_confidence-0
+    content: Maybe hashing the user id makes a good shard key, but I haven't checked the distribution.
+    category: low_confidence
+    importance: 0.29
+    novelty: 0.375
+    urgency: 0.228
+    confidence: 0.36
+  - id: db-partitioning-low_confidence-1
+    content: 'Unverified note: someone suggested partition might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.202
+    novelty: 0.549
+    urgency: 0.502
+    confidence: 0.184
+  - id: db-partitioning-low_confidence-2
+    content: 'Unverified note: someone suggested shard might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.343
+    novelty: 0.304
+    urgency: 0.485
+    confidence: 0.229
+- query: how should we size database connection pools and timeouts under load
+  domain: database
+  target_memories:
+  - db-connection-pool-target-0
+  relevant_memories:
+  - db-connection-pool-relevant-0
+  - db-connection-pool-relevant-1
+  - db-connection-pool-relevant-2
+  memories:
+  - id: db-connection-pool-target-0
+    content: Pool size should be bounded well below the database's max_connections and sized to cores,
+      not request concurrency; the last brownout came from each pod opening 50 connections and saturating
+      Postgres, fixed by a small pool plus a short acquire timeout and backpressure.
+    category: target
+    importance: 0.982
+    novelty: 0.938
+    urgency: 0.564
+    confidence: 0.878
+  - id: db-connection-pool-relevant-0
+    content: A short connection-acquire timeout sheds load fast instead of letting requests queue forever.
+    category: relevant
+    importance: 0.654
+    novelty: 0.786
+    urgency: 0.346
+    confidence: 0.794
+  - id: db-connection-pool-relevant-1
+    content: Total connections = pods × pool size must stay under the database ceiling with headroom for
+      migrations.
+    category: relevant
+    importance: 0.751
+    novelty: 0.545
+    urgency: 0.653
+    confidence: 0.789
+  - id: db-connection-pool-relevant-2
+    content: Pool saturation is alerted on so we see exhaustion before it becomes user-facing latency.
+    category: relevant
+    importance: 0.677
+    novelty: 0.757
+    urgency: 0.525
+    confidence: 0.908
+  - id: db-connection-pool-distractor-0
+    content: The HTTP client pool reuses keep-alive connections to the payment provider.
+    category: distractor
+    importance: 0.084
+    novelty: 0.328
+    urgency: 0.142
+    confidence: 0.689
+  - id: db-connection-pool-distractor-1
+    content: Our thread pool for image resizing is sized to the number of CPU cores.
+    category: distractor
+    importance: 0.202
+    novelty: 0.419
+    urgency: 0.49
+    confidence: 0.556
+  - id: db-connection-pool-distractor-2
+    content: The websocket gateway holds one long-lived connection per active client.
+    category: distractor
+    importance: 0.08
+    novelty: 0.219
+    urgency: 0.291
+    confidence: 0.596
+  - id: db-connection-pool-distractor-3
+    content: We raised the pool to 100 during a load test once, then reverted it.
+    category: distractor
+    importance: 0.074
+    novelty: 0.399
+    urgency: 0.166
+    confidence: 0.83
+  - id: db-connection-pool-distractor-4
+    content: A separate change to connection pool touched the same area but addressed timeout rather than
+      the question of how to how should we size database connection pools and.
+    category: distractor
+    importance: 0.11
+    novelty: 0.484
+    urgency: 0.297
+    confidence: 0.783
+  - id: db-connection-pool-distractor-5
+    content: A separate change to timeout touched the same area but addressed saturation rather than the
+      question of how to how should we size database connection pools and.
+    category: distractor
+    importance: 0.241
+    novelty: 0.464
+    urgency: 0.481
+    confidence: 0.734
+  - id: db-connection-pool-distractor-6
+    content: A separate change to saturation touched the same area but addressed queue rather than the
+      question of how to how should we size database connection pools and.
+    category: distractor
+    importance: 0.235
+    novelty: 0.597
+    urgency: 0.207
+    confidence: 0.664
+  - id: db-connection-pool-stale-0
+    content: '[2021] Set the pool as large as possible so we never wait on a connection.'
+    category: stale
+    importance: 0.164
+    novelty: 0.244
+    urgency: 0.154
+    confidence: 0.594
+  - id: db-connection-pool-stale-1
+    content: '[archived] The earlier connection pool approach was the accepted answer before the last
+      replatform; it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.129
+    novelty: 0.122
+    urgency: 0.217
+    confidence: 0.658
+  - id: db-connection-pool-stale-2
+    content: '[archived] The earlier timeout approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.291
+    novelty: 0.25
+    urgency: 0.163
+    confidence: 0.545
+  - id: db-connection-pool-contradictory-0
+    content: Connection limits don't matter; the database will queue everything fine, just open as many
+      as you need.
+    category: contradictory
+    importance: 0.38
+    novelty: 0.314
+    urgency: 0.727
+    confidence: 0.477
+  - id: db-connection-pool-low_confidence-0
+    content: I heard pgbouncer in transaction mode would fix this, but nobody has trialed it here.
+    category: low_confidence
+    importance: 0.381
+    novelty: 0.388
+    urgency: 0.462
+    confidence: 0.235
+  - id: db-connection-pool-low_confidence-1
+    content: 'Unverified note: someone suggested connection pool might be relevant here, but it was never
+      confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.477
+    novelty: 0.548
+    urgency: 0.451
+    confidence: 0.221
+  - id: db-connection-pool-low_confidence-2
+    content: 'Unverified note: someone suggested timeout might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.435
+    novelty: 0.506
+    urgency: 0.478
+    confidence: 0.19
+- query: what caused the authentication outage and how was it remediated
+  domain: reliability
+  target_memories:
+  - rel-auth-outage-target-0
+  relevant_memories:
+  - rel-auth-outage-relevant-0
+  - rel-auth-outage-relevant-1
+  - rel-auth-outage-relevant-2
+  - rel-auth-outage-relevant-3
+  - rel-auth-outage-relevant-4
+  memories:
+  - id: rel-auth-outage-target-0
+    content: 'The auth outage was a token clock-skew bug: nodes drifted, so freshly issued JWTs failed
+      not-before validation; the fix pins NTP and widens the nbf/exp tolerance to 60 seconds.'
+    category: target
+    importance: 0.898
+    novelty: 0.879
+    urgency: 0.559
+    confidence: 0.857
+  - id: rel-auth-outage-relevant-0
+    content: A cold auth cache now falls back to short-lived refresh tokens instead of rejecting the request.
+    category: relevant
+    importance: 0.66
+    novelty: 0.766
+    urgency: 0.519
+    confidence: 0.805
+  - id: rel-auth-outage-relevant-1
+    content: Token validation clock tolerance is a tunable config so we can widen it without a redeploy.
+    category: relevant
+    importance: 0.836
+    novelty: 0.602
+    urgency: 0.619
+    confidence: 0.778
+  - id: rel-auth-outage-relevant-2
+    content: We added an alert on the rate of nbf/exp validation failures to catch skew early.
+    category: relevant
+    importance: 0.699
+    novelty: 0.784
+    urgency: 0.447
+    confidence: 0.795
+  - id: rel-auth-outage-relevant-3
+    content: Auth nodes now sync time from a hardened NTP source with drift monitoring on each host.
+    category: relevant
+    importance: 0.798
+    novelty: 0.709
+    urgency: 0.469
+    confidence: 0.772
+  - id: rel-auth-outage-relevant-4
+    content: The postmortem action items track widening tolerance, NTP pinning, and a skew dashboard.
+    category: relevant
+    importance: 0.758
+    novelty: 0.503
+    urgency: 0.728
+    confidence: 0.737
+  - id: rel-auth-outage-distractor-0
+    content: The login page copy was updated and the outage banner component was removed afterward.
+    category: distractor
+    importance: 0.079
+    novelty: 0.552
+    urgency: 0.473
+    confidence: 0.896
+  - id: rel-auth-outage-distractor-1
+    content: OAuth scopes for third-party apps were expanded in the same sprint.
+    category: distractor
+    importance: 0.066
+    novelty: 0.24
+    urgency: 0.246
+    confidence: 0.572
+  - id: rel-auth-outage-distractor-2
+    content: The session cookie's SameSite attribute was changed to Lax for the new SSO flow.
+    category: distractor
+    importance: 0.224
+    novelty: 0.362
+    urgency: 0.307
+    confidence: 0.676
+  - id: rel-auth-outage-distractor-3
+    content: A separate rate-limit outage on the signup endpoint happened the following month.
+    category: distractor
+    importance: 0.213
+    novelty: 0.541
+    urgency: 0.284
+    confidence: 0.552
+  - id: rel-auth-outage-distractor-4
+    content: A separate change to token touched the same area but addressed clock skew rather than the
+      question of how to what caused the authentication outage and how wa.
+    category: distractor
+    importance: 0.139
+    novelty: 0.233
+    urgency: 0.461
+    confidence: 0.74
+  - id: rel-auth-outage-distractor-5
+    content: A separate change to clock skew touched the same area but addressed JWT rather than the question
+      of how to what caused the authentication outage and how wa.
+    category: distractor
+    importance: 0.163
+    novelty: 0.586
+    urgency: 0.47
+    confidence: 0.572
+  - id: rel-auth-outage-distractor-6
+    content: A separate change to JWT touched the same area but addressed NTP rather than the question
+      of how to what caused the authentication outage and how wa.
+    category: distractor
+    importance: 0.066
+    novelty: 0.296
+    urgency: 0.139
+    confidence: 0.682
+  - id: rel-auth-outage-stale-0
+    content: '[2022] Auth tokens are validated against a central service on every request, so skew can''t
+      matter.'
+    category: stale
+    importance: 0.191
+    novelty: 0.232
+    urgency: 0.275
+    confidence: 0.719
+  - id: rel-auth-outage-stale-1
+    content: '[archived] The earlier token approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.258
+    novelty: 0.195
+    urgency: 0.257
+    confidence: 0.704
+  - id: rel-auth-outage-stale-2
+    content: '[archived] The earlier clock skew approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.149
+    novelty: 0.099
+    urgency: 0.148
+    confidence: 0.61
+  - id: rel-auth-outage-contradictory-0
+    content: The outage was a database failover, not clock skew; tokens were never involved.
+    category: contradictory
+    importance: 0.612
+    novelty: 0.414
+    urgency: 0.357
+    confidence: 0.43
+  - id: rel-auth-outage-low_confidence-0
+    content: It might have been a leap-second issue, but we never confirmed that theory.
+    category: low_confidence
+    importance: 0.21
+    novelty: 0.405
+    urgency: 0.352
+    confidence: 0.306
+  - id: rel-auth-outage-low_confidence-1
+    content: 'Unverified note: someone suggested token might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.287
+    novelty: 0.568
+    urgency: 0.293
+    confidence: 0.149
+  - id: rel-auth-outage-low_confidence-2
+    content: 'Unverified note: someone suggested clock skew might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.404
+    novelty: 0.412
+    urgency: 0.402
+    confidence: 0.115
+- query: how do we prevent retry storms and cascading failures between services
+  domain: reliability
+  target_memories:
+  - rel-retry-storm-target-0
+  relevant_memories:
+  - rel-retry-storm-relevant-0
+  - rel-retry-storm-relevant-1
+  - rel-retry-storm-relevant-2
+  memories:
+  - id: rel-retry-storm-target-0
+    content: Retries must use exponential backoff with jitter and a bounded budget, fronted by a circuit
+      breaker; the checkout cascade happened because synchronous retries with no jitter amplified a downstream
+      blip into a thundering herd.
+    category: target
+    importance: 0.921
+    novelty: 0.888
+    urgency: 0.885
+    confidence: 0.956
+  - id: rel-retry-storm-relevant-0
+    content: Every cross-service call has a timeout shorter than its caller's so timeout budgets nest
+      correctly.
+    category: relevant
+    importance: 0.508
+    novelty: 0.42
+    urgency: 0.599
+    confidence: 0.874
+  - id: rel-retry-storm-relevant-1
+    content: Circuit breakers open on sustained error rates and shed load instead of retrying into a dead
+      dependency.
+    category: relevant
+    importance: 0.534
+    novelty: 0.633
+    urgency: 0.557
+    confidence: 0.942
+  - id: rel-retry-storm-relevant-2
+    content: Retries are only allowed on idempotent operations to avoid duplicate side effects.
+    category: relevant
+    importance: 0.615
+    novelty: 0.642
+    urgency: 0.688
+    confidence: 0.757
+  - id: rel-retry-storm-distractor-0
+    content: The CI pipeline retries flaky tests up to three times before failing the build.
+    category: distractor
+    importance: 0.142
+    novelty: 0.256
+    urgency: 0.343
+    confidence: 0.683
+  - id: rel-retry-storm-distractor-1
+    content: The frontend retries a failed image load once with a placeholder fallback.
+    category: distractor
+    importance: 0.11
+    novelty: 0.491
+    urgency: 0.341
+    confidence: 0.51
+  - id: rel-retry-storm-distractor-2
+    content: Our webhook delivery retries for 24 hours with increasing intervals.
+    category: distractor
+    importance: 0.164
+    novelty: 0.203
+    urgency: 0.255
+    confidence: 0.596
+  - id: rel-retry-storm-distractor-3
+    content: A retry button was added to the upload dialog for user-initiated retries.
+    category: distractor
+    importance: 0.072
+    novelty: 0.431
+    urgency: 0.487
+    confidence: 0.614
+  - id: rel-retry-storm-distractor-4
+    content: A separate change to retry touched the same area but addressed exponential backoff rather
+      than the question of how to how do we prevent retry storms and cascading fai.
+    category: distractor
+    importance: 0.101
+    novelty: 0.29
+    urgency: 0.126
+    confidence: 0.755
+  - id: rel-retry-storm-distractor-5
+    content: A separate change to exponential backoff touched the same area but addressed circuit breaker
+      rather than the question of how to how do we prevent retry storms and cascading fai.
+    category: distractor
+    importance: 0.119
+    novelty: 0.439
+    urgency: 0.436
+    confidence: 0.771
+  - id: rel-retry-storm-distractor-6
+    content: A separate change to circuit breaker touched the same area but addressed timeout budget rather
+      than the question of how to how do we prevent retry storms and cascading fai.
+    category: distractor
+    importance: 0.054
+    novelty: 0.282
+    urgency: 0.253
+    confidence: 0.553
+  - id: rel-retry-storm-stale-0
+    content: '[2021] Just retry failed calls immediately a few times; transient errors usually clear up
+      fast.'
+    category: stale
+    importance: 0.189
+    novelty: 0.16
+    urgency: 0.229
+    confidence: 0.607
+  - id: rel-retry-storm-stale-1
+    content: '[archived] The earlier retry approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.249
+    novelty: 0.065
+    urgency: 0.14
+    confidence: 0.573
+  - id: rel-retry-storm-stale-2
+    content: '[archived] The earlier exponential backoff approach was the accepted answer before the last
+      replatform; it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.285
+    novelty: 0.181
+    urgency: 0.109
+    confidence: 0.722
+  - id: rel-retry-storm-contradictory-0
+    content: Disable circuit breakers; they cause more outages than they prevent by failing requests early.
+    category: contradictory
+    importance: 0.381
+    novelty: 0.572
+    urgency: 0.543
+    confidence: 0.529
+  - id: rel-retry-storm-low_confidence-0
+    content: Maybe the mesh already adds jitter to retries by default, but I haven't verified the config.
+    category: low_confidence
+    importance: 0.316
+    novelty: 0.419
+    urgency: 0.57
+    confidence: 0.317
+  - id: rel-retry-storm-low_confidence-1
+    content: 'Unverified note: someone suggested retry might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.302
+    novelty: 0.4
+    urgency: 0.33
+    confidence: 0.218
+  - id: rel-retry-storm-low_confidence-2
+    content: 'Unverified note: someone suggested exponential backoff might be relevant here, but it was
+      never confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.297
+    novelty: 0.392
+    urgency: 0.481
+    confidence: 0.255
+- query: what is the safe procedure to roll back a bad deployment quickly
+  domain: reliability
+  target_memories:
+  - rel-deploy-rollback-target-0
+  relevant_memories:
+  - rel-deploy-rollback-relevant-0
+  - rel-deploy-rollback-relevant-1
+  - rel-deploy-rollback-relevant-2
+  memories:
+  - id: rel-deploy-rollback-target-0
+    content: Roll back by redeploying the previous immutable image behind the same canary gates; never
+      hot-patch prod. The fastest mitigation is a feature flag kill-switch, with image rollback as the
+      fallback when the change isn't flag-guarded.
+    category: target
+    importance: 0.913
+    novelty: 0.911
+    urgency: 0.929
+    confidence: 0.899
+  - id: rel-deploy-rollback-relevant-0
+    content: Risky changes ship behind a feature flag so they can be disabled without a redeploy.
+    category: relevant
+    importance: 0.814
+    novelty: 0.56
+    urgency: 0.576
+    confidence: 0.824
+  - id: rel-deploy-rollback-relevant-1
+    content: Canary deploys watch error rate and latency and auto-halt before a full rollout.
+    category: relevant
+    importance: 0.591
+    novelty: 0.722
+    urgency: 0.755
+    confidence: 0.717
+  - id: rel-deploy-rollback-relevant-2
+    content: Previous images are retained so a rollback is a redeploy, not a rebuild.
+    category: relevant
+    importance: 0.614
+    novelty: 0.639
+    urgency: 0.539
+    confidence: 0.732
+  - id: rel-deploy-rollback-distractor-0
+    content: The git history is rebased and force-pushed to keep the main branch linear.
+    category: distractor
+    importance: 0.235
+    novelty: 0.245
+    urgency: 0.402
+    confidence: 0.725
+  - id: rel-deploy-rollback-distractor-1
+    content: Documentation deploys are rolled back by reverting the docs commit.
+    category: distractor
+    importance: 0.177
+    novelty: 0.493
+    urgency: 0.115
+    confidence: 0.856
+  - id: rel-deploy-rollback-distractor-2
+    content: The mobile app rollback requires an app-store review, which takes a day.
+    category: distractor
+    importance: 0.093
+    novelty: 0.3
+    urgency: 0.267
+    confidence: 0.897
+  - id: rel-deploy-rollback-distractor-3
+    content: We rolled back a dependency bump last week that broke the build.
+    category: distractor
+    importance: 0.158
+    novelty: 0.405
+    urgency: 0.24
+    confidence: 0.704
+  - id: rel-deploy-rollback-distractor-4
+    content: A separate change to deploy touched the same area but addressed rollback rather than the
+      question of how to what is the safe procedure to roll back a bad de.
+    category: distractor
+    importance: 0.231
+    novelty: 0.282
+    urgency: 0.477
+    confidence: 0.76
+  - id: rel-deploy-rollback-distractor-5
+    content: A separate change to rollback touched the same area but addressed canary rather than the
+      question of how to what is the safe procedure to roll back a bad de.
+    category: distractor
+    importance: 0.124
+    novelty: 0.471
+    urgency: 0.378
+    confidence: 0.752
+  - id: rel-deploy-rollback-distractor-6
+    content: A separate change to canary touched the same area but addressed health check rather than
+      the question of how to what is the safe procedure to roll back a bad de.
+    category: distractor
+    importance: 0.225
+    novelty: 0.488
+    urgency: 0.234
+    confidence: 0.744
+  - id: rel-deploy-rollback-stale-0
+    content: '[2020] To roll back, SSH into each host and check out the previous release tag in place.'
+    category: stale
+    importance: 0.178
+    novelty: 0.178
+    urgency: 0.107
+    confidence: 0.574
+  - id: rel-deploy-rollback-stale-1
+    content: '[archived] The earlier deploy approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.274
+    novelty: 0.093
+    urgency: 0.279
+    confidence: 0.504
+  - id: rel-deploy-rollback-stale-2
+    content: '[archived] The earlier rollback approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.135
+    novelty: 0.234
+    urgency: 0.292
+    confidence: 0.633
+  - id: rel-deploy-rollback-contradictory-0
+    content: Rolling back is a sign of failure; always fix forward in production even during an incident.
+    category: contradictory
+    importance: 0.258
+    novelty: 0.664
+    urgency: 0.506
+    confidence: 0.315
+  - id: rel-deploy-rollback-low_confidence-0
+    content: I think the canary auto-halt threshold is 2% errors, but it may have been changed recently.
+    category: low_confidence
+    importance: 0.288
+    novelty: 0.505
+    urgency: 0.5
+    confidence: 0.247
+  - id: rel-deploy-rollback-low_confidence-1
+    content: 'Unverified note: someone suggested deploy might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.299
+    novelty: 0.558
+    urgency: 0.403
+    confidence: 0.253
+  - id: rel-deploy-rollback-low_confidence-2
+    content: 'Unverified note: someone suggested rollback might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.262
+    novelty: 0.541
+    urgency: 0.369
+    confidence: 0.388
+- query: how should we design alerts around SLOs to avoid pager fatigue
+  domain: reliability
+  target_memories:
+  - rel-alerting-slo-target-0
+  relevant_memories:
+  - rel-alerting-slo-relevant-0
+  - rel-alerting-slo-relevant-1
+  - rel-alerting-slo-relevant-2
+  memories:
+  - id: rel-alerting-slo-target-0
+    content: 'Alert on symptoms against SLO burn rate, not on causes: page only when a fast or slow error-budget
+      burn threatens the SLO, which cut our pages by 70% versus per-metric threshold alerts.'
+    category: target
+    importance: 0.967
+    novelty: 0.841
+    urgency: 0.826
+    confidence: 0.892
+  - id: rel-alerting-slo-relevant-0
+    content: Multi-window burn-rate alerts catch both sudden outages and slow degradations.
+    category: relevant
+    importance: 0.64
+    novelty: 0.568
+    urgency: 0.495
+    confidence: 0.74
+  - id: rel-alerting-slo-relevant-1
+    content: Cause-based signals (CPU, disk) go to dashboards and tickets, not the pager.
+    category: relevant
+    importance: 0.611
+    novelty: 0.775
+    urgency: 0.396
+    confidence: 0.722
+  - id: rel-alerting-slo-relevant-2
+    content: Each SLO has a documented error budget that gates risky releases when depleted.
+    category: relevant
+    importance: 0.744
+    novelty: 0.579
+    urgency: 0.535
+    confidence: 0.77
+  - id: rel-alerting-slo-distractor-0
+    content: Marketing wants alerts when signups spike so they can scale a campaign.
+    category: distractor
+    importance: 0.234
+    novelty: 0.24
+    urgency: 0.257
+    confidence: 0.882
+  - id: rel-alerting-slo-distractor-1
+    content: The build system emails the team when a nightly job fails.
+    category: distractor
+    importance: 0.213
+    novelty: 0.32
+    urgency: 0.309
+    confidence: 0.502
+  - id: rel-alerting-slo-distractor-2
+    content: Calendar alerts remind on-call to hand off at the end of a shift.
+    category: distractor
+    importance: 0.136
+    novelty: 0.53
+    urgency: 0.283
+    confidence: 0.549
+  - id: rel-alerting-slo-distractor-3
+    content: We once paged on raw queue depth and got woken up nightly until we removed it.
+    category: distractor
+    importance: 0.21
+    novelty: 0.315
+    urgency: 0.159
+    confidence: 0.811
+  - id: rel-alerting-slo-distractor-4
+    content: A separate change to SLO touched the same area but addressed error budget rather than the
+      question of how to how should we design alerts around slos to avoid.
+    category: distractor
+    importance: 0.163
+    novelty: 0.58
+    urgency: 0.113
+    confidence: 0.72
+  - id: rel-alerting-slo-distractor-5
+    content: A separate change to error budget touched the same area but addressed burn rate rather than
+      the question of how to how should we design alerts around slos to avoid.
+    category: distractor
+    importance: 0.171
+    novelty: 0.401
+    urgency: 0.232
+    confidence: 0.754
+  - id: rel-alerting-slo-distractor-6
+    content: A separate change to burn rate touched the same area but addressed alert rather than the
+      question of how to how should we design alerts around slos to avoid.
+    category: distractor
+    importance: 0.195
+    novelty: 0.593
+    urgency: 0.438
+    confidence: 0.594
+  - id: rel-alerting-slo-stale-0
+    content: '[2021] Page on every metric that crosses a static threshold so nothing is missed.'
+    category: stale
+    importance: 0.254
+    novelty: 0.247
+    urgency: 0.102
+    confidence: 0.584
+  - id: rel-alerting-slo-stale-1
+    content: '[archived] The earlier SLO approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.105
+    novelty: 0.095
+    urgency: 0.08
+    confidence: 0.605
+  - id: rel-alerting-slo-stale-2
+    content: '[archived] The earlier error budget approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.129
+    novelty: 0.073
+    urgency: 0.084
+    confidence: 0.671
+  - id: rel-alerting-slo-contradictory-0
+    content: More alerts are always safer; route every warning straight to the pager regardless of impact.
+    category: contradictory
+    importance: 0.581
+    novelty: 0.363
+    urgency: 0.432
+    confidence: 0.549
+  - id: rel-alerting-slo-low_confidence-0
+    content: Possibly the latency SLO target is p99 < 300ms, but the SLO doc might be out of date.
+    category: low_confidence
+    importance: 0.474
+    novelty: 0.575
+    urgency: 0.549
+    confidence: 0.247
+  - id: rel-alerting-slo-low_confidence-1
+    content: 'Unverified note: someone suggested SLO might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.387
+    novelty: 0.651
+    urgency: 0.274
+    confidence: 0.374
+  - id: rel-alerting-slo-low_confidence-2
+    content: 'Unverified note: someone suggested error budget might be relevant here, but it was never
+      confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.29
+    novelty: 0.669
+    urgency: 0.577
+    confidence: 0.383
+- query: how do we plan capacity and autoscaling for a traffic spike
+  domain: reliability
+  target_memories:
+  - rel-capacity-planning-target-0
+  relevant_memories:
+  - rel-capacity-planning-relevant-0
+  - rel-capacity-planning-relevant-1
+  - rel-capacity-planning-relevant-2
+  memories:
+  - id: rel-capacity-planning-target-0
+    content: Size baseline capacity to peak-with-headroom and autoscale on a leading saturation signal,
+      not CPU alone; the launch brownout was scale-up lag, so we now pre-warm before known events and
+      keep 30% headroom.
+    category: target
+    importance: 0.922
+    novelty: 0.835
+    urgency: 0.865
+    confidence: 0.88
+  - id: rel-capacity-planning-relevant-0
+    content: Autoscaling on request concurrency reacts faster than CPU for our IO-bound services.
+    category: relevant
+    importance: 0.684
+    novelty: 0.453
+    urgency: 0.315
+    confidence: 0.817
+  - id: rel-capacity-planning-relevant-1
+    content: Load tests model peak traffic plus a margin before every major launch.
+    category: relevant
+    importance: 0.768
+    novelty: 0.549
+    urgency: 0.766
+    confidence: 0.888
+  - id: rel-capacity-planning-relevant-2
+    content: Pre-warming and raised minimums cover predictable spikes that autoscaling reacts to too slowly.
+    category: relevant
+    importance: 0.654
+    novelty: 0.732
+    urgency: 0.654
+    confidence: 0.917
+  - id: rel-capacity-planning-distractor-0
+    content: Storage capacity for backups is planned separately on a yearly budget.
+    category: distractor
+    importance: 0.146
+    novelty: 0.443
+    urgency: 0.442
+    confidence: 0.75
+  - id: rel-capacity-planning-distractor-1
+    content: The office wifi was upgraded to handle the larger team.
+    category: distractor
+    importance: 0.227
+    novelty: 0.46
+    urgency: 0.214
+    confidence: 0.858
+  - id: rel-capacity-planning-distractor-2
+    content: We added more CI runners to handle the growing test suite.
+    category: distractor
+    importance: 0.221
+    novelty: 0.427
+    urgency: 0.453
+    confidence: 0.586
+  - id: rel-capacity-planning-distractor-3
+    content: A one-off batch job needed extra memory, so we bumped its limit.
+    category: distractor
+    importance: 0.081
+    novelty: 0.279
+    urgency: 0.357
+    confidence: 0.851
+  - id: rel-capacity-planning-distractor-4
+    content: A separate change to capacity touched the same area but addressed autoscale rather than the
+      question of how to how do we plan capacity and autoscaling for a tr.
+    category: distractor
+    importance: 0.078
+    novelty: 0.588
+    urgency: 0.313
+    confidence: 0.563
+  - id: rel-capacity-planning-distractor-5
+    content: A separate change to autoscale touched the same area but addressed headroom rather than the
+      question of how to how do we plan capacity and autoscaling for a tr.
+    category: distractor
+    importance: 0.076
+    novelty: 0.497
+    urgency: 0.242
+    confidence: 0.767
+  - id: rel-capacity-planning-distractor-6
+    content: A separate change to headroom touched the same area but addressed load test rather than the
+      question of how to how do we plan capacity and autoscaling for a tr.
+    category: distractor
+    importance: 0.241
+    novelty: 0.281
+    urgency: 0.234
+    confidence: 0.506
+  - id: rel-capacity-planning-stale-0
+    content: '[2020] Scale by manually adding servers the morning of a big launch.'
+    category: stale
+    importance: 0.102
+    novelty: 0.051
+    urgency: 0.115
+    confidence: 0.534
+  - id: rel-capacity-planning-stale-1
+    content: '[archived] The earlier capacity approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.21
+    novelty: 0.224
+    urgency: 0.157
+    confidence: 0.576
+  - id: rel-capacity-planning-stale-2
+    content: '[archived] The earlier autoscale approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.146
+    novelty: 0.164
+    urgency: 0.085
+    confidence: 0.694
+  - id: rel-capacity-planning-contradictory-0
+    content: Autoscaling makes capacity planning unnecessary; just let it handle any amount of traffic
+      instantly.
+    category: contradictory
+    importance: 0.398
+    novelty: 0.399
+    urgency: 0.561
+    confidence: 0.302
+  - id: rel-capacity-planning-low_confidence-0
+    content: I think we have 30% headroom configured, but the autoscaler limits may have drifted.
+    category: low_confidence
+    importance: 0.285
+    novelty: 0.689
+    urgency: 0.534
+    confidence: 0.184
+  - id: rel-capacity-planning-low_confidence-1
+    content: 'Unverified note: someone suggested capacity might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.375
+    novelty: 0.548
+    urgency: 0.511
+    confidence: 0.181
+  - id: rel-capacity-planning-low_confidence-2
+    content: 'Unverified note: someone suggested autoscale might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.347
+    novelty: 0.659
+    urgency: 0.581
+    confidence: 0.166
+- query: how should application secrets and credentials be stored and rotated
+  domain: security
+  target_memories:
+  - sec-secret-handling-target-0
+  relevant_memories:
+  - sec-secret-handling-relevant-0
+  - sec-secret-handling-relevant-1
+  - sec-secret-handling-relevant-2
+  - sec-secret-handling-relevant-3
+  - sec-secret-handling-relevant-4
+  memories:
+  - id: sec-secret-handling-target-0
+    content: Secrets live in the managed secret manager, injected at runtime and never committed; they
+      are rotated on a schedule and immediately on suspected exposure, after a key was once leaked in
+      a committed .env file.
+    category: target
+    importance: 0.926
+    novelty: 0.894
+    urgency: 0.544
+    confidence: 0.951
+  - id: sec-secret-handling-relevant-0
+    content: Short-lived dynamically issued credentials are preferred over long-lived static keys.
+    category: relevant
+    importance: 0.655
+    novelty: 0.624
+    urgency: 0.455
+    confidence: 0.86
+  - id: sec-secret-handling-relevant-1
+    content: Secret access is scoped per service and audit-logged so a leak's blast radius is bounded.
+    category: relevant
+    importance: 0.738
+    novelty: 0.469
+    urgency: 0.302
+    confidence: 0.712
+  - id: sec-secret-handling-relevant-2
+    content: Pre-commit and CI secret scanning block credentials from entering the repo.
+    category: relevant
+    importance: 0.639
+    novelty: 0.628
+    urgency: 0.473
+    confidence: 0.813
+  - id: sec-secret-handling-relevant-3
+    content: On a suspected leak, the runbook is to rotate the credential first and investigate second.
+    category: relevant
+    importance: 0.664
+    novelty: 0.769
+    urgency: 0.432
+    confidence: 0.89
+  - id: sec-secret-handling-relevant-4
+    content: Production secrets are never readable by developers directly; access goes through the secret
+      manager.
+    category: relevant
+    importance: 0.708
+    novelty: 0.682
+    urgency: 0.757
+    confidence: 0.869
+  - id: sec-secret-handling-distractor-0
+    content: The marketing site stores its analytics token in a public config, which is fine since it's
+      public.
+    category: distractor
+    importance: 0.101
+    novelty: 0.521
+    urgency: 0.299
+    confidence: 0.596
+  - id: sec-secret-handling-distractor-1
+    content: User passwords are hashed with bcrypt before storage.
+    category: distractor
+    importance: 0.245
+    novelty: 0.321
+    urgency: 0.496
+    confidence: 0.818
+  - id: sec-secret-handling-distractor-2
+    content: TLS certificates are renewed automatically by the ingress controller.
+    category: distractor
+    importance: 0.168
+    novelty: 0.401
+    urgency: 0.102
+    confidence: 0.505
+  - id: sec-secret-handling-distractor-3
+    content: A rotation reminder for the office door codes goes out quarterly.
+    category: distractor
+    importance: 0.125
+    novelty: 0.323
+    urgency: 0.357
+    confidence: 0.541
+  - id: sec-secret-handling-distractor-4
+    content: A separate change to secret touched the same area but addressed vault rather than the question
+      of how to how should application secrets and credentials b.
+    category: distractor
+    importance: 0.113
+    novelty: 0.575
+    urgency: 0.357
+    confidence: 0.713
+  - id: sec-secret-handling-distractor-5
+    content: A separate change to vault touched the same area but addressed rotation rather than the question
+      of how to how should application secrets and credentials b.
+    category: distractor
+    importance: 0.065
+    novelty: 0.481
+    urgency: 0.203
+    confidence: 0.806
+  - id: sec-secret-handling-distractor-6
+    content: A separate change to rotation touched the same area but addressed env var rather than the
+      question of how to how should application secrets and credentials b.
+    category: distractor
+    importance: 0.161
+    novelty: 0.578
+    urgency: 0.456
+    confidence: 0.676
+  - id: sec-secret-handling-stale-0
+    content: '[2021] Keep secrets in a shared encrypted spreadsheet that the team unlocks with a master
+      password.'
+    category: stale
+    importance: 0.132
+    novelty: 0.189
+    urgency: 0.098
+    confidence: 0.624
+  - id: sec-secret-handling-stale-1
+    content: '[archived] The earlier secret approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.184
+    novelty: 0.213
+    urgency: 0.271
+    confidence: 0.645
+  - id: sec-secret-handling-stale-2
+    content: '[archived] The earlier vault approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.128
+    novelty: 0.178
+    urgency: 0.123
+    confidence: 0.721
+  - id: sec-secret-handling-contradictory-0
+    content: Committing secrets to a private repo is acceptable since only employees can read it.
+    category: contradictory
+    importance: 0.366
+    novelty: 0.502
+    urgency: 0.636
+    confidence: 0.364
+  - id: sec-secret-handling-low_confidence-0
+    content: I believe the rotation period is 90 days, but I'm not sure it's actually enforced.
+    category: low_confidence
+    importance: 0.446
+    novelty: 0.662
+    urgency: 0.394
+    confidence: 0.122
+  - id: sec-secret-handling-low_confidence-1
+    content: 'Unverified note: someone suggested secret might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.425
+    novelty: 0.655
+    urgency: 0.368
+    confidence: 0.119
+  - id: sec-secret-handling-low_confidence-2
+    content: 'Unverified note: someone suggested vault might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.262
+    novelty: 0.421
+    urgency: 0.331
+    confidence: 0.367
+- query: what are the constraints for issuing and validating JWT access tokens securely
+  domain: security
+  target_memories:
+  - sec-jwt-constraints-target-0
+  relevant_memories:
+  - sec-jwt-constraints-relevant-0
+  - sec-jwt-constraints-relevant-1
+  - sec-jwt-constraints-relevant-2
+  memories:
+  - id: sec-jwt-constraints-target-0
+    content: JWTs must be signed with an asymmetric algorithm (never 'none' or a shared HMAC secret),
+      carry short expiries plus audience and issuer claims, and pin the expected alg; we had a near-miss
+      where alg:none would have been accepted.
+    category: target
+    importance: 0.866
+    novelty: 0.739
+    urgency: 0.801
+    confidence: 0.913
+  - id: sec-jwt-constraints-relevant-0
+    content: Access tokens are short-lived and paired with revocable refresh tokens for logout and compromise.
+    category: relevant
+    importance: 0.713
+    novelty: 0.649
+    urgency: 0.658
+    confidence: 0.842
+  - id: sec-jwt-constraints-relevant-1
+    content: Validators check exp, nbf, aud, and iss, not just the signature.
+    category: relevant
+    importance: 0.507
+    novelty: 0.759
+    urgency: 0.63
+    confidence: 0.725
+  - id: sec-jwt-constraints-relevant-2
+    content: Signing keys are rotated via a JWKS endpoint with overlapping key validity.
+    category: relevant
+    importance: 0.662
+    novelty: 0.666
+    urgency: 0.679
+    confidence: 0.919
+  - id: sec-jwt-constraints-distractor-0
+    content: Our session IDs are random 128-bit tokens stored server-side.
+    category: distractor
+    importance: 0.129
+    novelty: 0.356
+    urgency: 0.429
+    confidence: 0.853
+  - id: sec-jwt-constraints-distractor-1
+    content: API keys for partners are long random strings with no expiry.
+    category: distractor
+    importance: 0.226
+    novelty: 0.597
+    urgency: 0.323
+    confidence: 0.891
+  - id: sec-jwt-constraints-distractor-2
+    content: The CSRF token is a per-form nonce unrelated to auth tokens.
+    category: distractor
+    importance: 0.168
+    novelty: 0.539
+    urgency: 0.252
+    confidence: 0.568
+  - id: sec-jwt-constraints-distractor-3
+    content: We base64-encode some non-sensitive metadata in a cookie for the UI.
+    category: distractor
+    importance: 0.052
+    novelty: 0.44
+    urgency: 0.382
+    confidence: 0.518
+  - id: sec-jwt-constraints-distractor-4
+    content: A separate change to JWT touched the same area but addressed signing rather than the question
+      of how to what are the constraints for issuing and validat.
+    category: distractor
+    importance: 0.2
+    novelty: 0.251
+    urgency: 0.274
+    confidence: 0.753
+  - id: sec-jwt-constraints-distractor-5
+    content: A separate change to signing touched the same area but addressed audience rather than the
+      question of how to what are the constraints for issuing and validat.
+    category: distractor
+    importance: 0.224
+    novelty: 0.49
+    urgency: 0.235
+    confidence: 0.816
+  - id: sec-jwt-constraints-distractor-6
+    content: A separate change to audience touched the same area but addressed expiry rather than the
+      question of how to what are the constraints for issuing and validat.
+    category: distractor
+    importance: 0.089
+    novelty: 0.268
+    urgency: 0.347
+    confidence: 0.826
+  - id: sec-jwt-constraints-stale-0
+    content: '[2020] We sign tokens with a single shared HMAC secret embedded in every service.'
+    category: stale
+    importance: 0.203
+    novelty: 0.076
+    urgency: 0.059
+    confidence: 0.718
+  - id: sec-jwt-constraints-stale-1
+    content: '[archived] The earlier JWT approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.215
+    novelty: 0.151
+    urgency: 0.088
+    confidence: 0.58
+  - id: sec-jwt-constraints-stale-2
+    content: '[archived] The earlier signing approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.273
+    novelty: 0.186
+    urgency: 0.201
+    confidence: 0.566
+  - id: sec-jwt-constraints-contradictory-0
+    content: Long-lived non-expiring JWTs are fine as long as they're signed; revocation isn't needed.
+    category: contradictory
+    importance: 0.586
+    novelty: 0.626
+    urgency: 0.463
+    confidence: 0.525
+  - id: sec-jwt-constraints-low_confidence-0
+    content: Maybe the gateway already validates the audience claim, but I haven't checked its config.
+    category: low_confidence
+    importance: 0.229
+    novelty: 0.621
+    urgency: 0.352
+    confidence: 0.217
+  - id: sec-jwt-constraints-low_confidence-1
+    content: 'Unverified note: someone suggested JWT might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.367
+    novelty: 0.368
+    urgency: 0.236
+    confidence: 0.317
+  - id: sec-jwt-constraints-low_confidence-2
+    content: 'Unverified note: someone suggested signing might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.352
+    novelty: 0.303
+    urgency: 0.421
+    confidence: 0.323
+- query: how do we prioritize and remediate a reported dependency vulnerability
+  domain: security
+  target_memories:
+  - sec-vuln-remediation-target-0
+  relevant_memories:
+  - sec-vuln-remediation-relevant-0
+  - sec-vuln-remediation-relevant-1
+  - sec-vuln-remediation-relevant-2
+  memories:
+  - id: sec-vuln-remediation-target-0
+    content: 'Prioritize a CVE by exploitability in our context, not raw CVSS: confirm the vulnerable
+      code path is actually reachable, then patch reachable high-severity issues within the SLA and document
+      non-reachable ones with justification.'
+    category: target
+    importance: 0.963
+    novelty: 0.893
+    urgency: 0.706
+    confidence: 0.867
+  - id: sec-vuln-remediation-relevant-0
+    content: An SBOM lets us find every service pulling a vulnerable transitive dependency quickly.
+    category: relevant
+    importance: 0.566
+    novelty: 0.694
+    urgency: 0.72
+    confidence: 0.712
+  - id: sec-vuln-remediation-relevant-1
+    content: Reachability analysis distinguishes a vulnerable function we call from one we never invoke.
+    category: relevant
+    importance: 0.529
+    novelty: 0.43
+    urgency: 0.525
+    confidence: 0.923
+  - id: sec-vuln-remediation-relevant-2
+    content: Remediation SLAs are tiered by severity and whether the service is internet-facing.
+    category: relevant
+    importance: 0.56
+    novelty: 0.757
+    urgency: 0.421
+    confidence: 0.904
+  - id: sec-vuln-remediation-distractor-0
+    content: The dependency dashboard shows license compliance alongside versions.
+    category: distractor
+    importance: 0.164
+    novelty: 0.312
+    urgency: 0.342
+    confidence: 0.838
+  - id: sec-vuln-remediation-distractor-1
+    content: We pin dependency versions in a lockfile for reproducible builds.
+    category: distractor
+    importance: 0.238
+    novelty: 0.315
+    urgency: 0.488
+    confidence: 0.712
+  - id: sec-vuln-remediation-distractor-2
+    content: A deprecation warning from a library was noisy in the logs, so we silenced it.
+    category: distractor
+    importance: 0.24
+    novelty: 0.322
+    urgency: 0.168
+    confidence: 0.608
+  - id: sec-vuln-remediation-distractor-3
+    content: The frontend bundle size grew after a dependency upgrade.
+    category: distractor
+    importance: 0.094
+    novelty: 0.235
+    urgency: 0.132
+    confidence: 0.538
+  - id: sec-vuln-remediation-distractor-4
+    content: A separate change to CVE touched the same area but addressed dependency rather than the question
+      of how to how do we prioritize and remediate a reported de.
+    category: distractor
+    importance: 0.072
+    novelty: 0.41
+    urgency: 0.369
+    confidence: 0.738
+  - id: sec-vuln-remediation-distractor-5
+    content: A separate change to dependency touched the same area but addressed patch rather than the
+      question of how to how do we prioritize and remediate a reported de.
+    category: distractor
+    importance: 0.204
+    novelty: 0.493
+    urgency: 0.42
+    confidence: 0.86
+  - id: sec-vuln-remediation-distractor-6
+    content: A separate change to patch touched the same area but addressed reachability rather than the
+      question of how to how do we prioritize and remediate a reported de.
+    category: distractor
+    importance: 0.18
+    novelty: 0.472
+    urgency: 0.129
+    confidence: 0.542
+  - id: sec-vuln-remediation-stale-0
+    content: '[2021] Upgrade every dependency to latest immediately whenever any CVE is published anywhere.'
+    category: stale
+    importance: 0.263
+    novelty: 0.077
+    urgency: 0.272
+    confidence: 0.577
+  - id: sec-vuln-remediation-stale-1
+    content: '[archived] The earlier CVE approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.288
+    novelty: 0.065
+    urgency: 0.185
+    confidence: 0.676
+  - id: sec-vuln-remediation-stale-2
+    content: '[archived] The earlier dependency approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.18
+    novelty: 0.136
+    urgency: 0.118
+    confidence: 0.625
+  - id: sec-vuln-remediation-contradictory-0
+    content: CVSS score is the only thing that matters; patch strictly in score order regardless of reachability.
+    category: contradictory
+    importance: 0.606
+    novelty: 0.65
+    urgency: 0.399
+    confidence: 0.549
+  - id: sec-vuln-remediation-low_confidence-0
+    content: I think the vulnerable parser is only used in an internal tool, but I'd need to trace callers.
+    category: low_confidence
+    importance: 0.49
+    novelty: 0.654
+    urgency: 0.504
+    confidence: 0.374
+  - id: sec-vuln-remediation-low_confidence-1
+    content: 'Unverified note: someone suggested CVE might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.409
+    novelty: 0.556
+    urgency: 0.438
+    confidence: 0.18
+  - id: sec-vuln-remediation-low_confidence-2
+    content: 'Unverified note: someone suggested dependency might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.238
+    novelty: 0.425
+    urgency: 0.564
+    confidence: 0.175
+- query: how should we validate and sanitize untrusted input to prevent injection
+  domain: security
+  target_memories:
+  - sec-input-validation-target-0
+  relevant_memories:
+  - sec-input-validation-relevant-0
+  - sec-input-validation-relevant-1
+  - sec-input-validation-relevant-2
+  memories:
+  - id: sec-input-validation-target-0
+    content: 'Treat all external input as untrusted: use parameterized queries for SQL, context-aware
+      output encoding for HTML, and allowlist validation at the boundary; the reported bug was string-built
+      SQL that allowed injection.'
+    category: target
+    importance: 0.973
+    novelty: 0.759
+    urgency: 0.627
+    confidence: 0.913
+  - id: sec-input-validation-relevant-0
+    content: Validation is allowlist-based (what is permitted) rather than blocklist-based (what is forbidden).
+    category: relevant
+    importance: 0.758
+    novelty: 0.442
+    urgency: 0.372
+    confidence: 0.896
+  - id: sec-input-validation-relevant-1
+    content: Output encoding is chosen by the sink — HTML, attribute, URL, or JS context — to stop XSS.
+    category: relevant
+    importance: 0.807
+    novelty: 0.696
+    urgency: 0.755
+    confidence: 0.846
+  - id: sec-input-validation-relevant-2
+    content: ORM query builders are used so raw string concatenation into SQL is avoided by default.
+    category: relevant
+    importance: 0.729
+    novelty: 0.511
+    urgency: 0.332
+    confidence: 0.727
+  - id: sec-input-validation-distractor-0
+    content: The form library shows inline validation messages for a better UX.
+    category: distractor
+    importance: 0.187
+    novelty: 0.367
+    urgency: 0.2
+    confidence: 0.681
+  - id: sec-input-validation-distractor-1
+    content: We validate config files against a JSON schema on startup.
+    category: distractor
+    importance: 0.154
+    novelty: 0.54
+    urgency: 0.349
+    confidence: 0.765
+  - id: sec-input-validation-distractor-2
+    content: Email addresses are normalized to lowercase before storage.
+    category: distractor
+    importance: 0.199
+    novelty: 0.368
+    urgency: 0.471
+    confidence: 0.762
+  - id: sec-input-validation-distractor-3
+    content: The CSV importer trims whitespace from each cell.
+    category: distractor
+    importance: 0.103
+    novelty: 0.591
+    urgency: 0.325
+    confidence: 0.771
+  - id: sec-input-validation-distractor-4
+    content: A separate change to injection touched the same area but addressed parameterized query rather
+      than the question of how to how should we validate and sanitize untrusted in.
+    category: distractor
+    importance: 0.193
+    novelty: 0.302
+    urgency: 0.112
+    confidence: 0.747
+  - id: sec-input-validation-distractor-5
+    content: A separate change to parameterized query touched the same area but addressed validation rather
+      than the question of how to how should we validate and sanitize untrusted in.
+    category: distractor
+    importance: 0.089
+    novelty: 0.478
+    urgency: 0.397
+    confidence: 0.882
+  - id: sec-input-validation-distractor-6
+    content: A separate change to validation touched the same area but addressed allowlist rather than
+      the question of how to how should we validate and sanitize untrusted in.
+    category: distractor
+    importance: 0.085
+    novelty: 0.317
+    urgency: 0.49
+    confidence: 0.804
+  - id: sec-input-validation-stale-0
+    content: '[2020] Escaping quotes in user input is enough to stop SQL injection.'
+    category: stale
+    importance: 0.207
+    novelty: 0.141
+    urgency: 0.097
+    confidence: 0.614
+  - id: sec-input-validation-stale-1
+    content: '[archived] The earlier injection approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.273
+    novelty: 0.106
+    urgency: 0.148
+    confidence: 0.501
+  - id: sec-input-validation-stale-2
+    content: '[archived] The earlier parameterized query approach was the accepted answer before the last
+      replatform; it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.149
+    novelty: 0.099
+    urgency: 0.086
+    confidence: 0.791
+  - id: sec-input-validation-contradictory-0
+    content: A web application firewall handles injection, so input validation in code is redundant.
+    category: contradictory
+    importance: 0.452
+    novelty: 0.341
+    urgency: 0.324
+    confidence: 0.442
+  - id: sec-input-validation-low_confidence-0
+    content: Possibly the legacy search endpoint still builds SQL by hand, but I'm not sure it's still
+      live.
+    category: low_confidence
+    importance: 0.388
+    novelty: 0.499
+    urgency: 0.498
+    confidence: 0.157
+  - id: sec-input-validation-low_confidence-1
+    content: 'Unverified note: someone suggested injection might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.297
+    novelty: 0.408
+    urgency: 0.524
+    confidence: 0.188
+  - id: sec-input-validation-low_confidence-2
+    content: 'Unverified note: someone suggested parameterized query might be relevant here, but it was
+      never confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.327
+    novelty: 0.322
+    urgency: 0.504
+    confidence: 0.352
+- query: how do we design least-privilege access control and roles for our services
+  domain: security
+  target_memories:
+  - sec-rbac-access-target-0
+  relevant_memories:
+  - sec-rbac-access-relevant-0
+  - sec-rbac-access-relevant-1
+  - sec-rbac-access-relevant-2
+  memories:
+  - id: sec-rbac-access-target-0
+    content: Grant least privilege via roles scoped to the minimum needed, deny by default, and authorize
+      every request server-side; the audit found a service account with broad admin it never used, which
+      we scoped down.
+    category: target
+    importance: 0.878
+    novelty: 0.937
+    urgency: 0.709
+    confidence: 0.879
+  - id: sec-rbac-access-relevant-0
+    content: Authorization is enforced on the server for every action, never assumed from a hidden UI
+      control.
+    category: relevant
+    importance: 0.573
+    novelty: 0.45
+    urgency: 0.763
+    confidence: 0.893
+  - id: sec-rbac-access-relevant-1
+    content: Roles are reviewed quarterly and unused permissions are revoked.
+    category: relevant
+    importance: 0.678
+    novelty: 0.689
+    urgency: 0.742
+    confidence: 0.864
+  - id: sec-rbac-access-relevant-2
+    content: Service-to-service calls use narrowly scoped tokens rather than a shared admin credential.
+    category: relevant
+    importance: 0.606
+    novelty: 0.588
+    urgency: 0.742
+    confidence: 0.878
+  - id: sec-rbac-access-distractor-0
+    content: The admin dashboard hides buttons the user can't use to reduce clutter.
+    category: distractor
+    importance: 0.105
+    novelty: 0.321
+    urgency: 0.111
+    confidence: 0.709
+  - id: sec-rbac-access-distractor-1
+    content: Feature flags gate access to beta features by cohort.
+    category: distractor
+    importance: 0.177
+    novelty: 0.571
+    urgency: 0.358
+    confidence: 0.801
+  - id: sec-rbac-access-distractor-2
+    content: Our org chart defines reporting lines but not system permissions.
+    category: distractor
+    importance: 0.145
+    novelty: 0.391
+    urgency: 0.25
+    confidence: 0.676
+  - id: sec-rbac-access-distractor-3
+    content: We added a read-only viewer role to the analytics tool.
+    category: distractor
+    importance: 0.215
+    novelty: 0.554
+    urgency: 0.473
+    confidence: 0.511
+  - id: sec-rbac-access-distractor-4
+    content: A separate change to RBAC touched the same area but addressed least privilege rather than
+      the question of how to how do we design least-privilege access control .
+    category: distractor
+    importance: 0.184
+    novelty: 0.526
+    urgency: 0.408
+    confidence: 0.541
+  - id: sec-rbac-access-distractor-5
+    content: A separate change to least privilege touched the same area but addressed role rather than
+      the question of how to how do we design least-privilege access control .
+    category: distractor
+    importance: 0.146
+    novelty: 0.326
+    urgency: 0.246
+    confidence: 0.813
+  - id: sec-rbac-access-distractor-6
+    content: A separate change to role touched the same area but addressed scope rather than the question
+      of how to how do we design least-privilege access control .
+    category: distractor
+    importance: 0.21
+    novelty: 0.317
+    urgency: 0.253
+    confidence: 0.57
+  - id: sec-rbac-access-stale-0
+    content: '[2021] Give every internal service the same shared admin token; it''s simpler to manage.'
+    category: stale
+    importance: 0.234
+    novelty: 0.112
+    urgency: 0.265
+    confidence: 0.633
+  - id: sec-rbac-access-stale-1
+    content: '[archived] The earlier RBAC approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.299
+    novelty: 0.18
+    urgency: 0.173
+    confidence: 0.586
+  - id: sec-rbac-access-stale-2
+    content: '[archived] The earlier least privilege approach was the accepted answer before the last
+      replatform; it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.231
+    novelty: 0.238
+    urgency: 0.249
+    confidence: 0.76
+  - id: sec-rbac-access-contradictory-0
+    content: Client-side checks that hide unauthorized actions are sufficient; server-side authorization
+      is overkill.
+    category: contradictory
+    importance: 0.457
+    novelty: 0.323
+    urgency: 0.656
+    confidence: 0.396
+  - id: sec-rbac-access-low_confidence-0
+    content: I believe the billing service still has write access to user records, but it may have been
+      revoked.
+    category: low_confidence
+    importance: 0.487
+    novelty: 0.584
+    urgency: 0.406
+    confidence: 0.394
+  - id: sec-rbac-access-low_confidence-1
+    content: 'Unverified note: someone suggested RBAC might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.467
+    novelty: 0.356
+    urgency: 0.579
+    confidence: 0.345
+  - id: sec-rbac-access-low_confidence-2
+    content: 'Unverified note: someone suggested least privilege might be relevant here, but it was never
+      confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.437
+    novelty: 0.644
+    urgency: 0.275
+    confidence: 0.173
+- query: how do we decide service boundaries and ownership to avoid coupling
+  domain: architecture
+  target_memories:
+  - arch-service-ownership-target-0
+  relevant_memories:
+  - arch-service-ownership-relevant-0
+  - arch-service-ownership-relevant-1
+  - arch-service-ownership-relevant-2
+  - arch-service-ownership-relevant-3
+  - arch-service-ownership-relevant-4
+  memories:
+  - id: arch-service-ownership-target-0
+    content: Draw service boundaries around business capabilities with a single owning team and no shared
+      database between services; the coupling pain came from two services writing the same tables, which
+      we split behind an owned API.
+    category: target
+    importance: 0.983
+    novelty: 0.941
+    urgency: 0.592
+    confidence: 0.959
+  - id: arch-service-ownership-relevant-0
+    content: Cross-service data access goes through a published API, never directly into another service's
+      store.
+    category: relevant
+    importance: 0.743
+    novelty: 0.566
+    urgency: 0.362
+    confidence: 0.742
+  - id: arch-service-ownership-relevant-1
+    content: Each service has one owning team accountable for its contract and on-call.
+    category: relevant
+    importance: 0.756
+    novelty: 0.704
+    urgency: 0.464
+    confidence: 0.943
+  - id: arch-service-ownership-relevant-2
+    content: Boundaries follow domain capabilities so changes stay local to one team.
+    category: relevant
+    importance: 0.699
+    novelty: 0.503
+    urgency: 0.686
+    confidence: 0.854
+  - id: arch-service-ownership-relevant-3
+    content: When two teams kept editing the same tables, we gave one team ownership and put an API in
+      front.
+    category: relevant
+    importance: 0.572
+    novelty: 0.482
+    urgency: 0.667
+    confidence: 0.95
+  - id: arch-service-ownership-relevant-4
+    content: A service registry records each service's owner and its public contract for coordination.
+    category: relevant
+    importance: 0.844
+    novelty: 0.574
+    urgency: 0.73
+    confidence: 0.767
+  - id: arch-service-ownership-distractor-0
+    content: The monorepo is organized into folders by language for tooling reasons.
+    category: distractor
+    importance: 0.173
+    novelty: 0.23
+    urgency: 0.384
+    confidence: 0.769
+  - id: arch-service-ownership-distractor-1
+    content: Our on-call rotation is shared across the platform team.
+    category: distractor
+    importance: 0.088
+    novelty: 0.488
+    urgency: 0.266
+    confidence: 0.668
+  - id: arch-service-ownership-distractor-2
+    content: The design system component library is owned by the frontend guild.
+    category: distractor
+    importance: 0.159
+    novelty: 0.36
+    urgency: 0.238
+    confidence: 0.626
+  - id: arch-service-ownership-distractor-3
+    content: We split a large repo into two once for CI speed, then partially merged it back.
+    category: distractor
+    importance: 0.109
+    novelty: 0.267
+    urgency: 0.268
+    confidence: 0.861
+  - id: arch-service-ownership-distractor-4
+    content: A separate change to service boundary touched the same area but addressed ownership rather
+      than the question of how to how do we decide service boundaries and ownershi.
+    category: distractor
+    importance: 0.19
+    novelty: 0.57
+    urgency: 0.417
+    confidence: 0.763
+  - id: arch-service-ownership-distractor-5
+    content: A separate change to ownership touched the same area but addressed coupling rather than the
+      question of how to how do we decide service boundaries and ownershi.
+    category: distractor
+    importance: 0.087
+    novelty: 0.356
+    urgency: 0.396
+    confidence: 0.75
+  - id: arch-service-ownership-distractor-6
+    content: A separate change to coupling touched the same area but addressed domain rather than the
+      question of how to how do we decide service boundaries and ownershi.
+    category: distractor
+    importance: 0.108
+    novelty: 0.389
+    urgency: 0.408
+    confidence: 0.534
+  - id: arch-service-ownership-stale-0
+    content: '[2020] One shared database for all services is fine; just coordinate schema changes in chat.'
+    category: stale
+    importance: 0.228
+    novelty: 0.141
+    urgency: 0.095
+    confidence: 0.679
+  - id: arch-service-ownership-stale-1
+    content: '[archived] The earlier service boundary approach was the accepted answer before the last
+      replatform; it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.182
+    novelty: 0.094
+    urgency: 0.244
+    confidence: 0.556
+  - id: arch-service-ownership-stale-2
+    content: '[archived] The earlier ownership approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.179
+    novelty: 0.233
+    urgency: 0.209
+    confidence: 0.559
+  - id: arch-service-ownership-contradictory-0
+    content: Microservices should share a database to avoid data duplication and keep things consistent.
+    category: contradictory
+    importance: 0.218
+    novelty: 0.344
+    urgency: 0.615
+    confidence: 0.465
+  - id: arch-service-ownership-low_confidence-0
+    content: Maybe the notifications service still reads the orders table directly, but I'd have to check.
+    category: low_confidence
+    importance: 0.326
+    novelty: 0.474
+    urgency: 0.43
+    confidence: 0.226
+  - id: arch-service-ownership-low_confidence-1
+    content: 'Unverified note: someone suggested service boundary might be relevant here, but it was never
+      confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.215
+    novelty: 0.662
+    urgency: 0.404
+    confidence: 0.126
+  - id: arch-service-ownership-low_confidence-2
+    content: 'Unverified note: someone suggested ownership might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.254
+    novelty: 0.568
+    urgency: 0.215
+    confidence: 0.28
+- query: how should we version a public API and manage backward compatibility
+  domain: architecture
+  target_memories:
+  - arch-api-compat-target-0
+  relevant_memories:
+  - arch-api-compat-relevant-0
+  - arch-api-compat-relevant-1
+  - arch-api-compat-relevant-2
+  memories:
+  - id: arch-api-compat-target-0
+    content: 'Evolve APIs additively and never break a published contract within a major version: add
+      optional fields, keep old behavior, and use a sunset header plus a deprecation window before removing
+      anything; a silently changed response field once broke a partner.'
+    category: target
+    importance: 0.853
+    novelty: 0.62
+    urgency: 0.669
+    confidence: 0.898
+  - id: arch-api-compat-relevant-0
+    content: Consumer-driven contract tests catch breaking changes before they ship.
+    category: relevant
+    importance: 0.512
+    novelty: 0.623
+    urgency: 0.607
+    confidence: 0.926
+  - id: arch-api-compat-relevant-1
+    content: Deprecations are announced with a sunset date and tracked usage before removal.
+    category: relevant
+    importance: 0.783
+    novelty: 0.796
+    urgency: 0.775
+    confidence: 0.803
+  - id: arch-api-compat-relevant-2
+    content: New required fields are introduced as optional first, then enforced after consumers migrate.
+    category: relevant
+    importance: 0.553
+    novelty: 0.577
+    urgency: 0.725
+    confidence: 0.927
+  - id: arch-api-compat-distractor-0
+    content: The internal RPC between our own services can change freely with a coordinated deploy.
+    category: distractor
+    importance: 0.136
+    novelty: 0.238
+    urgency: 0.194
+    confidence: 0.726
+  - id: arch-api-compat-distractor-1
+    content: We version the database schema with sequential migration numbers.
+    category: distractor
+    importance: 0.115
+    novelty: 0.226
+    urgency: 0.371
+    confidence: 0.817
+  - id: arch-api-compat-distractor-2
+    content: The CLI tool prints its version with a --version flag.
+    category: distractor
+    importance: 0.113
+    novelty: 0.288
+    urgency: 0.341
+    confidence: 0.527
+  - id: arch-api-compat-distractor-3
+    content: Our docs site shows the API version in the footer.
+    category: distractor
+    importance: 0.246
+    novelty: 0.365
+    urgency: 0.49
+    confidence: 0.67
+  - id: arch-api-compat-distractor-4
+    content: A separate change to API version touched the same area but addressed backward compatible
+      rather than the question of how to how should we version a public api and manage ba.
+    category: distractor
+    importance: 0.165
+    novelty: 0.4
+    urgency: 0.244
+    confidence: 0.875
+  - id: arch-api-compat-distractor-5
+    content: A separate change to backward compatible touched the same area but addressed breaking change
+      rather than the question of how to how should we version a public api and manage ba.
+    category: distractor
+    importance: 0.094
+    novelty: 0.289
+    urgency: 0.251
+    confidence: 0.555
+  - id: arch-api-compat-distractor-6
+    content: A separate change to breaking change touched the same area but addressed deprecation rather
+      than the question of how to how should we version a public api and manage ba.
+    category: distractor
+    importance: 0.134
+    novelty: 0.554
+    urgency: 0.331
+    confidence: 0.826
+  - id: arch-api-compat-stale-0
+    content: '[2021] Just bump the major version for any change and let clients deal with it.'
+    category: stale
+    importance: 0.132
+    novelty: 0.068
+    urgency: 0.172
+    confidence: 0.524
+  - id: arch-api-compat-stale-1
+    content: '[archived] The earlier API version approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.112
+    novelty: 0.152
+    urgency: 0.111
+    confidence: 0.763
+  - id: arch-api-compat-stale-2
+    content: '[archived] The earlier backward compatible approach was the accepted answer before the last
+      replatform; it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.273
+    novelty: 0.166
+    urgency: 0.211
+    confidence: 0.755
+  - id: arch-api-compat-contradictory-0
+    content: Backward compatibility is the client's problem; change response shapes whenever it's convenient.
+    category: contradictory
+    importance: 0.327
+    novelty: 0.485
+    urgency: 0.401
+    confidence: 0.425
+  - id: arch-api-compat-low_confidence-0
+    content: I think two external partners still call v1, but the usage metrics might be stale.
+    category: low_confidence
+    importance: 0.435
+    novelty: 0.406
+    urgency: 0.45
+    confidence: 0.354
+  - id: arch-api-compat-low_confidence-1
+    content: 'Unverified note: someone suggested API version might be relevant here, but it was never
+      confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.307
+    novelty: 0.351
+    urgency: 0.232
+    confidence: 0.127
+  - id: arch-api-compat-low_confidence-2
+    content: 'Unverified note: someone suggested backward compatible might be relevant here, but it was
+      never confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.462
+    novelty: 0.636
+    urgency: 0.328
+    confidence: 0.209
+- query: what constraints govern adding a new third-party dependency or service
+  domain: architecture
+  target_memories:
+  - arch-dependency-constraints-target-0
+  relevant_memories:
+  - arch-dependency-constraints-relevant-0
+  - arch-dependency-constraints-relevant-1
+  - arch-dependency-constraints-relevant-2
+  memories:
+  - id: arch-dependency-constraints-target-0
+    content: A new dependency needs a justification covering maintenance health, license, supply-chain
+      risk, and exit cost; we default to the standard library or an existing internal lib first, after
+      a tiny abandoned package caused a painful migration.
+    category: target
+    importance: 0.89
+    novelty: 0.646
+    urgency: 0.767
+    confidence: 0.957
+  - id: arch-dependency-constraints-relevant-0
+    content: Dependencies are pinned and their provenance verified to reduce supply-chain risk.
+    category: relevant
+    importance: 0.698
+    novelty: 0.765
+    urgency: 0.533
+    confidence: 0.917
+  - id: arch-dependency-constraints-relevant-1
+    content: We prefer a well-maintained dependency over a one-maintainer package that may be abandoned.
+    category: relevant
+    importance: 0.609
+    novelty: 0.499
+    urgency: 0.694
+    confidence: 0.932
+  - id: arch-dependency-constraints-relevant-2
+    content: Adopting a new datastore or queue requires an architecture review, not just a PR.
+    category: relevant
+    importance: 0.617
+    novelty: 0.743
+    urgency: 0.759
+    confidence: 0.786
+  - id: arch-dependency-constraints-distractor-0
+    content: The design team added a new font dependency to the marketing site.
+    category: distractor
+    importance: 0.238
+    novelty: 0.548
+    urgency: 0.106
+    confidence: 0.866
+  - id: arch-dependency-constraints-distractor-1
+    content: We use a popular HTTP client library across all services.
+    category: distractor
+    importance: 0.069
+    novelty: 0.465
+    urgency: 0.418
+    confidence: 0.662
+  - id: arch-dependency-constraints-distractor-2
+    content: A dev added a code-formatter dependency to the pre-commit config.
+    category: distractor
+    importance: 0.063
+    novelty: 0.512
+    urgency: 0.146
+    confidence: 0.794
+  - id: arch-dependency-constraints-distractor-3
+    content: The test suite depends on a snapshot-testing library.
+    category: distractor
+    importance: 0.094
+    novelty: 0.422
+    urgency: 0.447
+    confidence: 0.763
+  - id: arch-dependency-constraints-distractor-4
+    content: A separate change to dependency touched the same area but addressed build vs buy rather than
+      the question of how to what constraints govern adding a new third-party.
+    category: distractor
+    importance: 0.138
+    novelty: 0.398
+    urgency: 0.132
+    confidence: 0.887
+  - id: arch-dependency-constraints-distractor-5
+    content: A separate change to build vs buy touched the same area but addressed maintenance rather
+      than the question of how to what constraints govern adding a new third-party.
+    category: distractor
+    importance: 0.058
+    novelty: 0.288
+    urgency: 0.407
+    confidence: 0.769
+  - id: arch-dependency-constraints-distractor-6
+    content: A separate change to maintenance touched the same area but addressed supply chain rather
+      than the question of how to what constraints govern adding a new third-party.
+    category: distractor
+    importance: 0.139
+    novelty: 0.225
+    urgency: 0.143
+    confidence: 0.888
+  - id: arch-dependency-constraints-stale-0
+    content: '[2020] Add whatever dependency unblocks you fastest; we can always clean it up later.'
+    category: stale
+    importance: 0.185
+    novelty: 0.101
+    urgency: 0.169
+    confidence: 0.61
+  - id: arch-dependency-constraints-stale-1
+    content: '[archived] The earlier dependency approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.257
+    novelty: 0.086
+    urgency: 0.185
+    confidence: 0.535
+  - id: arch-dependency-constraints-stale-2
+    content: '[archived] The earlier build vs buy approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.287
+    novelty: 0.178
+    urgency: 0.244
+    confidence: 0.775
+  - id: arch-dependency-constraints-contradictory-0
+    content: Never write code you can pull from a package; always add a dependency to save time, no review
+      needed.
+    category: contradictory
+    importance: 0.637
+    novelty: 0.685
+    urgency: 0.599
+    confidence: 0.59
+  - id: arch-dependency-constraints-low_confidence-0
+    content: Maybe that date library is unmaintained now, but I haven't checked its release history.
+    category: low_confidence
+    importance: 0.254
+    novelty: 0.573
+    urgency: 0.443
+    confidence: 0.214
+  - id: arch-dependency-constraints-low_confidence-1
+    content: 'Unverified note: someone suggested dependency might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.436
+    novelty: 0.391
+    urgency: 0.329
+    confidence: 0.15
+  - id: arch-dependency-constraints-low_confidence-2
+    content: 'Unverified note: someone suggested build vs buy might be relevant here, but it was never
+      confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.356
+    novelty: 0.389
+    urgency: 0.449
+    confidence: 0.117
+- query: when should communication between services be event-driven versus synchronous
+  domain: architecture
+  target_memories:
+  - arch-event-vs-sync-target-0
+  relevant_memories:
+  - arch-event-vs-sync-relevant-0
+  - arch-event-vs-sync-relevant-1
+  - arch-event-vs-sync-relevant-2
+  memories:
+  - id: arch-event-vs-sync-target-0
+    content: Use synchronous calls only when the caller needs an immediate answer and can tolerate the
+      dependency's availability; prefer events for side effects and fan-out to decouple services and absorb
+      load, accepting eventual consistency.
+    category: target
+    importance: 0.905
+    novelty: 0.719
+    urgency: 0.648
+    confidence: 0.931
+  - id: arch-event-vs-sync-relevant-0
+    content: Asynchronous events let a slow or down consumer not take the producer with it.
+    category: relevant
+    importance: 0.52
+    novelty: 0.512
+    urgency: 0.734
+    confidence: 0.944
+  - id: arch-event-vs-sync-relevant-1
+    content: Synchronous chains multiply failure probability and latency, so we keep them short.
+    category: relevant
+    importance: 0.53
+    novelty: 0.586
+    urgency: 0.435
+    confidence: 0.752
+  - id: arch-event-vs-sync-relevant-2
+    content: Events carry enough payload to be processed without a synchronous callback to the producer.
+    category: relevant
+    importance: 0.641
+    novelty: 0.711
+    urgency: 0.562
+    confidence: 0.708
+  - id: arch-event-vs-sync-distractor-0
+    content: The UI uses websockets to push live updates to the browser.
+    category: distractor
+    importance: 0.137
+    novelty: 0.254
+    urgency: 0.488
+    confidence: 0.829
+  - id: arch-event-vs-sync-distractor-1
+    content: Cron jobs run nightly batch reconciliation.
+    category: distractor
+    importance: 0.243
+    novelty: 0.425
+    urgency: 0.321
+    confidence: 0.894
+  - id: arch-event-vs-sync-distractor-2
+    content: The analytics pipeline ingests events into a warehouse for reporting.
+    category: distractor
+    importance: 0.245
+    novelty: 0.356
+    urgency: 0.328
+    confidence: 0.641
+  - id: arch-event-vs-sync-distractor-3
+    content: We added a synchronous health-check endpoint to every service.
+    category: distractor
+    importance: 0.156
+    novelty: 0.519
+    urgency: 0.326
+    confidence: 0.746
+  - id: arch-event-vs-sync-distractor-4
+    content: A separate change to event-driven touched the same area but addressed synchronous rather
+      than the question of how to when should communication between services be ev.
+    category: distractor
+    importance: 0.135
+    novelty: 0.466
+    urgency: 0.331
+    confidence: 0.688
+  - id: arch-event-vs-sync-distractor-5
+    content: A separate change to synchronous touched the same area but addressed coupling rather than
+      the question of how to when should communication between services be ev.
+    category: distractor
+    importance: 0.128
+    novelty: 0.581
+    urgency: 0.202
+    confidence: 0.756
+  - id: arch-event-vs-sync-distractor-6
+    content: A separate change to coupling touched the same area but addressed eventual consistency rather
+      than the question of how to when should communication between services be ev.
+    category: distractor
+    importance: 0.078
+    novelty: 0.234
+    urgency: 0.443
+    confidence: 0.839
+  - id: arch-event-vs-sync-stale-0
+    content: '[2021] Everything should be a synchronous REST call; message queues are too hard to debug.'
+    category: stale
+    importance: 0.138
+    novelty: 0.199
+    urgency: 0.265
+    confidence: 0.558
+  - id: arch-event-vs-sync-stale-1
+    content: '[archived] The earlier event-driven approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.13
+    novelty: 0.142
+    urgency: 0.121
+    confidence: 0.797
+  - id: arch-event-vs-sync-stale-2
+    content: '[archived] The earlier synchronous approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.176
+    novelty: 0.119
+    urgency: 0.184
+    confidence: 0.523
+  - id: arch-event-vs-sync-contradictory-0
+    content: Make every interaction event-driven, including request/response reads, to be fully decoupled.
+    category: contradictory
+    importance: 0.428
+    novelty: 0.447
+    urgency: 0.442
+    confidence: 0.34
+  - id: arch-event-vs-sync-low_confidence-0
+    content: I think the order service emits an event on completion, but it may still be a sync call.
+    category: low_confidence
+    importance: 0.485
+    novelty: 0.503
+    urgency: 0.226
+    confidence: 0.3
+  - id: arch-event-vs-sync-low_confidence-1
+    content: 'Unverified note: someone suggested event-driven might be relevant here, but it was never
+      confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.22
+    novelty: 0.592
+    urgency: 0.357
+    confidence: 0.378
+  - id: arch-event-vs-sync-low_confidence-2
+    content: 'Unverified note: someone suggested synchronous might be relevant here, but it was never
+      confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.387
+    novelty: 0.58
+    urgency: 0.526
+    confidence: 0.239
+- query: how do we choose a caching strategy and handle cache invalidation
+  domain: architecture
+  target_memories:
+  - arch-caching-strategy-target-0
+  relevant_memories:
+  - arch-caching-strategy-relevant-0
+  - arch-caching-strategy-relevant-1
+  - arch-caching-strategy-relevant-2
+  memories:
+  - id: arch-caching-strategy-target-0
+    content: Cache only what's hot and tolerant of staleness, with an explicit TTL and a clear invalidation
+      trigger on write; the stale-data bug came from caching with no invalidation, so we now use write-through
+      plus short TTLs and stampede protection.
+    category: target
+    importance: 0.858
+    novelty: 0.664
+    urgency: 0.781
+    confidence: 0.892
+  - id: arch-caching-strategy-relevant-0
+    content: Cache stampedes are prevented with request coalescing or a short randomized TTL jitter.
+    category: relevant
+    importance: 0.656
+    novelty: 0.651
+    urgency: 0.53
+    confidence: 0.923
+  - id: arch-caching-strategy-relevant-1
+    content: Each cached entry documents its staleness tolerance so we know what TTL is safe.
+    category: relevant
+    importance: 0.802
+    novelty: 0.468
+    urgency: 0.658
+    confidence: 0.705
+  - id: arch-caching-strategy-relevant-2
+    content: Write-through or explicit invalidation keeps the cache from serving stale records after an
+      update.
+    category: relevant
+    importance: 0.588
+    novelty: 0.602
+    urgency: 0.347
+    confidence: 0.826
+  - id: arch-caching-strategy-distractor-0
+    content: The CDN caches static assets with long max-age and content hashing.
+    category: distractor
+    importance: 0.087
+    novelty: 0.402
+    urgency: 0.176
+    confidence: 0.834
+  - id: arch-caching-strategy-distractor-1
+    content: The browser caches the app shell for offline use.
+    category: distractor
+    importance: 0.085
+    novelty: 0.453
+    urgency: 0.228
+    confidence: 0.708
+  - id: arch-caching-strategy-distractor-2
+    content: We memoize a pure function inside a request handler for the duration of the request.
+    category: distractor
+    importance: 0.247
+    novelty: 0.493
+    urgency: 0.473
+    confidence: 0.814
+  - id: arch-caching-strategy-distractor-3
+    content: The build cache stores compiled artifacts between CI runs.
+    category: distractor
+    importance: 0.154
+    novelty: 0.4
+    urgency: 0.165
+    confidence: 0.551
+  - id: arch-caching-strategy-distractor-4
+    content: A separate change to cache touched the same area but addressed invalidation rather than the
+      question of how to how do we choose a caching strategy and handle c.
+    category: distractor
+    importance: 0.089
+    novelty: 0.554
+    urgency: 0.323
+    confidence: 0.516
+  - id: arch-caching-strategy-distractor-5
+    content: A separate change to invalidation touched the same area but addressed TTL rather than the
+      question of how to how do we choose a caching strategy and handle c.
+    category: distractor
+    importance: 0.113
+    novelty: 0.576
+    urgency: 0.102
+    confidence: 0.64
+  - id: arch-caching-strategy-distractor-6
+    content: A separate change to TTL touched the same area but addressed stampede rather than the question
+      of how to how do we choose a caching strategy and handle c.
+    category: distractor
+    importance: 0.095
+    novelty: 0.536
+    urgency: 0.108
+    confidence: 0.711
+  - id: arch-caching-strategy-stale-0
+    content: '[2020] Cache everything forever and just restart the service when data looks wrong.'
+    category: stale
+    importance: 0.212
+    novelty: 0.23
+    urgency: 0.098
+    confidence: 0.64
+  - id: arch-caching-strategy-stale-1
+    content: '[archived] The earlier cache approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.128
+    novelty: 0.137
+    urgency: 0.12
+    confidence: 0.508
+  - id: arch-caching-strategy-stale-2
+    content: '[archived] The earlier invalidation approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.178
+    novelty: 0.236
+    urgency: 0.276
+    confidence: 0.571
+  - id: arch-caching-strategy-contradictory-0
+    content: Cache invalidation isn't worth the complexity; serve whatever is cached and let it go stale.
+    category: contradictory
+    importance: 0.502
+    novelty: 0.354
+    urgency: 0.335
+    confidence: 0.517
+  - id: arch-caching-strategy-low_confidence-0
+    content: Maybe the profile cache TTL is five minutes, but the value might have changed since.
+    category: low_confidence
+    importance: 0.246
+    novelty: 0.309
+    urgency: 0.355
+    confidence: 0.175
+  - id: arch-caching-strategy-low_confidence-1
+    content: 'Unverified note: someone suggested cache might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.352
+    novelty: 0.475
+    urgency: 0.323
+    confidence: 0.15
+  - id: arch-caching-strategy-low_confidence-2
+    content: 'Unverified note: someone suggested invalidation might be relevant here, but it was never
+      confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.242
+    novelty: 0.7
+    urgency: 0.344
+    confidence: 0.134
+- query: what retrieval strategy best supports long-horizon agent memory
+  domain: agent-systems
+  target_memories:
+  - agent-memory-retrieval-target-0
+  relevant_memories:
+  - agent-memory-retrieval-relevant-0
+  - agent-memory-retrieval-relevant-1
+  - agent-memory-retrieval-relevant-2
+  - agent-memory-retrieval-relevant-3
+  - agent-memory-retrieval-relevant-4
+  memories:
+  - id: agent-memory-retrieval-target-0
+    content: Long-horizon recall should weight importance and recency alongside semantic similarity so
+      critical-but-distant memories surface; similarity-only retrieval buries an important decision under
+      many superficially similar but low-value notes.
+    category: target
+    importance: 0.853
+    novelty: 0.825
+    urgency: 0.769
+    confidence: 0.855
+  - id: agent-memory-retrieval-relevant-0
+    content: Salience-weighted ranking promotes high-importance memories that aren't the closest match
+      by embedding.
+    category: relevant
+    importance: 0.527
+    novelty: 0.556
+    urgency: 0.64
+    confidence: 0.756
+  - id: agent-memory-retrieval-relevant-1
+    content: Recency weighting helps the latest decision win over an outdated but similar one.
+    category: relevant
+    importance: 0.553
+    novelty: 0.638
+    urgency: 0.564
+    confidence: 0.937
+  - id: agent-memory-retrieval-relevant-2
+    content: Retrieval is evaluated on recall and ranking, not just top-1 similarity.
+    category: relevant
+    importance: 0.566
+    novelty: 0.777
+    urgency: 0.335
+    confidence: 0.799
+  - id: agent-memory-retrieval-relevant-3
+    content: Importance is a stored signal on each memory so the ranker doesn't have to infer it at query
+      time.
+    category: relevant
+    importance: 0.703
+    novelty: 0.55
+    urgency: 0.446
+    confidence: 0.911
+  - id: agent-memory-retrieval-relevant-4
+    content: A pure-similarity baseline is kept as a control arm so any salience gain is measured against
+      it.
+    category: relevant
+    importance: 0.781
+    novelty: 0.777
+    urgency: 0.488
+    confidence: 0.918
+  - id: agent-memory-retrieval-distractor-0
+    content: The embedding cache stores vectors for the memory listing UI.
+    category: distractor
+    importance: 0.129
+    novelty: 0.457
+    urgency: 0.24
+    confidence: 0.648
+  - id: agent-memory-retrieval-distractor-1
+    content: The vector index uses cosine similarity over normalized embeddings.
+    category: distractor
+    importance: 0.19
+    novelty: 0.375
+    urgency: 0.417
+    confidence: 0.556
+  - id: agent-memory-retrieval-distractor-2
+    content: We chunk long documents before embedding them for search.
+    category: distractor
+    importance: 0.121
+    novelty: 0.407
+    urgency: 0.302
+    confidence: 0.867
+  - id: agent-memory-retrieval-distractor-3
+    content: The retrieval latency benchmark records p95 over the corpus.
+    category: distractor
+    importance: 0.224
+    novelty: 0.243
+    urgency: 0.355
+    confidence: 0.722
+  - id: agent-memory-retrieval-distractor-4
+    content: A separate change to retrieval touched the same area but addressed salience rather than the
+      question of how to what retrieval strategy best supports long-horiz.
+    category: distractor
+    importance: 0.21
+    novelty: 0.321
+    urgency: 0.291
+    confidence: 0.663
+  - id: agent-memory-retrieval-distractor-5
+    content: A separate change to salience touched the same area but addressed importance rather than
+      the question of how to what retrieval strategy best supports long-horiz.
+    category: distractor
+    importance: 0.14
+    novelty: 0.375
+    urgency: 0.372
+    confidence: 0.779
+  - id: agent-memory-retrieval-distractor-6
+    content: A separate change to importance touched the same area but addressed recency rather than the
+      question of how to what retrieval strategy best supports long-horiz.
+    category: distractor
+    importance: 0.19
+    novelty: 0.336
+    urgency: 0.327
+    confidence: 0.586
+  - id: agent-memory-retrieval-stale-0
+    content: '[2023] Pure nearest-neighbor similarity is all you need; importance and recency add noise.'
+    category: stale
+    importance: 0.161
+    novelty: 0.107
+    urgency: 0.295
+    confidence: 0.68
+  - id: agent-memory-retrieval-stale-1
+    content: '[archived] The earlier retrieval approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.285
+    novelty: 0.185
+    urgency: 0.21
+    confidence: 0.695
+  - id: agent-memory-retrieval-stale-2
+    content: '[archived] The earlier salience approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.102
+    novelty: 0.214
+    urgency: 0.073
+    confidence: 0.572
+  - id: agent-memory-retrieval-contradictory-0
+    content: Always return the single most semantically similar memory; ranking by importance hurts relevance.
+    category: contradictory
+    importance: 0.67
+    novelty: 0.643
+    urgency: 0.407
+    confidence: 0.302
+  - id: agent-memory-retrieval-low_confidence-0
+    content: Maybe adding frequency-of-access to the score helps, but we haven't measured it.
+    category: low_confidence
+    importance: 0.452
+    novelty: 0.302
+    urgency: 0.522
+    confidence: 0.256
+  - id: agent-memory-retrieval-low_confidence-1
+    content: 'Unverified note: someone suggested retrieval might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.239
+    novelty: 0.667
+    urgency: 0.318
+    confidence: 0.387
+  - id: agent-memory-retrieval-low_confidence-2
+    content: 'Unverified note: someone suggested salience might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.234
+    novelty: 0.615
+    urgency: 0.517
+    confidence: 0.208
+- query: how should we engineer the context window for an agent task to stay relevant
+  domain: agent-systems
+  target_memories:
+  - agent-context-engineering-target-0
+  relevant_memories:
+  - agent-context-engineering-relevant-0
+  - agent-context-engineering-relevant-1
+  - agent-context-engineering-relevant-2
+  memories:
+  - id: agent-context-engineering-target-0
+    content: Fill the context with the most task-relevant material under a token budget and compact or
+      drop the rest; a bloated window of marginally related text measurably degraded task accuracy, so
+      we rank-and-trim before each call.
+    category: target
+    importance: 0.973
+    novelty: 0.602
+    urgency: 0.617
+    confidence: 0.862
+  - id: agent-context-engineering-relevant-0
+    content: Irrelevant context is actively harmful, not neutral, so the window is curated rather than
+      stuffed.
+    category: relevant
+    importance: 0.785
+    novelty: 0.741
+    urgency: 0.792
+    confidence: 0.701
+  - id: agent-context-engineering-relevant-1
+    content: Long histories are summarized into compact checkpoints to preserve the token budget.
+    category: relevant
+    importance: 0.785
+    novelty: 0.488
+    urgency: 0.3
+    confidence: 0.848
+  - id: agent-context-engineering-relevant-2
+    content: Retrieved context is ranked by relevance and truncated to a budget before the prompt is built.
+    category: relevant
+    importance: 0.574
+    novelty: 0.562
+    urgency: 0.671
+    confidence: 0.712
+  - id: agent-context-engineering-distractor-0
+    content: The editor shows a context menu on right-click.
+    category: distractor
+    importance: 0.072
+    novelty: 0.489
+    urgency: 0.302
+    confidence: 0.72
+  - id: agent-context-engineering-distractor-1
+    content: We log the full prompt for debugging in a separate sink.
+    category: distractor
+    importance: 0.184
+    novelty: 0.517
+    urgency: 0.261
+    confidence: 0.843
+  - id: agent-context-engineering-distractor-2
+    content: The UI has a sidebar panel that displays related documents.
+    category: distractor
+    importance: 0.123
+    novelty: 0.47
+    urgency: 0.448
+    confidence: 0.507
+  - id: agent-context-engineering-distractor-3
+    content: The model's max context length was increased in the latest version.
+    category: distractor
+    importance: 0.079
+    novelty: 0.217
+    urgency: 0.481
+    confidence: 0.517
+  - id: agent-context-engineering-distractor-4
+    content: A separate change to context window touched the same area but addressed token budget rather
+      than the question of how to how should we engineer the context window for an.
+    category: distractor
+    importance: 0.143
+    novelty: 0.317
+    urgency: 0.48
+    confidence: 0.563
+  - id: agent-context-engineering-distractor-5
+    content: A separate change to token budget touched the same area but addressed relevance rather than
+      the question of how to how should we engineer the context window for an.
+    category: distractor
+    importance: 0.204
+    novelty: 0.305
+    urgency: 0.171
+    confidence: 0.758
+  - id: agent-context-engineering-distractor-6
+    content: A separate change to relevance touched the same area but addressed compaction rather than
+      the question of how to how should we engineer the context window for an.
+    category: distractor
+    importance: 0.121
+    novelty: 0.238
+    urgency: 0.398
+    confidence: 0.568
+  - id: agent-context-engineering-stale-0
+    content: '[2023] Always pass the entire conversation history; more context is strictly better.'
+    category: stale
+    importance: 0.103
+    novelty: 0.127
+    urgency: 0.133
+    confidence: 0.778
+  - id: agent-context-engineering-stale-1
+    content: '[archived] The earlier context window approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.134
+    novelty: 0.23
+    urgency: 0.199
+    confidence: 0.664
+  - id: agent-context-engineering-stale-2
+    content: '[archived] The earlier token budget approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.101
+    novelty: 0.197
+    urgency: 0.182
+    confidence: 0.603
+  - id: agent-context-engineering-contradictory-0
+    content: Dumping every available document into the prompt maximizes accuracy; curation only loses
+      information.
+    category: contradictory
+    importance: 0.387
+    novelty: 0.584
+    urgency: 0.626
+    confidence: 0.574
+  - id: agent-context-engineering-low_confidence-0
+    content: I think trimming to the top 20 chunks is optimal, but the sweep was never finished.
+    category: low_confidence
+    importance: 0.229
+    novelty: 0.501
+    urgency: 0.298
+    confidence: 0.222
+  - id: agent-context-engineering-low_confidence-1
+    content: 'Unverified note: someone suggested context window might be relevant here, but it was never
+      confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.491
+    novelty: 0.427
+    urgency: 0.332
+    confidence: 0.398
+  - id: agent-context-engineering-low_confidence-2
+    content: 'Unverified note: someone suggested token budget might be relevant here, but it was never
+      confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.354
+    novelty: 0.683
+    urgency: 0.563
+    confidence: 0.241
+- query: how do we design an evaluation benchmark that can discriminate between strategies
+  domain: agent-systems
+  target_memories:
+  - agent-benchmark-design-target-0
+  relevant_memories:
+  - agent-benchmark-design-relevant-0
+  - agent-benchmark-design-relevant-1
+  - agent-benchmark-design-relevant-2
+  memories:
+  - id: agent-benchmark-design-target-0
+    content: 'A discriminating benchmark must avoid saturation: include more relevant items than k and
+      many plausible distractors so a metric like recall@k can''t trivially hit 1.0 for every strategy,
+      which is exactly why the 13-memory smoke test couldn''t separate retrievers.'
+    category: target
+    importance: 0.906
+    novelty: 0.702
+    urgency: 0.811
+    confidence: 0.937
+  - id: agent-benchmark-design-relevant-0
+    content: Distractors should be plausible and semantically close so they actually challenge similarity-only
+      retrieval.
+    category: relevant
+    importance: 0.563
+    novelty: 0.628
+    urgency: 0.557
+    confidence: 0.893
+  - id: agent-benchmark-design-relevant-1
+    content: Gold labels separate target memories from supporting-relevant ones for fine-grained scoring.
+    category: relevant
+    importance: 0.792
+    novelty: 0.533
+    urgency: 0.615
+    confidence: 0.713
+  - id: agent-benchmark-design-relevant-2
+    content: Multiple cutoffs (recall@1/3/5/10) reveal coverage differences a single k hides.
+    category: relevant
+    importance: 0.51
+    novelty: 0.4
+    urgency: 0.583
+    confidence: 0.777
+  - id: agent-benchmark-design-distractor-0
+    content: The CI benchmark records build duration trends over time.
+    category: distractor
+    importance: 0.223
+    novelty: 0.429
+    urgency: 0.134
+    confidence: 0.871
+  - id: agent-benchmark-design-distractor-1
+    content: We benchmark database query latency separately in a load test.
+    category: distractor
+    importance: 0.188
+    novelty: 0.366
+    urgency: 0.308
+    confidence: 0.764
+  - id: agent-benchmark-design-distractor-2
+    content: The UI performance budget caps the largest contentful paint.
+    category: distractor
+    importance: 0.225
+    novelty: 0.448
+    urgency: 0.421
+    confidence: 0.769
+  - id: agent-benchmark-design-distractor-3
+    content: A microbenchmark measures JSON serialization throughput.
+    category: distractor
+    importance: 0.11
+    novelty: 0.492
+    urgency: 0.152
+    confidence: 0.805
+  - id: agent-benchmark-design-distractor-4
+    content: A separate change to benchmark touched the same area but addressed saturation rather than
+      the question of how to how do we design an evaluation benchmark that ca.
+    category: distractor
+    importance: 0.078
+    novelty: 0.248
+    urgency: 0.448
+    confidence: 0.72
+  - id: agent-benchmark-design-distractor-5
+    content: A separate change to saturation touched the same area but addressed discriminating rather
+      than the question of how to how do we design an evaluation benchmark that ca.
+    category: distractor
+    importance: 0.179
+    novelty: 0.425
+    urgency: 0.169
+    confidence: 0.64
+  - id: agent-benchmark-design-distractor-6
+    content: A separate change to discriminating touched the same area but addressed distractor rather
+      than the question of how to how do we design an evaluation benchmark that ca.
+    category: distractor
+    importance: 0.145
+    novelty: 0.544
+    urgency: 0.106
+    confidence: 0.583
+  - id: agent-benchmark-design-stale-0
+    content: '[2025] A handful of easy queries is enough to validate a retrieval change.'
+    category: stale
+    importance: 0.127
+    novelty: 0.234
+    urgency: 0.088
+    confidence: 0.757
+  - id: agent-benchmark-design-stale-1
+    content: '[archived] The earlier benchmark approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.103
+    novelty: 0.066
+    urgency: 0.155
+    confidence: 0.744
+  - id: agent-benchmark-design-stale-2
+    content: '[archived] The earlier saturation approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.197
+    novelty: 0.177
+    urgency: 0.241
+    confidence: 0.607
+  - id: agent-benchmark-design-contradictory-0
+    content: Benchmark size doesn't matter; if recall is 1.0 the retriever is perfect, no need for distractors.
+    category: contradictory
+    importance: 0.346
+    novelty: 0.579
+    urgency: 0.471
+    confidence: 0.392
+  - id: agent-benchmark-design-low_confidence-0
+    content: Maybe 30 queries is enough for statistical power, but we haven't run the power analysis.
+    category: low_confidence
+    importance: 0.339
+    novelty: 0.319
+    urgency: 0.401
+    confidence: 0.365
+  - id: agent-benchmark-design-low_confidence-1
+    content: 'Unverified note: someone suggested benchmark might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.419
+    novelty: 0.525
+    urgency: 0.517
+    confidence: 0.115
+  - id: agent-benchmark-design-low_confidence-2
+    content: 'Unverified note: someone suggested saturation might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.361
+    novelty: 0.613
+    urgency: 0.409
+    confidence: 0.34
+- query: how do we make agent evaluation runs reproducible and replayable
+  domain: agent-systems
+  target_memories:
+  - agent-replay-repro-target-0
+  relevant_memories:
+  - agent-replay-repro-relevant-0
+  - agent-replay-repro-relevant-1
+  - agent-replay-repro-relevant-2
+  memories:
+  - id: agent-replay-repro-target-0
+    content: Every run must persist enough metadata — model, prompt, context package, and seed — to replay
+      it later against new strategies; reproducibility is a first-class requirement, so the luck roll
+      is seeded by (agent, case, trial) and never by the strategy under test.
+    category: target
+    importance: 0.932
+    novelty: 0.695
+    urgency: 0.546
+    confidence: 0.872
+  - id: agent-replay-repro-relevant-0
+    content: Seeding by case and trial but not by strategy keeps experiment arms properly paired.
+    category: relevant
+    importance: 0.511
+    novelty: 0.662
+    urgency: 0.763
+    confidence: 0.722
+  - id: agent-replay-repro-relevant-1
+    content: Stored run records link the case, context version, and agent run for deterministic replay.
+    category: relevant
+    importance: 0.695
+    novelty: 0.402
+    urgency: 0.399
+    confidence: 0.783
+  - id: agent-replay-repro-relevant-2
+    content: Synthetic results are flagged as non-production so they aren't mistaken for real evidence.
+    category: relevant
+    importance: 0.82
+    novelty: 0.707
+    urgency: 0.338
+    confidence: 0.881
+  - id: agent-replay-repro-distractor-0
+    content: The video player supports replaying the last clip.
+    category: distractor
+    importance: 0.09
+    novelty: 0.537
+    urgency: 0.257
+    confidence: 0.705
+  - id: agent-replay-repro-distractor-1
+    content: We record screen captures of manual QA sessions.
+    category: distractor
+    importance: 0.079
+    novelty: 0.322
+    urgency: 0.225
+    confidence: 0.513
+  - id: agent-replay-repro-distractor-2
+    content: The event log can be tailed live during an incident.
+    category: distractor
+    importance: 0.119
+    novelty: 0.468
+    urgency: 0.41
+    confidence: 0.706
+  - id: agent-replay-repro-distractor-3
+    content: Git lets us replay history with a rebase.
+    category: distractor
+    importance: 0.102
+    novelty: 0.263
+    urgency: 0.235
+    confidence: 0.645
+  - id: agent-replay-repro-distractor-4
+    content: A separate change to reproducible touched the same area but addressed replay rather than
+      the question of how to how do we make agent evaluation runs reproducibl.
+    category: distractor
+    importance: 0.217
+    novelty: 0.446
+    urgency: 0.168
+    confidence: 0.516
+  - id: agent-replay-repro-distractor-5
+    content: A separate change to replay touched the same area but addressed seed rather than the question
+      of how to how do we make agent evaluation runs reproducibl.
+    category: distractor
+    importance: 0.076
+    novelty: 0.276
+    urgency: 0.133
+    confidence: 0.694
+  - id: agent-replay-repro-distractor-6
+    content: A separate change to seed touched the same area but addressed metadata rather than the question
+      of how to how do we make agent evaluation runs reproducibl.
+    category: distractor
+    importance: 0.14
+    novelty: 0.552
+    urgency: 0.475
+    confidence: 0.785
+  - id: agent-replay-repro-stale-0
+    content: '[2024] Just rerun the agent; if results differ, average a few runs and move on.'
+    category: stale
+    importance: 0.215
+    novelty: 0.245
+    urgency: 0.14
+    confidence: 0.519
+  - id: agent-replay-repro-stale-1
+    content: '[archived] The earlier reproducible approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.216
+    novelty: 0.184
+    urgency: 0.166
+    confidence: 0.539
+  - id: agent-replay-repro-stale-2
+    content: '[archived] The earlier replay approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.24
+    novelty: 0.189
+    urgency: 0.271
+    confidence: 0.755
+  - id: agent-replay-repro-contradictory-0
+    content: Seeding the run by the strategy is fine; pairing across arms doesn't really matter for the
+      verdict.
+    category: contradictory
+    importance: 0.249
+    novelty: 0.474
+    urgency: 0.645
+    confidence: 0.338
+  - id: agent-replay-repro-low_confidence-0
+    content: I think the trial seed includes the model name, but the exact tuple may have changed.
+    category: low_confidence
+    importance: 0.312
+    novelty: 0.472
+    urgency: 0.226
+    confidence: 0.236
+  - id: agent-replay-repro-low_confidence-1
+    content: 'Unverified note: someone suggested reproducible might be relevant here, but it was never
+      confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.489
+    novelty: 0.684
+    urgency: 0.51
+    confidence: 0.136
+  - id: agent-replay-repro-low_confidence-2
+    content: 'Unverified note: someone suggested replay might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.217
+    novelty: 0.556
+    urgency: 0.527
+    confidence: 0.113
+- query: how should the eval platform stay decoupled from execution and retrieval providers
+  domain: agent-systems
+  target_memories:
+  - agent-provider-boundary-target-0
+  relevant_memories:
+  - agent-provider-boundary-relevant-0
+  - agent-provider-boundary-relevant-1
+  - agent-provider-boundary-relevant-2
+  memories:
+  - id: agent-provider-boundary-target-0
+    content: Execution and retrieval must sit behind provider interfaces with mock and real MCP implementations
+      that are drop-in equivalents; the eval platform measures outcomes and must not absorb workspace
+      management or context generation that belong to other systems.
+    category: target
+    importance: 0.91
+    novelty: 0.87
+    urgency: 0.877
+    confidence: 0.877
+  - id: agent-provider-boundary-relevant-0
+    content: Mock providers let the full pipeline run end-to-end without a live backend.
+    category: relevant
+    importance: 0.569
+    novelty: 0.787
+    urgency: 0.538
+    confidence: 0.894
+  - id: agent-provider-boundary-relevant-1
+    content: Real MCP providers are selected from the environment and fall back to mocks independently.
+    category: relevant
+    importance: 0.629
+    novelty: 0.675
+    urgency: 0.424
+    confidence: 0.891
+  - id: agent-provider-boundary-relevant-2
+    content: Retrieval/memory logic stays behind the Cortex provider, not inside the eval engine.
+    category: relevant
+    importance: 0.781
+    novelty: 0.719
+    urgency: 0.365
+    confidence: 0.934
+  - id: agent-provider-boundary-distractor-0
+    content: The CLI uses a plugin system for output formatters.
+    category: distractor
+    importance: 0.183
+    novelty: 0.483
+    urgency: 0.279
+    confidence: 0.721
+  - id: agent-provider-boundary-distractor-1
+    content: We abstract the database behind a repository for testing.
+    category: distractor
+    importance: 0.179
+    novelty: 0.235
+    urgency: 0.187
+    confidence: 0.506
+  - id: agent-provider-boundary-distractor-2
+    content: The payment provider is wrapped in an adapter for sandbox mode.
+    category: distractor
+    importance: 0.058
+    novelty: 0.371
+    urgency: 0.185
+    confidence: 0.632
+  - id: agent-provider-boundary-distractor-3
+    content: Logging goes through a façade so we can swap backends.
+    category: distractor
+    importance: 0.122
+    novelty: 0.208
+    urgency: 0.134
+    confidence: 0.847
+  - id: agent-provider-boundary-distractor-4
+    content: A separate change to provider interface touched the same area but addressed boundary rather
+      than the question of how to how should the eval platform stay decoupled from.
+    category: distractor
+    importance: 0.101
+    novelty: 0.368
+    urgency: 0.109
+    confidence: 0.557
+  - id: agent-provider-boundary-distractor-5
+    content: A separate change to boundary touched the same area but addressed MCP rather than the question
+      of how to how should the eval platform stay decoupled from.
+    category: distractor
+    importance: 0.052
+    novelty: 0.394
+    urgency: 0.412
+    confidence: 0.561
+  - id: agent-provider-boundary-distractor-6
+    content: A separate change to MCP touched the same area but addressed mock rather than the question
+      of how to how should the eval platform stay decoupled from.
+    category: distractor
+    importance: 0.167
+    novelty: 0.244
+    urgency: 0.486
+    confidence: 0.857
+  - id: agent-provider-boundary-stale-0
+    content: '[2024] Just call the execution backend directly from the scorer; an interface is premature.'
+    category: stale
+    importance: 0.172
+    novelty: 0.122
+    urgency: 0.074
+    confidence: 0.657
+  - id: agent-provider-boundary-stale-1
+    content: '[archived] The earlier provider interface approach was the accepted answer before the last
+      replatform; it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.181
+    novelty: 0.137
+    urgency: 0.054
+    confidence: 0.597
+  - id: agent-provider-boundary-stale-2
+    content: '[archived] The earlier boundary approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.131
+    novelty: 0.083
+    urgency: 0.207
+    confidence: 0.735
+  - id: agent-provider-boundary-contradictory-0
+    content: The eval platform should run the agent and generate context itself to avoid coordinating
+      with other teams.
+    category: contradictory
+    importance: 0.204
+    novelty: 0.432
+    urgency: 0.475
+    confidence: 0.586
+  - id: agent-provider-boundary-low_confidence-0
+    content: Maybe the real provider already implements every mock method, but parity isn't fully tested.
+    category: low_confidence
+    importance: 0.34
+    novelty: 0.682
+    urgency: 0.209
+    confidence: 0.346
+  - id: agent-provider-boundary-low_confidence-1
+    content: 'Unverified note: someone suggested provider interface might be relevant here, but it was
+      never confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.349
+    novelty: 0.578
+    urgency: 0.288
+    confidence: 0.285
+  - id: agent-provider-boundary-low_confidence-2
+    content: 'Unverified note: someone suggested boundary might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.267
+    novelty: 0.48
+    urgency: 0.51
+    confidence: 0.367
+- query: what guidelines keep pull request diffs small and focused
+  domain: code-review
+  target_memories:
+  - review-diff-size-target-0
+  relevant_memories:
+  - review-diff-size-relevant-0
+  - review-diff-size-relevant-1
+  - review-diff-size-relevant-2
+  - review-diff-size-relevant-3
+  - review-diff-size-relevant-4
+  memories:
+  - id: review-diff-size-target-0
+    content: A PR must touch only files required by its task; unrelated edits, drive-by refactors, and
+      whitespace churn are rejected in review because they hide the real change and bloat the diff.
+    category: target
+    importance: 0.877
+    novelty: 0.894
+    urgency: 0.841
+    confidence: 0.936
+  - id: review-diff-size-relevant-0
+    content: Reviewers flag trailing-newline and reformat-only changes as noise that obscures intent.
+    category: relevant
+    importance: 0.664
+    novelty: 0.449
+    urgency: 0.568
+    confidence: 0.899
+  - id: review-diff-size-relevant-1
+    content: Large changes are split into a stack of small, independently reviewable PRs.
+    category: relevant
+    importance: 0.626
+    novelty: 0.466
+    urgency: 0.42
+    confidence: 0.73
+  - id: review-diff-size-relevant-2
+    content: Mechanical reformatting goes in its own commit, separate from behavior changes.
+    category: relevant
+    importance: 0.793
+    novelty: 0.777
+    urgency: 0.497
+    confidence: 0.737
+  - id: review-diff-size-relevant-3
+    content: A PR that touches files outside the task's scope is sent back to trim the unrelated edits.
+    category: relevant
+    importance: 0.666
+    novelty: 0.584
+    urgency: 0.332
+    confidence: 0.778
+  - id: review-diff-size-relevant-4
+    content: Reviewers approve faster when the diff is small, so focus is also a velocity win.
+    category: relevant
+    importance: 0.766
+    novelty: 0.542
+    urgency: 0.553
+    confidence: 0.726
+  - id: review-diff-size-distractor-0
+    content: The PR template lists a checklist of sections to fill in before requesting review.
+    category: distractor
+    importance: 0.084
+    novelty: 0.595
+    urgency: 0.46
+    confidence: 0.816
+  - id: review-diff-size-distractor-1
+    content: We squash-merge so the main branch has one commit per PR.
+    category: distractor
+    importance: 0.23
+    novelty: 0.548
+    urgency: 0.224
+    confidence: 0.721
+  - id: review-diff-size-distractor-2
+    content: The diff viewer can hide whitespace changes with a toggle.
+    category: distractor
+    importance: 0.081
+    novelty: 0.475
+    urgency: 0.183
+    confidence: 0.792
+  - id: review-diff-size-distractor-3
+    content: A bot comments the diff's line count on every PR.
+    category: distractor
+    importance: 0.077
+    novelty: 0.376
+    urgency: 0.389
+    confidence: 0.85
+  - id: review-diff-size-distractor-4
+    content: A separate change to diff touched the same area but addressed focused rather than the question
+      of how to what guidelines keep pull request diffs small an.
+    category: distractor
+    importance: 0.113
+    novelty: 0.289
+    urgency: 0.232
+    confidence: 0.639
+  - id: review-diff-size-distractor-5
+    content: A separate change to focused touched the same area but addressed scope creep rather than
+      the question of how to what guidelines keep pull request diffs small an.
+    category: distractor
+    importance: 0.237
+    novelty: 0.369
+    urgency: 0.351
+    confidence: 0.502
+  - id: review-diff-size-distractor-6
+    content: A separate change to scope creep touched the same area but addressed whitespace rather than
+      the question of how to what guidelines keep pull request diffs small an.
+    category: distractor
+    importance: 0.101
+    novelty: 0.509
+    urgency: 0.388
+    confidence: 0.555
+  - id: review-diff-size-stale-0
+    content: '[2021] Big PRs are fine if they''re well described; reviewers should just read more carefully.'
+    category: stale
+    importance: 0.291
+    novelty: 0.207
+    urgency: 0.19
+    confidence: 0.785
+  - id: review-diff-size-stale-1
+    content: '[archived] The earlier diff approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.195
+    novelty: 0.14
+    urgency: 0.194
+    confidence: 0.573
+  - id: review-diff-size-stale-2
+    content: '[archived] The earlier focused approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.197
+    novelty: 0.208
+    urgency: 0.128
+    confidence: 0.554
+  - id: review-diff-size-contradictory-0
+    content: Bundle unrelated cleanups into the same PR; it saves opening multiple reviews.
+    category: contradictory
+    importance: 0.274
+    novelty: 0.61
+    urgency: 0.795
+    confidence: 0.551
+  - id: review-diff-size-low_confidence-0
+    content: Maybe our guideline caps PRs at 400 lines, but the number might have changed.
+    category: low_confidence
+    importance: 0.325
+    novelty: 0.698
+    urgency: 0.409
+    confidence: 0.167
+  - id: review-diff-size-low_confidence-1
+    content: 'Unverified note: someone suggested diff might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.495
+    novelty: 0.358
+    urgency: 0.488
+    confidence: 0.379
+  - id: review-diff-size-low_confidence-2
+    content: 'Unverified note: someone suggested focused might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.201
+    novelty: 0.357
+    urgency: 0.307
+    confidence: 0.278
+- query: what testing is required before a change can be merged
+  domain: code-review
+  target_memories:
+  - review-test-requirements-target-0
+  relevant_memories:
+  - review-test-requirements-relevant-0
+  - review-test-requirements-relevant-1
+  - review-test-requirements-relevant-2
+  memories:
+  - id: review-test-requirements-target-0
+    content: A change merges only with tests covering the new behavior and a regression test for any bug
+      it fixes; CI must be green, and a bug fix without a failing-then-passing test is sent back.
+    category: target
+    importance: 0.99
+    novelty: 0.656
+    urgency: 0.885
+    confidence: 0.927
+  - id: review-test-requirements-relevant-0
+    content: Bug fixes add a test that fails before the fix and passes after, proving the fix works.
+    category: relevant
+    importance: 0.662
+    novelty: 0.439
+    urgency: 0.502
+    confidence: 0.839
+  - id: review-test-requirements-relevant-1
+    content: New behavior is covered at the level it lives — unit for logic, integration for wiring.
+    category: relevant
+    importance: 0.562
+    novelty: 0.442
+    urgency: 0.417
+    confidence: 0.854
+  - id: review-test-requirements-relevant-2
+    content: CI runs the full suite as a required merge gate, not an optional check.
+    category: relevant
+    importance: 0.768
+    novelty: 0.711
+    urgency: 0.392
+    confidence: 0.744
+  - id: review-test-requirements-distractor-0
+    content: We measure test wall-time and shard slow suites across runners.
+    category: distractor
+    importance: 0.125
+    novelty: 0.293
+    urgency: 0.291
+    confidence: 0.607
+  - id: review-test-requirements-distractor-1
+    content: The coverage badge is shown in the README.
+    category: distractor
+    importance: 0.104
+    novelty: 0.553
+    urgency: 0.431
+    confidence: 0.734
+  - id: review-test-requirements-distractor-2
+    content: Manual QA signs off on the release candidate before a launch.
+    category: distractor
+    importance: 0.133
+    novelty: 0.577
+    urgency: 0.273
+    confidence: 0.712
+  - id: review-test-requirements-distractor-3
+    content: Snapshot tests guard the component library's rendered output.
+    category: distractor
+    importance: 0.17
+    novelty: 0.219
+    urgency: 0.389
+    confidence: 0.601
+  - id: review-test-requirements-distractor-4
+    content: A separate change to tests touched the same area but addressed coverage rather than the question
+      of how to what testing is required before a change can be .
+    category: distractor
+    importance: 0.196
+    novelty: 0.318
+    urgency: 0.144
+    confidence: 0.75
+  - id: review-test-requirements-distractor-5
+    content: A separate change to coverage touched the same area but addressed regression rather than
+      the question of how to what testing is required before a change can be .
+    category: distractor
+    importance: 0.167
+    novelty: 0.473
+    urgency: 0.396
+    confidence: 0.53
+  - id: review-test-requirements-distractor-6
+    content: A separate change to regression touched the same area but addressed CI rather than the question
+      of how to what testing is required before a change can be .
+    category: distractor
+    importance: 0.201
+    novelty: 0.335
+    urgency: 0.279
+    confidence: 0.53
+  - id: review-test-requirements-stale-0
+    content: '[2021] Tests can be added in a follow-up PR after the feature ships if we''re in a hurry.'
+    category: stale
+    importance: 0.141
+    novelty: 0.184
+    urgency: 0.169
+    confidence: 0.516
+  - id: review-test-requirements-stale-1
+    content: '[archived] The earlier tests approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.297
+    novelty: 0.191
+    urgency: 0.183
+    confidence: 0.552
+  - id: review-test-requirements-stale-2
+    content: '[archived] The earlier coverage approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.228
+    novelty: 0.192
+    urgency: 0.084
+    confidence: 0.679
+  - id: review-test-requirements-contradictory-0
+    content: Coverage percentage is all that matters; a high number means the change is safe to merge
+      untested.
+    category: contradictory
+    importance: 0.546
+    novelty: 0.588
+    urgency: 0.741
+    confidence: 0.365
+  - id: review-test-requirements-low_confidence-0
+    content: I think the merge gate requires 80% coverage, but the threshold may not be enforced.
+    category: low_confidence
+    importance: 0.231
+    novelty: 0.473
+    urgency: 0.469
+    confidence: 0.209
+  - id: review-test-requirements-low_confidence-1
+    content: 'Unverified note: someone suggested tests might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.396
+    novelty: 0.471
+    urgency: 0.472
+    confidence: 0.365
+  - id: review-test-requirements-low_confidence-2
+    content: 'Unverified note: someone suggested coverage might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.212
+    novelty: 0.479
+    urgency: 0.235
+    confidence: 0.121
+- query: what makes a good code review and how many approvals are needed
+  domain: code-review
+  target_memories:
+  - review-quality-approvals-target-0
+  relevant_memories:
+  - review-quality-approvals-relevant-0
+  - review-quality-approvals-relevant-1
+  - review-quality-approvals-relevant-2
+  memories:
+  - id: review-quality-approvals-target-0
+    content: A good review checks correctness, edge cases, and design against the task's intent — not
+      just style — and risky or cross-cutting changes need an owning-area reviewer's approval, not just
+      any rubber-stamp.
+    category: target
+    importance: 0.852
+    novelty: 0.688
+    urgency: 0.829
+    confidence: 0.922
+  - id: review-quality-approvals-relevant-0
+    content: Reviewers distinguish blocking concerns from optional nits so authors know what must change.
+    category: relevant
+    importance: 0.639
+    novelty: 0.622
+    urgency: 0.794
+    confidence: 0.784
+  - id: review-quality-approvals-relevant-1
+    content: Changes to a critical area require sign-off from that area's owner.
+    category: relevant
+    importance: 0.776
+    novelty: 0.701
+    urgency: 0.323
+    confidence: 0.808
+  - id: review-quality-approvals-relevant-2
+    content: Review feedback references the task's acceptance criteria, not personal preference.
+    category: relevant
+    importance: 0.708
+    novelty: 0.648
+    urgency: 0.795
+    confidence: 0.89
+  - id: review-quality-approvals-distractor-0
+    content: The standup covers who is reviewing what each morning.
+    category: distractor
+    importance: 0.086
+    novelty: 0.327
+    urgency: 0.413
+    confidence: 0.56
+  - id: review-quality-approvals-distractor-1
+    content: We use emoji reactions to acknowledge messages in the channel.
+    category: distractor
+    importance: 0.213
+    novelty: 0.538
+    urgency: 0.174
+    confidence: 0.886
+  - id: review-quality-approvals-distractor-2
+    content: The linter auto-approves formatting-only changes.
+    category: distractor
+    importance: 0.234
+    novelty: 0.333
+    urgency: 0.158
+    confidence: 0.61
+  - id: review-quality-approvals-distractor-3
+    content: A dashboard tracks average time-to-first-review.
+    category: distractor
+    importance: 0.179
+    novelty: 0.209
+    urgency: 0.364
+    confidence: 0.878
+  - id: review-quality-approvals-distractor-4
+    content: A separate change to review quality touched the same area but addressed approval rather than
+      the question of how to what makes a good code review and how many appro.
+    category: distractor
+    importance: 0.236
+    novelty: 0.435
+    urgency: 0.136
+    confidence: 0.576
+  - id: review-quality-approvals-distractor-5
+    content: A separate change to approval touched the same area but addressed ownership rather than the
+      question of how to what makes a good code review and how many appro.
+    category: distractor
+    importance: 0.246
+    novelty: 0.297
+    urgency: 0.457
+    confidence: 0.67
+  - id: review-quality-approvals-distractor-6
+    content: A separate change to ownership touched the same area but addressed feedback rather than the
+      question of how to what makes a good code review and how many appro.
+    category: distractor
+    importance: 0.165
+    novelty: 0.362
+    urgency: 0.433
+    confidence: 0.801
+  - id: review-quality-approvals-stale-0
+    content: '[2020] One approval from anyone on the team is always enough to merge anything.'
+    category: stale
+    importance: 0.202
+    novelty: 0.089
+    urgency: 0.106
+    confidence: 0.711
+  - id: review-quality-approvals-stale-1
+    content: '[archived] The earlier review quality approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.242
+    novelty: 0.224
+    urgency: 0.168
+    confidence: 0.693
+  - id: review-quality-approvals-stale-2
+    content: '[archived] The earlier approval approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.152
+    novelty: 0.235
+    urgency: 0.206
+    confidence: 0.692
+  - id: review-quality-approvals-contradictory-0
+    content: Reviews should only check formatting and style; design and correctness are the author's job
+      alone.
+    category: contradictory
+    importance: 0.431
+    novelty: 0.65
+    urgency: 0.53
+    confidence: 0.444
+  - id: review-quality-approvals-low_confidence-0
+    content: Maybe two approvals are required for infra changes, but the policy might be looser now.
+    category: low_confidence
+    importance: 0.253
+    novelty: 0.414
+    urgency: 0.343
+    confidence: 0.155
+  - id: review-quality-approvals-low_confidence-1
+    content: 'Unverified note: someone suggested review quality might be relevant here, but it was never
+      confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.4
+    novelty: 0.369
+    urgency: 0.562
+    confidence: 0.239
+  - id: review-quality-approvals-low_confidence-2
+    content: 'Unverified note: someone suggested approval might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.289
+    novelty: 0.322
+    urgency: 0.255
+    confidence: 0.38
+- query: how do we keep naming and code style consistent across the codebase
+  domain: code-review
+  target_memories:
+  - review-naming-consistency-target-0
+  relevant_memories:
+  - review-naming-consistency-relevant-0
+  - review-naming-consistency-relevant-1
+  - review-naming-consistency-relevant-2
+  memories:
+  - id: review-naming-consistency-target-0
+    content: 'New code should read like the code around it: match the existing module''s naming, idioms,
+      and structure, with automated formatting and linting enforcing the mechanical rules so reviews focus
+      on substance.'
+    category: target
+    importance: 0.858
+    novelty: 0.876
+    urgency: 0.609
+    confidence: 0.936
+  - id: review-naming-consistency-relevant-0
+    content: Formatters and linters run in CI so style isn't argued in review.
+    category: relevant
+    importance: 0.623
+    novelty: 0.474
+    urgency: 0.519
+    confidence: 0.857
+  - id: review-naming-consistency-relevant-1
+    content: Names follow the surrounding file's conventions rather than a contributor's personal habit.
+    category: relevant
+    importance: 0.823
+    novelty: 0.534
+    urgency: 0.529
+    confidence: 0.871
+  - id: review-naming-consistency-relevant-2
+    content: Public APIs follow documented naming conventions for discoverability.
+    category: relevant
+    importance: 0.713
+    novelty: 0.401
+    urgency: 0.44
+    confidence: 0.747
+  - id: review-naming-consistency-distractor-0
+    content: The design tokens define consistent colors and spacing in the UI.
+    category: distractor
+    importance: 0.197
+    novelty: 0.394
+    urgency: 0.192
+    confidence: 0.863
+  - id: review-naming-consistency-distractor-1
+    content: Commit messages follow a conventional-commits prefix.
+    category: distractor
+    importance: 0.151
+    novelty: 0.515
+    urgency: 0.499
+    confidence: 0.561
+  - id: review-naming-consistency-distractor-2
+    content: Branch names include the ticket number by convention.
+    category: distractor
+    importance: 0.103
+    novelty: 0.317
+    urgency: 0.155
+    confidence: 0.855
+  - id: review-naming-consistency-distractor-3
+    content: The docs use a consistent voice per the style guide.
+    category: distractor
+    importance: 0.143
+    novelty: 0.32
+    urgency: 0.497
+    confidence: 0.721
+  - id: review-naming-consistency-distractor-4
+    content: A separate change to naming touched the same area but addressed style rather than the question
+      of how to how do we keep naming and code style consistent .
+    category: distractor
+    importance: 0.055
+    novelty: 0.575
+    urgency: 0.319
+    confidence: 0.813
+  - id: review-naming-consistency-distractor-5
+    content: A separate change to style touched the same area but addressed convention rather than the
+      question of how to how do we keep naming and code style consistent .
+    category: distractor
+    importance: 0.23
+    novelty: 0.295
+    urgency: 0.449
+    confidence: 0.67
+  - id: review-naming-consistency-distractor-6
+    content: A separate change to convention touched the same area but addressed linter rather than the
+      question of how to how do we keep naming and code style consistent .
+    category: distractor
+    importance: 0.164
+    novelty: 0.253
+    urgency: 0.214
+    confidence: 0.602
+  - id: review-naming-consistency-stale-0
+    content: '[2021] Everyone formats code their own way; we''ll standardize someday.'
+    category: stale
+    importance: 0.24
+    novelty: 0.25
+    urgency: 0.133
+    confidence: 0.513
+  - id: review-naming-consistency-stale-1
+    content: '[archived] The earlier naming approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.209
+    novelty: 0.055
+    urgency: 0.157
+    confidence: 0.631
+  - id: review-naming-consistency-stale-2
+    content: '[archived] The earlier style approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.278
+    novelty: 0.137
+    urgency: 0.135
+    confidence: 0.659
+  - id: review-naming-consistency-contradictory-0
+    content: Consistency doesn't matter; write each file in whatever personal style you prefer.
+    category: contradictory
+    importance: 0.393
+    novelty: 0.616
+    urgency: 0.737
+    confidence: 0.439
+  - id: review-naming-consistency-low_confidence-0
+    content: I think we settled on snake_case for module-level constants, but it's not in the style doc.
+    category: low_confidence
+    importance: 0.27
+    novelty: 0.644
+    urgency: 0.522
+    confidence: 0.152
+  - id: review-naming-consistency-low_confidence-1
+    content: 'Unverified note: someone suggested naming might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.286
+    novelty: 0.482
+    urgency: 0.213
+    confidence: 0.385
+  - id: review-naming-consistency-low_confidence-2
+    content: 'Unverified note: someone suggested style might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.422
+    novelty: 0.6
+    urgency: 0.45
+    confidence: 0.126
+- query: what should a pull request description contain to be reviewable
+  domain: code-review
+  target_memories:
+  - review-pr-description-target-0
+  relevant_memories:
+  - review-pr-description-relevant-0
+  - review-pr-description-relevant-1
+  - review-pr-description-relevant-2
+  memories:
+  - id: review-pr-description-target-0
+    content: A PR description states what changed and why, links the task and its acceptance criteria,
+      and notes how it was tested; reviewers can't evaluate intent without the why, so a description that
+      only restates the diff is sent back.
+    category: target
+    importance: 0.913
+    novelty: 0.656
+    urgency: 0.777
+    confidence: 0.954
+  - id: review-pr-description-relevant-0
+    content: Linking the originating issue lets the reviewer check the change against its acceptance criteria.
+    category: relevant
+    importance: 0.846
+    novelty: 0.728
+    urgency: 0.466
+    confidence: 0.876
+  - id: review-pr-description-relevant-1
+    content: Testing notes tell the reviewer what was verified and what wasn't.
+    category: relevant
+    importance: 0.595
+    novelty: 0.738
+    urgency: 0.502
+    confidence: 0.841
+  - id: review-pr-description-relevant-2
+    content: Out-of-scope follow-ups are called out so they aren't expected in this PR.
+    category: relevant
+    importance: 0.671
+    novelty: 0.779
+    urgency: 0.374
+    confidence: 0.819
+  - id: review-pr-description-distractor-0
+    content: The PR title is used as the squash-merge commit subject.
+    category: distractor
+    importance: 0.24
+    novelty: 0.394
+    urgency: 0.261
+    confidence: 0.535
+  - id: review-pr-description-distractor-1
+    content: Screenshots are attached for UI changes.
+    category: distractor
+    importance: 0.191
+    novelty: 0.403
+    urgency: 0.359
+    confidence: 0.521
+  - id: review-pr-description-distractor-2
+    content: A bot links related PRs in a comment.
+    category: distractor
+    importance: 0.053
+    novelty: 0.426
+    urgency: 0.282
+    confidence: 0.745
+  - id: review-pr-description-distractor-3
+    content: Labels categorize PRs by area for filtering.
+    category: distractor
+    importance: 0.063
+    novelty: 0.345
+    urgency: 0.499
+    confidence: 0.638
+  - id: review-pr-description-distractor-4
+    content: A separate change to PR description touched the same area but addressed context rather than
+      the question of how to what should a pull request description contain t.
+    category: distractor
+    importance: 0.245
+    novelty: 0.512
+    urgency: 0.15
+    confidence: 0.781
+  - id: review-pr-description-distractor-5
+    content: A separate change to context touched the same area but addressed acceptance criteria rather
+      than the question of how to what should a pull request description contain t.
+    category: distractor
+    importance: 0.067
+    novelty: 0.241
+    urgency: 0.219
+    confidence: 0.751
+  - id: review-pr-description-distractor-6
+    content: A separate change to acceptance criteria touched the same area but addressed what and why
+      rather than the question of how to what should a pull request description contain t.
+    category: distractor
+    importance: 0.053
+    novelty: 0.422
+    urgency: 0.475
+    confidence: 0.764
+  - id: review-pr-description-stale-0
+    content: '[2021] The diff speaks for itself; a description is optional busywork.'
+    category: stale
+    importance: 0.3
+    novelty: 0.084
+    urgency: 0.244
+    confidence: 0.519
+  - id: review-pr-description-stale-1
+    content: '[archived] The earlier PR description approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.286
+    novelty: 0.13
+    urgency: 0.292
+    confidence: 0.707
+  - id: review-pr-description-stale-2
+    content: '[archived] The earlier context approach was the accepted answer before the last replatform;
+      it has since been superseded and should not be relied on.'
+    category: stale
+    importance: 0.201
+    novelty: 0.152
+    urgency: 0.078
+    confidence: 0.766
+  - id: review-pr-description-contradictory-0
+    content: Just paste the list of changed files as the description; explaining why is unnecessary detail.
+    category: contradictory
+    importance: 0.56
+    novelty: 0.407
+    urgency: 0.536
+    confidence: 0.319
+  - id: review-pr-description-low_confidence-0
+    content: Maybe the template already requires a testing section, but I'm not sure it's enforced.
+    category: low_confidence
+    importance: 0.292
+    novelty: 0.594
+    urgency: 0.509
+    confidence: 0.121
+  - id: review-pr-description-low_confidence-1
+    content: 'Unverified note: someone suggested PR description might be relevant here, but it was never
+      confirmed and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.333
+    novelty: 0.605
+    urgency: 0.439
+    confidence: 0.353
+  - id: review-pr-description-low_confidence-2
+    content: 'Unverified note: someone suggested context might be relevant here, but it was never confirmed
+      and no owner stands behind it.'
+    category: low_confidence
+    importance: 0.463
+    novelty: 0.316
+    urgency: 0.44
+    confidence: 0.361

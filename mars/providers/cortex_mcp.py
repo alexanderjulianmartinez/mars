@@ -26,7 +26,7 @@ from datetime import datetime
 
 from mars.models import ContextPackage, EvalCase
 from mars.providers.base import CortexProvider
-from mars.providers.mcp_client import MCPServerConfig, MCPToolCaller, ToolCaller
+from mars.providers.mcp_client import MCPServerConfig, MCPToolCaller, ToolCaller, parse_kv_env
 
 DEFAULT_TOOL_NAMES = {
     "list_profiles": "list_profiles",
@@ -53,6 +53,8 @@ def config_from_env() -> MCPServerConfig | None:
         url=url,
         command=command,
         args=os.environ.get("MARS_CORTEX_MCP_ARGS", "").split(),
+        env=parse_kv_env(os.environ.get("MARS_CORTEX_MCP_ENV")),
+        cwd=os.environ.get("MARS_CORTEX_MCP_CWD"),
         transport=os.environ.get("MARS_CORTEX_MCP_TRANSPORT", "streamable-http"),
     )
 

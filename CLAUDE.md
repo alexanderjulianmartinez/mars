@@ -20,6 +20,7 @@ mars list-suites | list-cases --suite S | run --suite S --agent A | report --run
 mars list-experiments | experiment --experiment salience-memory [--trials N --seed S]   # Apollo
 mars list-fixtures | score-fixture bootstrap-typo-and-rename                             # Track A (no paid models)
 mars experiments run salience-memory-v1 [--cortex-provider mcp --strict-semantic] | experiments report ...  # Track B
+mars corpus validate salience-memory-v1-expanded | corpus stats salience-memory-v1-expanded             # benchmark corpus
 ```
 
 Two evaluation tracks (kept separate): **Track A — agentic eval** scores real AutoDev runs via new
@@ -29,7 +30,13 @@ case fields (`setup_commands`, `acceptance_criteria`, `expected/allowed/forbidde
 `score-fixture` compare mock outputs with no paid models. **Track B — Salience Memory v1**
 (`mars/memory/salience_v1.py`, `metrics.py`, `retrieval_source.py`) runs retrieval metrics over real
 Cortex retrieval + mock execution and is **honest about `semantic_score: null`** (never claims a
-semantic baseline without embeddings). Details: `docs/AGENTIC_EVALS.md`, `docs/SALIENCE_MEMORY_V1.md`.
+semantic baseline without embeddings). The **expanded benchmark corpus**
+(`experiments/corpus/salience-memory-v1-expanded.corpus.yaml`, 30 queries / 552 memories across six
+categories) replaces the saturating 13-memory smoke test; it is authored reproducibly by
+`experiments/corpus/generate_expanded.py` + `scenarios_data.py`, loaded/validated via
+`mars/memory/expanded_corpus.py` (`mars corpus validate|stats`), and scored with metrics incl.
+`ndcg_at_k`. Details: `docs/AGENTIC_EVALS.md`, `docs/SALIENCE_MEMORY_V1.md`,
+`docs/SALIENCE_MEMORY_V1_EXPANDED.md`, `docs/salience-memory-v2-proposal.md`.
 
 Use the venv binaries directly (`.venv/bin/mars`, `.venv/bin/python -m pytest`) since there is no
 activated shell. Runs persist to SQLite (`mars.db` by default; `--db` to override) — it is gitignored.

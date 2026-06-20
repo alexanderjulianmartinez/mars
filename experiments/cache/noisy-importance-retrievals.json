@@ -1,0 +1,3257 @@
+{
+  "semantic_available": true,
+  "queries": [
+    {
+      "query": "how should database schema migrations be rolled back safely in production",
+      "target_id": "1b58ce31-a846-44bd-a741-02749b24989c",
+      "relevant_ids": [
+        "1b58ce31-a846-44bd-a741-02749b24989c",
+        "3064db7f-70b7-43f7-982d-3cc98603f19e",
+        "6a89a49c-0897-456e-b19f-48a19660748b",
+        "6f3bbc4e-0a59-423b-8331-663c776c8cca",
+        "8694aab0-a208-45d0-9747-51a63f3af62b",
+        "a33b3245-cef6-4922-a400-9ae901eafd7b"
+      ],
+      "memories": [
+        {
+          "id": "1b58ce31-a846-44bd-a741-02749b24989c",
+          "content": "Every schema migration must ship with a tested down-migration; the March prod incident was an irreversible ALTER with no recovery path that forced a 40-minute outage.",
+          "similarity": 0.686919126831297,
+          "importance": 0.4995,
+          "recency": 0.2972583513271354,
+          "frequency": 0.0
+        },
+        {
+          "id": "3064db7f-70b7-43f7-982d-3cc98603f19e",
+          "content": "Migrations run against a staging clone of prod data with a rehearsed rollback before promotion.",
+          "similarity": 0.6898526076994255,
+          "importance": 0.39832624467022765,
+          "recency": 0.297258391544787,
+          "frequency": 0.0
+        },
+        {
+          "id": "e0b3cb98-7910-4144-8c6f-02ba8a18462a",
+          "content": "Down-migrations are optional; if a change breaks we just roll forward with a hotfix and never revert schema.",
+          "similarity": 0.7313547911687128,
+          "importance": 0.278,
+          "recency": 0.29725862238175743,
+          "frequency": 0.0
+        },
+        {
+          "id": "6a89a49c-0897-456e-b19f-48a19660748b",
+          "content": "A migration that can't be reversed cleanly is gated behind a feature flag so reads can switch back instantly.",
+          "similarity": 0.6727601787834814,
+          "importance": 0.30914876190637497,
+          "recency": 0.29725842490989646,
+          "frequency": 0.0
+        },
+        {
+          "id": "8694aab0-a208-45d0-9747-51a63f3af62b",
+          "content": "We snapshot the affected tables immediately before a high-risk migration as a last-resort recovery point.",
+          "similarity": 0.6321334341864773,
+          "importance": 0.3428380685622375,
+          "recency": 0.2972584409498374,
+          "frequency": 0.0
+        },
+        {
+          "id": "6f3bbc4e-0a59-423b-8331-663c776c8cca",
+          "content": "Long backfills are chunked and run out-of-band so the migration transaction stays short.",
+          "similarity": 0.5230112995874989,
+          "importance": 0.37454559389770026,
+          "recency": 0.2972584078552382,
+          "frequency": 0.0
+        },
+        {
+          "id": "a33b3245-cef6-4922-a400-9ae901eafd7b",
+          "content": "Expand-and-contract is mandatory for column changes: add the new column, dual-write, backfill, switch reads, then drop the old column in a later release.",
+          "similarity": 0.4855668075168664,
+          "importance": 0.3636460789307716,
+          "recency": 0.29725837514737224,
+          "frequency": 0.0
+        },
+        {
+          "id": "118ffb6f-bc1c-4a96-9a29-f4b2fc6030a3",
+          "content": "A separate change to rollback touched the same area but addressed downtime rather than the question of how to how should database schema migrations be rolled .",
+          "similarity": 0.770506294416055,
+          "importance": 0.07084662263329532,
+          "recency": 0.2972585565032575,
+          "frequency": 0.0
+        },
+        {
+          "id": "85066c5a-d88d-4a8f-bdb2-b82a926255be",
+          "content": "A separate change to migration touched the same area but addressed schema rather than the question of how to how should database schema migrations be rolled .",
+          "similarity": 0.7652626731077272,
+          "importance": 0.07233290745213557,
+          "recency": 0.29725852377582007,
+          "frequency": 0.0
+        },
+        {
+          "id": "afc4acfb-534d-4ec3-8e10-81aa545bba2f",
+          "content": "A separate change to schema touched the same area but addressed rollback rather than the question of how to how should database schema migrations be rolled .",
+          "similarity": 0.7867548098005942,
+          "importance": 0.03567102474145272,
+          "recency": 0.2972585395120265,
+          "frequency": 0.0
+        },
+        {
+          "id": "c88182e1-c7a6-4566-a8af-73dec3255c11",
+          "content": "I think Postgres can roll back a DROP COLUMN instantly from the WAL, but I never tested it.",
+          "similarity": 0.5790848837577273,
+          "importance": 0.20709018553490702,
+          "recency": 0.2972586395237105,
+          "frequency": 0.0
+        },
+        {
+          "id": "5f3da50b-81dc-4cb6-9f77-82391622439c",
+          "content": "Our ORM auto-generates migration files, but the generated names are hard to read in review.",
+          "similarity": 0.5874291113944758,
+          "importance": 0.11593080450332395,
+          "recency": 0.2972584730853665,
+          "frequency": 0.0
+        },
+        {
+          "id": "7ce3995f-6ad3-4e0c-a922-85c4236831aa",
+          "content": "Unverified note: someone suggested schema might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.4961720167541735,
+          "importance": 0.20560391572065215,
+          "recency": 0.2972586733309839,
+          "frequency": 0.0
+        },
+        {
+          "id": "9f7f797d-0649-4f4c-a9dd-16a34136af8b",
+          "content": "Unverified note: someone suggested migration might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.49957500513817243,
+          "importance": 0.18033691875400248,
+          "recency": 0.2972586572867378,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how do we decide which database indexes to add for a slow query",
+      "target_id": "33473409-9ce5-4e14-ad33-1185dbf5af3d",
+      "relevant_ids": [
+        "2774e13f-9a16-49de-b03c-b9b1c22fa1d5",
+        "33473409-9ce5-4e14-ad33-1185dbf5af3d",
+        "966f6925-1a0f-4b9b-9eb7-1fed92bd8bbe",
+        "db8acdeb-d8ea-4b31-b276-c1fb2e69c5f9"
+      ],
+      "memories": [
+        {
+          "id": "33473409-9ce5-4e14-ad33-1185dbf5af3d",
+          "content": "Add indexes from the query plan, not by guessing: run EXPLAIN ANALYZE, index the columns in the WHERE/JOIN that show sequential scans, and order composite indexes by selectivity.",
+          "similarity": 0.663852621236996,
+          "importance": 0.446,
+          "recency": 0.29725866217281055,
+          "frequency": 0.0
+        },
+        {
+          "id": "079c0c39-8414-48b2-b7d8-56f5cd0efa7c",
+          "content": "Indexes never hurt; add one on every column that appears in any query to be safe.",
+          "similarity": 0.7113350272257609,
+          "importance": 0.3075,
+          "recency": 0.2972589036605349,
+          "frequency": 0.0
+        },
+        {
+          "id": "db8acdeb-d8ea-4b31-b276-c1fb2e69c5f9",
+          "content": "Unused indexes are dropped quarterly based on pg_stat_user_indexes scan counts.",
+          "similarity": 0.497614925454359,
+          "importance": 0.41318961756985917,
+          "recency": 0.2972587176760782,
+          "frequency": 0.0
+        },
+        {
+          "id": "966f6925-1a0f-4b9b-9eb7-1fed92bd8bbe",
+          "content": "Every new index is justified by a measured plan improvement and weighed against write amplification, since each index slows inserts and updates.",
+          "similarity": 0.6177687903589223,
+          "importance": 0.27942316068428286,
+          "recency": 0.2972586815789448,
+          "frequency": 0.0
+        },
+        {
+          "id": "cb42315a-6811-4509-bae9-358622f79619",
+          "content": "Someone mentioned a partial index might help the dashboard query, but it was never benchmarked.",
+          "similarity": 0.6589953532898274,
+          "importance": 0.23186195773810556,
+          "recency": 0.2972589201769789,
+          "frequency": 0.0
+        },
+        {
+          "id": "6c2678d2-e0ee-4d53-85dc-77136f2e1511",
+          "content": "A separate change to index touched the same area but addressed query plan rather than the question of how to how do we decide which database indexes to add f.",
+          "similarity": 0.7577292015124667,
+          "importance": 0.1124629137639326,
+          "recency": 0.29725880290018286,
+          "frequency": 0.0
+        },
+        {
+          "id": "e2a33914-e821-44c5-b700-02a210e7059d",
+          "content": "A separate change to query plan touched the same area but addressed cardinality rather than the question of how to how do we decide which database indexes to add f.",
+          "similarity": 0.7540873884329221,
+          "importance": 0.09314109711830199,
+          "recency": 0.29725882059024594,
+          "frequency": 0.0
+        },
+        {
+          "id": "b2576a91-5967-41f7-995c-c0c4e6606084",
+          "content": "A separate change to cardinality touched the same area but addressed composite index rather than the question of how to how do we decide which database indexes to add f.",
+          "similarity": 0.6856484719739097,
+          "importance": 0.11791267221530721,
+          "recency": 0.2972588375175017,
+          "frequency": 0.0
+        },
+        {
+          "id": "2774e13f-9a16-49de-b03c-b9b1c22fa1d5",
+          "content": "Composite index column order follows the equality-then-range rule for the target query.",
+          "similarity": 0.5243561334550595,
+          "importance": 0.2630739492562454,
+          "recency": 0.29725869972449154,
+          "frequency": 0.0
+        },
+        {
+          "id": "8a3e3cb1-5970-4535-8c26-a342103db40a",
+          "content": "[2021] We add an index on every foreign key by default as a blanket policy.",
+          "similarity": 0.624723083893811,
+          "importance": 0.12385785575711955,
+          "recency": 0.2972588538170074,
+          "frequency": 0.0
+        },
+        {
+          "id": "f2f6ba78-60cc-446b-82e0-142bd6e91e7b",
+          "content": "[archived] The earlier index approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6153268644271022,
+          "importance": 0.1134538020577283,
+          "recency": 0.29725887002016926,
+          "frequency": 0.0
+        },
+        {
+          "id": "450d046e-8fd6-460c-95eb-f4dbff7d5f64",
+          "content": "[archived] The earlier query plan approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.5753036936994745,
+          "importance": 0.11741725994345108,
+          "recency": 0.29725888593270805,
+          "frequency": 0.0
+        },
+        {
+          "id": "a95354a5-af38-4da7-9f66-f99b2ce6e674",
+          "content": "Unverified note: someone suggested index might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.49179044724213605,
+          "importance": 0.19520003524959925,
+          "recency": 0.29725893692824423,
+          "frequency": 0.0
+        },
+        {
+          "id": "7b9f2f10-9c17-4a9b-9e7c-ef6fb829691f",
+          "content": "Unverified note: someone suggested query plan might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.4885014209257218,
+          "importance": 0.18182339381761853,
+          "recency": 0.29725895447014156,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "what is our policy for evolving a shared table schema without breaking consumers",
+      "target_id": "74ed749c-8b54-4d21-9d5c-42d04e0a9234",
+      "relevant_ids": [
+        "74ed749c-8b54-4d21-9d5c-42d04e0a9234",
+        "84e4e4c8-8224-49fa-9dee-1448294a16b7",
+        "a3845b8c-89fc-48bc-b50a-07ca7b99a94e",
+        "bbcca095-eff2-4150-b90b-501e81b66d58"
+      ],
+      "memories": [
+        {
+          "id": "74ed749c-8b54-4d21-9d5c-42d04e0a9234",
+          "content": "Shared-table changes must be backward compatible for one release: new columns are nullable or defaulted, and no column is renamed or dropped until all consumers stop referencing it.",
+          "similarity": 0.7495443454170302,
+          "importance": 0.4725,
+          "recency": 0.29725894281433546,
+          "frequency": 0.0
+        },
+        {
+          "id": "a3845b8c-89fc-48bc-b50a-07ca7b99a94e",
+          "content": "Consumers of a shared table are tracked in the service registry so a deprecation can be announced to every owning team before a breaking change.",
+          "similarity": 0.7327376855046881,
+          "importance": 0.3948589847214925,
+          "recency": 0.29725895963968896,
+          "frequency": 0.0
+        },
+        {
+          "id": "bbcca095-eff2-4150-b90b-501e81b66d58",
+          "content": "Each shared table has a documented owner who reviews proposed schema changes.",
+          "similarity": 0.7233312614575319,
+          "importance": 0.3725646056833497,
+          "recency": 0.29725899389621013,
+          "frequency": 0.0
+        },
+        {
+          "id": "0cc28407-d343-4db3-95ca-548eff55328d",
+          "content": "Just rename the column and fix the consumers in the same PR; coordinating deprecations is overkill.",
+          "similarity": 0.6082918288938192,
+          "importance": 0.3385,
+          "recency": 0.2972591863388043,
+          "frequency": 0.0
+        },
+        {
+          "id": "5a2b1bbf-bedf-4df9-9e45-f17b944e1895",
+          "content": "A separate change to schema touched the same area but addressed backward compatible rather than the question of how to what is our policy for evolving a shared table s.",
+          "similarity": 0.8577576443108227,
+          "importance": 0.07431477005641408,
+          "recency": 0.29725908022557684,
+          "frequency": 0.0
+        },
+        {
+          "id": "a1b18936-1f5f-40dd-a649-32fdd8f07b0e",
+          "content": "A separate change to nullable touched the same area but addressed consumer rather than the question of how to what is our policy for evolving a shared table s.",
+          "similarity": 0.815225568853838,
+          "importance": 0.1114721677088293,
+          "recency": 0.297259113890132,
+          "frequency": 0.0
+        },
+        {
+          "id": "84e4e4c8-8224-49fa-9dee-1448294a16b7",
+          "content": "Breaking schema changes go through a two-phase deprecation with a logged-usage grace period.",
+          "similarity": 0.5953914966332378,
+          "importance": 0.32004883166902587,
+          "recency": 0.2972589767822974,
+          "frequency": 0.0
+        },
+        {
+          "id": "82a811ac-973b-4489-9cfe-b9ba9dee1ef9",
+          "content": "A separate change to backward compatible touched the same area but addressed nullable rather than the question of how to what is our policy for evolving a shared table s.",
+          "similarity": 0.7883086433607402,
+          "importance": 0.06688329681544528,
+          "recency": 0.2972590969573755,
+          "frequency": 0.0
+        },
+        {
+          "id": "3ea980ca-d2fe-4140-92b0-6f59c8fb512d",
+          "content": "[archived] The earlier schema approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6188628420404642,
+          "importance": 0.1481341434105609,
+          "recency": 0.2972591506565645,
+          "frequency": 0.0
+        },
+        {
+          "id": "9e92e17c-e9dc-4d02-ba65-da977f238aae",
+          "content": "I believe two services still read the legacy column, but I'm not certain which ones.",
+          "similarity": 0.4605224114555325,
+          "importance": 0.24276168273215326,
+          "recency": 0.2972592033454143,
+          "frequency": 0.0
+        },
+        {
+          "id": "ed75b7b1-e422-4b65-a20b-8fd3473294d5",
+          "content": "Unverified note: someone suggested schema might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5003943160991953,
+          "importance": 0.19569565300194547,
+          "recency": 0.2972592197497111,
+          "frequency": 0.0
+        },
+        {
+          "id": "2104b119-e6a3-4da4-9a29-353e71732ec3",
+          "content": "[2020] Any team can alter a shared table directly as long as they post in the channel afterward.",
+          "similarity": 0.5810698021932161,
+          "importance": 0.08323255685096231,
+          "recency": 0.29725913161042067,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "when should we partition or shard a large and growing table",
+      "target_id": "818e0882-97e7-4d42-9f39-9afdbdef8897",
+      "relevant_ids": [
+        "01ee456f-4ac5-4afe-9c81-102e5fa56ca0",
+        "818e0882-97e7-4d42-9f39-9afdbdef8897",
+        "e90fedea-5978-40a3-a8fd-6f95647ef38c",
+        "f44d444c-faaa-4dfa-8933-bf93fe80296c"
+      ],
+      "memories": [
+        {
+          "id": "818e0882-97e7-4d42-9f39-9afdbdef8897",
+          "content": "Partition by time-range once a table passes ~100M rows and queries are time-bounded; reach for sharding only when a single node can't hold the working set, and pick a shard key that spreads load to avoid hot partitions.",
+          "similarity": 0.7858502871879743,
+          "importance": 0.4365,
+          "recency": 0.29725919285209573,
+          "frequency": 0.0
+        },
+        {
+          "id": "e90fedea-5978-40a3-a8fd-6f95647ef38c",
+          "content": "Before sharding we exhaust vertical scaling and read replicas, since sharding is hard to reverse.",
+          "similarity": 0.6612299956574949,
+          "importance": 0.38247356067049787,
+          "recency": 0.2972592440443489,
+          "frequency": 0.0
+        },
+        {
+          "id": "01ee456f-4ac5-4afe-9c81-102e5fa56ca0",
+          "content": "The shard key must match the dominant access pattern or every query becomes a scatter-gather.",
+          "similarity": 0.661473884399468,
+          "importance": 0.25019316850448425,
+          "recency": 0.29725921010425826,
+          "frequency": 0.0
+        },
+        {
+          "id": "f44d444c-faaa-4dfa-8933-bf93fe80296c",
+          "content": "Range partitions are created ahead of time by a scheduled job so inserts never hit a missing partition.",
+          "similarity": 0.5804552910092512,
+          "importance": 0.3225262611194585,
+          "recency": 0.29725922683813105,
+          "frequency": 0.0
+        },
+        {
+          "id": "d8a6e4fb-21f4-4673-9baa-c21f5924d55f",
+          "content": "A separate change to shard touched the same area but addressed hot partition rather than the question of how to when should we partition or shard a large and gr.",
+          "similarity": 0.7509552875392149,
+          "importance": 0.09710472109675548,
+          "recency": 0.2972593502961107,
+          "frequency": 0.0
+        },
+        {
+          "id": "8518711e-ff79-49d7-9361-a3cc29fa3b45",
+          "content": "Always shard from day one; designing for a single database is a rookie mistake regardless of size.",
+          "similarity": 0.7183895768005975,
+          "importance": 0.127,
+          "recency": 0.29725943654449855,
+          "frequency": 0.0
+        },
+        {
+          "id": "2a67d6e7-490a-41d7-917a-e9c8e6d81f8e",
+          "content": "A separate change to partition touched the same area but addressed shard rather than the question of how to when should we partition or shard a large and gr.",
+          "similarity": 0.7605318390166244,
+          "importance": 0.07629656221249993,
+          "recency": 0.2972593332953748,
+          "frequency": 0.0
+        },
+        {
+          "id": "3508b46d-62ce-47d7-831b-b5180f63948f",
+          "content": "A separate change to hot partition touched the same area but addressed range partition rather than the question of how to when should we partition or shard a large and gr.",
+          "similarity": 0.7007493515525893,
+          "importance": 0.07233311299256717,
+          "recency": 0.2972593684625253,
+          "frequency": 0.0
+        },
+        {
+          "id": "5b127d0b-af83-4572-9ff5-c8b3b5b74aee",
+          "content": "[2019] Our standard is one giant table per entity; partitioning is premature optimization.",
+          "similarity": 0.6821297494954849,
+          "importance": 0.062424470632347226,
+          "recency": 0.2972593839634787,
+          "frequency": 0.0
+        },
+        {
+          "id": "a29b83b3-f73a-4615-927f-f4976a88814e",
+          "content": "[archived] The earlier partition approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6236358426004672,
+          "importance": 0.11692203133242549,
+          "recency": 0.2972594016925277,
+          "frequency": 0.0
+        },
+        {
+          "id": "79d1753d-88ab-4e67-8906-6e7fa6c8d6d7",
+          "content": "[archived] The earlier shard approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6428652562700178,
+          "importance": 0.07926917846936761,
+          "recency": 0.297259419260049,
+          "frequency": 0.0
+        },
+        {
+          "id": "98eafb11-be87-43ba-b39a-e81df77e29f0",
+          "content": "Maybe hashing the user id makes a good shard key, but I haven't checked the distribution.",
+          "similarity": 0.578289451633263,
+          "importance": 0.14367540302332965,
+          "recency": 0.2972594545309474,
+          "frequency": 0.0
+        },
+        {
+          "id": "524aa36f-fe01-4aee-9924-6df241c2e976",
+          "content": "Unverified note: someone suggested shard might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5160778332266488,
+          "importance": 0.16993334100899515,
+          "recency": 0.29725948864539303,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how should we size database connection pools and timeouts under load",
+      "target_id": "a84275f7-5f0f-4c19-8af4-b1b93e48a95d",
+      "relevant_ids": [
+        "80dd3fa2-91f3-4353-914e-9b63a2838b77",
+        "a0b388d8-1930-4cef-b713-b0cd31db8187",
+        "a84275f7-5f0f-4c19-8af4-b1b93e48a95d",
+        "bb071d3b-f506-4331-aab5-832013a68a50"
+      ],
+      "memories": [
+        {
+          "id": "a84275f7-5f0f-4c19-8af4-b1b93e48a95d",
+          "content": "Pool size should be bounded well below the database's max_connections and sized to cores, not request concurrency; the last brownout came from each pod opening 50 connections and saturating Postgres, fixed by a small pool plus a short acquire timeout and backpressure.",
+          "similarity": 0.7534515085063573,
+          "importance": 0.491,
+          "recency": 0.29725947750594933,
+          "frequency": 0.0
+        },
+        {
+          "id": "a0b388d8-1930-4cef-b713-b0cd31db8187",
+          "content": "Total connections = pods \u00d7 pool size must stay under the database ceiling with headroom for migrations.",
+          "similarity": 0.6729078803246181,
+          "importance": 0.3720698223151013,
+          "recency": 0.29725951183621974,
+          "frequency": 0.0
+        },
+        {
+          "id": "bb071d3b-f506-4331-aab5-832013a68a50",
+          "content": "A short connection-acquire timeout sheds load fast instead of letting requests queue forever.",
+          "similarity": 0.6778639179878435,
+          "importance": 0.3240128493050757,
+          "recency": 0.29725949477521924,
+          "frequency": 0.0
+        },
+        {
+          "id": "87625d9c-6081-41c1-8205-6d69a0521b78",
+          "content": "A separate change to timeout touched the same area but addressed saturation rather than the question of how to how should we size database connection pools and.",
+          "similarity": 0.8282295796474629,
+          "importance": 0.1193993004524359,
+          "recency": 0.29725966917610946,
+          "frequency": 0.0
+        },
+        {
+          "id": "80dd3fa2-91f3-4353-914e-9b63a2838b77",
+          "content": "Pool saturation is alerted on so we see exhaustion before it becomes user-facing latency.",
+          "similarity": 0.5958741511471949,
+          "importance": 0.3354078351572721,
+          "recency": 0.29725952894277047,
+          "frequency": 0.0
+        },
+        {
+          "id": "68edc496-a6c0-46e5-a18d-8b8de083adf5",
+          "content": "A separate change to connection pool touched the same area but addressed timeout rather than the question of how to how should we size database connection pools and.",
+          "similarity": 0.855584872320297,
+          "importance": 0.05449760300246282,
+          "recency": 0.2972596527406268,
+          "frequency": 0.0
+        },
+        {
+          "id": "7ed8dced-2f65-4ae7-abc0-ccea92b6f951",
+          "content": "Connection limits don't matter; the database will queue everything fine, just open as many as you need.",
+          "similarity": 0.6890015031335427,
+          "importance": 0.19,
+          "recency": 0.2972597557940713,
+          "frequency": 0.0
+        },
+        {
+          "id": "448ec266-e50c-48cc-8893-b5f313efdb3f",
+          "content": "[2021] Set the pool as large as possible so we never wait on a connection.",
+          "similarity": 0.742940965780626,
+          "importance": 0.0812509855448853,
+          "recency": 0.2972597032129155,
+          "frequency": 0.0
+        },
+        {
+          "id": "d4e232e0-ade5-4536-81ec-6878f55caabb",
+          "content": "A separate change to saturation touched the same area but addressed queue rather than the question of how to how should we size database connection pools and.",
+          "similarity": 0.70152823018344,
+          "importance": 0.11642671019753145,
+          "recency": 0.29725968561063915,
+          "frequency": 0.0
+        },
+        {
+          "id": "1586de93-2e0d-4fe1-b936-737aff8652f2",
+          "content": "Unverified note: someone suggested connection pool might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5370555655288992,
+          "importance": 0.2363215343024049,
+          "recency": 0.2972597915752726,
+          "frequency": 0.0
+        },
+        {
+          "id": "5f33b2f9-ef4b-4311-aa61-e9d5fd4487e0",
+          "content": "Unverified note: someone suggested timeout might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5344504746912923,
+          "importance": 0.2155133616446793,
+          "recency": 0.2972598091649954,
+          "frequency": 0.0
+        },
+        {
+          "id": "eef4d6e6-a196-4afd-bd1c-7ae7e8765029",
+          "content": "[archived] The earlier timeout approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.5946864888794003,
+          "importance": 0.14417097291071154,
+          "recency": 0.2972597379601505,
+          "frequency": 0.0
+        },
+        {
+          "id": "ad75eda3-8af2-4b71-acd8-9a12f3d95e85",
+          "content": "I heard pgbouncer in transaction mode would fix this, but nobody has trialed it here.",
+          "similarity": 0.5476294520869901,
+          "importance": 0.18875995667001555,
+          "recency": 0.29725977428340955,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "what caused the authentication outage and how was it remediated",
+      "target_id": "2b4ad577-259b-439d-ba46-ec429fa1f7bb",
+      "relevant_ids": [
+        "2b4ad577-259b-439d-ba46-ec429fa1f7bb",
+        "4be3af7f-9e97-4eeb-9448-da670951110b",
+        "4be6ec9b-592c-49b9-a74c-375032f7f9a8",
+        "8ae3ed2b-caf4-4a68-802b-2bb1b2a25b48",
+        "a647dc16-b72b-4e07-ac39-43e9cde67cb7",
+        "f1651613-8688-4582-9f54-8d0aac9fba26"
+      ],
+      "memories": [
+        {
+          "id": "2b4ad577-259b-439d-ba46-ec429fa1f7bb",
+          "content": "The auth outage was a token clock-skew bug: nodes drifted, so freshly issued JWTs failed not-before validation; the fix pins NTP and widens the nbf/exp tolerance to 60 seconds.",
+          "similarity": 0.6287919015011589,
+          "importance": 0.449,
+          "recency": 0.2972597972856227,
+          "frequency": 0.0
+        },
+        {
+          "id": "0cf88827-33af-42b3-be39-84f16e689647",
+          "content": "The outage was a database failover, not clock skew; tokens were never involved.",
+          "similarity": 0.6330227685188944,
+          "importance": 0.306,
+          "recency": 0.2972600894814448,
+          "frequency": 0.0
+        },
+        {
+          "id": "8ae3ed2b-caf4-4a68-802b-2bb1b2a25b48",
+          "content": "Auth nodes now sync time from a hardened NTP source with drift monitoring on each host.",
+          "similarity": 0.4954743385103237,
+          "importance": 0.39535562424569365,
+          "recency": 0.29725986785382547,
+          "frequency": 0.0
+        },
+        {
+          "id": "f1651613-8688-4582-9f54-8d0aac9fba26",
+          "content": "A cold auth cache now falls back to short-lived refresh tokens instead of rejecting the request.",
+          "similarity": 0.5399082270360244,
+          "importance": 0.3269857961628134,
+          "recency": 0.29725981469338725,
+          "frequency": 0.0
+        },
+        {
+          "id": "a647dc16-b72b-4e07-ac39-43e9cde67cb7",
+          "content": "The postmortem action items track widening tolerance, NTP pinning, and a skew dashboard.",
+          "similarity": 0.41384282697247327,
+          "importance": 0.3755383228345644,
+          "recency": 0.29725988614865223,
+          "frequency": 0.0
+        },
+        {
+          "id": "4be6ec9b-592c-49b9-a74c-375032f7f9a8",
+          "content": "Token validation clock tolerance is a tunable config so we can widen it without a redeploy.",
+          "similarity": 0.3655728707636372,
+          "importance": 0.4141820335007089,
+          "recency": 0.2972598326559317,
+          "frequency": 0.0
+        },
+        {
+          "id": "94c82725-d81e-4184-89e3-6f4a2aae0e98",
+          "content": "A separate change to token touched the same area but addressed clock skew rather than the question of how to what caused the authentication outage and how wa.",
+          "similarity": 0.704777181139873,
+          "importance": 0.06886522649720182,
+          "recency": 0.2972599704914391,
+          "frequency": 0.0
+        },
+        {
+          "id": "4be3af7f-9e97-4eeb-9448-da670951110b",
+          "content": "We added an alert on the rate of nbf/exp validation failures to catch skew early.",
+          "similarity": 0.4050668898644576,
+          "importance": 0.3463077269187483,
+          "recency": 0.2972598514323225,
+          "frequency": 0.0
+        },
+        {
+          "id": "7c5df741-7a8d-4574-81a7-091a7a814a80",
+          "content": "A separate change to clock skew touched the same area but addressed JWT rather than the question of how to what caused the authentication outage and how wa.",
+          "similarity": 0.6649911685216282,
+          "importance": 0.08075562987321068,
+          "recency": 0.29725998726327274,
+          "frequency": 0.0
+        },
+        {
+          "id": "79fcf0c3-3754-4bed-8558-e124ae3fc3a0",
+          "content": "A separate change to JWT touched the same area but addressed NTP rather than the question of how to what caused the authentication outage and how wa.",
+          "similarity": 0.6923210080951454,
+          "importance": 0.03269860037343609,
+          "recency": 0.297260003394794,
+          "frequency": 0.0
+        },
+        {
+          "id": "e8852228-4334-4f0b-80fb-8b9781c30c95",
+          "content": "The login page copy was updated and the outage banner component was removed afterward.",
+          "similarity": 0.6560052171784017,
+          "importance": 0.039139220558135984,
+          "recency": 0.29725990297318466,
+          "frequency": 0.0
+        },
+        {
+          "id": "247a3542-cb09-4696-b750-f8913866756f",
+          "content": "A separate rate-limit outage on the signup endpoint happened the following month.",
+          "similarity": 0.5628039587187137,
+          "importance": 0.10552728387088917,
+          "recency": 0.2972599545658055,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how do we prevent retry storms and cascading failures between services",
+      "target_id": "c49f7a41-6245-4cd5-8e7d-e5d0625c9e63",
+      "relevant_ids": [
+        "0d6bcb9a-b0f5-48f5-ba1a-3143bac3176e",
+        "24e75cf0-1517-4fb6-9ea4-3d882a80bbe1",
+        "b481a6f1-defc-47fb-9e57-2e16afd8a42b",
+        "c49f7a41-6245-4cd5-8e7d-e5d0625c9e63"
+      ],
+      "memories": [
+        {
+          "id": "c49f7a41-6245-4cd5-8e7d-e5d0625c9e63",
+          "content": "Retries must use exponential backoff with jitter and a bounded budget, fronted by a circuit breaker; the checkout cascade happened because synchronous retries with no jitter amplified a downstream blip into a thundering herd.",
+          "similarity": 0.6978961305005934,
+          "importance": 0.4605,
+          "recency": 0.2972601352007813,
+          "frequency": 0.0
+        },
+        {
+          "id": "0d6bcb9a-b0f5-48f5-ba1a-3143bac3176e",
+          "content": "Circuit breakers open on sustained error rates and shed load instead of retrying into a dead dependency.",
+          "similarity": 0.7000053560958774,
+          "importance": 0.2645615503319974,
+          "recency": 0.29726016891227713,
+          "frequency": 0.0
+        },
+        {
+          "id": "b481a6f1-defc-47fb-9e57-2e16afd8a42b",
+          "content": "Retries are only allowed on idempotent operations to avoid duplicate side effects.",
+          "similarity": 0.6557330685038062,
+          "importance": 0.30469169033698035,
+          "recency": 0.2972601856945355,
+          "frequency": 0.0
+        },
+        {
+          "id": "7c584e29-ecd5-43e9-aae9-dfdbc957f037",
+          "content": "A separate change to retry touched the same area but addressed exponential backoff rather than the question of how to how do we prevent retry storms and cascading fai.",
+          "similarity": 0.7721537678266056,
+          "importance": 0.050038816193440167,
+          "recency": 0.2972602942183769,
+          "frequency": 0.0
+        },
+        {
+          "id": "24e75cf0-1517-4fb6-9ea4-3d882a80bbe1",
+          "content": "Every cross-service call has a timeout shorter than its caller's so timeout budgets nest correctly.",
+          "similarity": 0.5571809723599631,
+          "importance": 0.25168026190744597,
+          "recency": 0.2972601518591087,
+          "frequency": 0.0
+        },
+        {
+          "id": "22aead23-e9be-4caa-8d0d-807002ceed75",
+          "content": "A separate change to exponential backoff touched the same area but addressed circuit breaker rather than the question of how to how do we prevent retry storms and cascading fai.",
+          "similarity": 0.7458222159916763,
+          "importance": 0.05895662817378857,
+          "recency": 0.29726031011986287,
+          "frequency": 0.0
+        },
+        {
+          "id": "d79df261-f4db-46f2-bd2e-817dee9323cb",
+          "content": "Disable circuit breakers; they cause more outages than they prevent by failing requests early.",
+          "similarity": 0.6054639820300565,
+          "importance": 0.1905,
+          "recency": 0.29726039669095183,
+          "frequency": 0.0
+        },
+        {
+          "id": "98289b2e-11dd-4810-ace0-cd34566822a2",
+          "content": "[archived] The earlier retry approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6526819843859241,
+          "importance": 0.1233630502979914,
+          "recency": 0.2972603621637552,
+          "frequency": 0.0
+        },
+        {
+          "id": "78982ec0-1eda-43de-ab02-68e3637bb5a2",
+          "content": "[2021] Just retry failed calls immediately a few times; transient errors usually clear up fast.",
+          "similarity": 0.6806053191320488,
+          "importance": 0.0936370086172827,
+          "recency": 0.297260344816691,
+          "frequency": 0.0
+        },
+        {
+          "id": "c65fd828-6e34-4dae-a2cf-e24a3b7d4911",
+          "content": "Maybe the mesh already adds jitter to retries by default, but I haven't verified the config.",
+          "similarity": 0.616133988283936,
+          "importance": 0.15655715109899557,
+          "recency": 0.297260413479026,
+          "frequency": 0.0
+        },
+        {
+          "id": "b911e0a8-766c-43be-a544-a16ed2ab4066",
+          "content": "Unverified note: someone suggested exponential backoff might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.608024344909466,
+          "importance": 0.1471439217395525,
+          "recency": 0.29726044795861245,
+          "frequency": 0.0
+        },
+        {
+          "id": "7fe43074-4a2a-4712-9d72-74a0fc8dcd87",
+          "content": "[archived] The earlier exponential backoff approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.598121576383695,
+          "importance": 0.14119868034361088,
+          "recency": 0.2972603796706803,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "what is the safe procedure to roll back a bad deployment quickly",
+      "target_id": "9dd61498-ce07-4463-a355-03e61eff6521",
+      "relevant_ids": [
+        "68e912e2-18e1-44f3-a485-34b532a9f16a",
+        "9dd61498-ce07-4463-a355-03e61eff6521",
+        "ae2d779b-f468-4aac-9a53-e7dde935a508",
+        "d87a2b8f-8f1f-4441-ab67-7a72b38cb891"
+      ],
+      "memories": [
+        {
+          "id": "9dd61498-ce07-4463-a355-03e61eff6521",
+          "content": "Roll back by redeploying the previous immutable image behind the same canary gates; never hot-patch prod. The fastest mitigation is a feature flag kill-switch, with image rollback as the fallback when the change isn't flag-guarded.",
+          "similarity": 0.5397121308078575,
+          "importance": 0.4565,
+          "recency": 0.2972604390900025,
+          "frequency": 0.0
+        },
+        {
+          "id": "68e912e2-18e1-44f3-a485-34b532a9f16a",
+          "content": "Risky changes ship behind a feature flag so they can be disabled without a redeploy.",
+          "similarity": 0.5271848932134453,
+          "importance": 0.40328335101494156,
+          "recency": 0.2972604552934892,
+          "frequency": 0.0
+        },
+        {
+          "id": "ae2d779b-f468-4aac-9a53-e7dde935a508",
+          "content": "Previous images are retained so a rollback is a redeploy, not a rebuild.",
+          "similarity": 0.6189052370470999,
+          "importance": 0.30419656700891773,
+          "recency": 0.2972604889337163,
+          "frequency": 0.0
+        },
+        {
+          "id": "eb173418-eccb-46ed-8b28-93e9c4d0da75",
+          "content": "A separate change to deploy touched the same area but addressed rollback rather than the question of how to what is the safe procedure to roll back a bad de.",
+          "similarity": 0.8070938556831926,
+          "importance": 0.11444532227606384,
+          "recency": 0.297260577340346,
+          "frequency": 0.0
+        },
+        {
+          "id": "d966f00a-c6d6-4db6-a529-ba37a9d3dc3a",
+          "content": "Rolling back is a sign of failure; always fix forward in production even during an incident.",
+          "similarity": 0.6752653087298334,
+          "importance": 0.129,
+          "recency": 0.29726068392001537,
+          "frequency": 0.0
+        },
+        {
+          "id": "8517a189-f35b-4e94-b518-bdf88efe7b70",
+          "content": "A separate change to rollback touched the same area but addressed canary rather than the question of how to what is the safe procedure to roll back a bad de.",
+          "similarity": 0.705159970308264,
+          "importance": 0.06143385654778908,
+          "recency": 0.2972605961988999,
+          "frequency": 0.0
+        },
+        {
+          "id": "e254904c-f1a0-46cc-8c9c-6d9ab06f321b",
+          "content": "[archived] The earlier deploy approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.5983998690745693,
+          "importance": 0.13574903019020435,
+          "recency": 0.29726065005146285,
+          "frequency": 0.0
+        },
+        {
+          "id": "a7b89e45-6dc9-4bd1-b6ea-7490f28abec7",
+          "content": "Unverified note: someone suggested deploy might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5708882763088152,
+          "importance": 0.148134924995807,
+          "recency": 0.2972607190550516,
+          "frequency": 0.0
+        },
+        {
+          "id": "f6ea8bb4-e012-49f9-b5c0-ebff6c83e845",
+          "content": "Unverified note: someone suggested rollback might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5766224427221187,
+          "importance": 0.1298038552001968,
+          "recency": 0.2972607370996078,
+          "frequency": 0.0
+        },
+        {
+          "id": "d87a2b8f-8f1f-4441-ab67-7a72b38cb891",
+          "content": "Canary deploys watch error rate and latency and auto-halt before a full rollout.",
+          "similarity": 0.40094863638329375,
+          "importance": 0.2928015642941521,
+          "recency": 0.297260471364542,
+          "frequency": 0.0
+        },
+        {
+          "id": "dac681dd-6214-410e-b94e-f9f346ca5108",
+          "content": "A separate change to canary touched the same area but addressed health check rather than the question of how to what is the safe procedure to roll back a bad de.",
+          "similarity": 0.5802903779280558,
+          "importance": 0.11147273168887521,
+          "recency": 0.29726061783692104,
+          "frequency": 0.0
+        },
+        {
+          "id": "22a7610c-0c2b-46f7-a517-35a81cdb2ba7",
+          "content": "[archived] The earlier rollback approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6241523064905945,
+          "importance": 0.06688365016554901,
+          "recency": 0.2972606674023605,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how should we design alerts around SLOs to avoid pager fatigue",
+      "target_id": "2ba9c8b0-7f91-4947-bf01-b39d43aee35e",
+      "relevant_ids": [
+        "2ba9c8b0-7f91-4947-bf01-b39d43aee35e",
+        "6e6ec30b-ec12-4f6e-b985-c7f6faab9c8a",
+        "7a372034-f08f-45ca-aa11-dddfac0a85cf",
+        "b1b02932-1646-44f5-b6db-5dbce4ceb05e"
+      ],
+      "memories": [
+        {
+          "id": "2ba9c8b0-7f91-4947-bf01-b39d43aee35e",
+          "content": "Alert on symptoms against SLO burn rate, not on causes: page only when a fast or slow error-budget burn threatens the SLO, which cut our pages by 70% versus per-metric threshold alerts.",
+          "similarity": 0.6669794889025813,
+          "importance": 0.4835,
+          "recency": 0.2972607270586289,
+          "frequency": 0.0
+        },
+        {
+          "id": "2aaa5ee7-9769-4a85-b72d-ea019e3acc58",
+          "content": "More alerts are always safer; route every warning straight to the pager regardless of impact.",
+          "similarity": 0.6845716198677064,
+          "importance": 0.2905,
+          "recency": 0.2972610300503441,
+          "frequency": 0.0
+        },
+        {
+          "id": "6e6ec30b-ec12-4f6e-b985-c7f6faab9c8a",
+          "content": "Each SLO has a documented error budget that gates risky releases when depleted.",
+          "similarity": 0.5933692856503868,
+          "importance": 0.3686033680379395,
+          "recency": 0.2972607806756782,
+          "frequency": 0.0
+        },
+        {
+          "id": "7a372034-f08f-45ca-aa11-dddfac0a85cf",
+          "content": "Multi-window burn-rate alerts catch both sudden outages and slow degradations.",
+          "similarity": 0.5210931807370902,
+          "importance": 0.3170781278183789,
+          "recency": 0.2972607448296507,
+          "frequency": 0.0
+        },
+        {
+          "id": "e225dc52-f0b2-40d7-bc2c-8cb28d0aef75",
+          "content": "Possibly the latency SLO target is p99 < 300ms, but the SLO doc might be out of date.",
+          "similarity": 0.6023987832892924,
+          "importance": 0.2348362263932872,
+          "recency": 0.29726104606737264,
+          "frequency": 0.0
+        },
+        {
+          "id": "226086da-b035-41d4-a531-f7397c0fdbde",
+          "content": "A separate change to SLO touched the same area but addressed error budget rather than the question of how to how should we design alerts around slos to avoid.",
+          "similarity": 0.7247253863167216,
+          "importance": 0.08075586812339415,
+          "recency": 0.29726086425781306,
+          "frequency": 0.0
+        },
+        {
+          "id": "b1b02932-1646-44f5-b6db-5dbce4ceb05e",
+          "content": "Cause-based signals (CPU, disk) go to dashboards and tickets, not the pager.",
+          "similarity": 0.4894133711608372,
+          "importance": 0.3027105432556381,
+          "recency": 0.2972607626077484,
+          "frequency": 0.0
+        },
+        {
+          "id": "00067e44-977f-4c10-a0cf-da2b652d2b73",
+          "content": "A separate change to burn rate touched the same area but addressed alert rather than the question of how to how should we design alerts around slos to avoid.",
+          "similarity": 0.6534880216136951,
+          "importance": 0.09660979387428908,
+          "recency": 0.29726090422850227,
+          "frequency": 0.0
+        },
+        {
+          "id": "323e8acf-a031-4bf7-87f0-d2285ad7e6f1",
+          "content": "A separate change to error budget touched the same area but addressed burn rate rather than the question of how to how should we design alerts around slos to avoid.",
+          "similarity": 0.6305380828581553,
+          "importance": 0.08471935084518238,
+          "recency": 0.29726088015845514,
+          "frequency": 0.0
+        },
+        {
+          "id": "36f7baf2-1930-46c2-9411-d06d30bad4ef",
+          "content": "Unverified note: someone suggested SLO might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.513705519582251,
+          "importance": 0.19173338679653823,
+          "recency": 0.2972610648007549,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how do we plan capacity and autoscaling for a traffic spike",
+      "target_id": "9070cd64-31a2-4121-a7d7-a0ef6557e6db",
+      "relevant_ids": [
+        "5be130f9-25bf-43eb-a224-b19f3677d097",
+        "9070cd64-31a2-4121-a7d7-a0ef6557e6db",
+        "c4546d40-241e-45d2-9c6b-ceb2df4aaa40",
+        "ce36c74b-0a3e-4819-a069-3e9419719442"
+      ],
+      "memories": [
+        {
+          "id": "ce36c74b-0a3e-4819-a069-3e9419719442",
+          "content": "Load tests model peak traffic plus a margin before every major launch.",
+          "similarity": 0.6472295687138665,
+          "importance": 0.3804942169136728,
+          "recency": 0.2972611069637274,
+          "frequency": 0.0
+        },
+        {
+          "id": "9070cd64-31a2-4121-a7d7-a0ef6557e6db",
+          "content": "Size baseline capacity to peak-with-headroom and autoscale on a leading saturation signal, not CPU alone; the launch brownout was scale-up lag, so we now pre-warm before known events and keep 30% headroom.",
+          "similarity": 0.5164416894585506,
+          "importance": 0.461,
+          "recency": 0.29726107208405605,
+          "frequency": 0.0
+        },
+        {
+          "id": "337189b4-3fbb-483b-874d-512934f517b8",
+          "content": "Autoscaling makes capacity planning unnecessary; just let it handle any amount of traffic instantly.",
+          "similarity": 0.7467763296167687,
+          "importance": 0.199,
+          "recency": 0.29726133287805606,
+          "frequency": 0.0
+        },
+        {
+          "id": "5be130f9-25bf-43eb-a224-b19f3677d097",
+          "content": "Pre-warming and raised minimums cover predictable spikes that autoscaling reacts to too slowly.",
+          "similarity": 0.5939941615864063,
+          "importance": 0.324014624679561,
+          "recency": 0.29726112355915074,
+          "frequency": 0.0
+        },
+        {
+          "id": "c4546d40-241e-45d2-9c6b-ceb2df4aaa40",
+          "content": "Autoscaling on request concurrency reacts faster than CPU for our IO-bound services.",
+          "similarity": 0.5185702781976298,
+          "importance": 0.33887764164477024,
+          "recency": 0.2972610891619996,
+          "frequency": 0.0
+        },
+        {
+          "id": "5b057151-59f1-4d7b-a3c3-1dfcf101f32c",
+          "content": "A separate change to capacity touched the same area but addressed autoscale rather than the question of how to how do we plan capacity and autoscaling for a tr.",
+          "similarity": 0.6643467415168498,
+          "importance": 0.03864395677238665,
+          "recency": 0.29726120594135624,
+          "frequency": 0.0
+        },
+        {
+          "id": "da8324fe-81e4-49b8-b0cd-a59c8ce48571",
+          "content": "A separate change to headroom touched the same area but addressed load test rather than the question of how to how do we plan capacity and autoscaling for a tr.",
+          "similarity": 0.5775643272376172,
+          "importance": 0.11939993171350156,
+          "recency": 0.2972612407804223,
+          "frequency": 0.0
+        },
+        {
+          "id": "0b66c71c-c7d6-4809-942f-761b90c62e69",
+          "content": "A separate change to autoscale touched the same area but addressed headroom rather than the question of how to how do we plan capacity and autoscaling for a tr.",
+          "similarity": 0.6461299209709285,
+          "importance": 0.03765308833185015,
+          "recency": 0.2972612236724217,
+          "frequency": 0.0
+        },
+        {
+          "id": "e35abe79-f445-4d24-8253-1d482800227c",
+          "content": "[archived] The earlier capacity approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.5750583855071224,
+          "importance": 0.10404145420307592,
+          "recency": 0.29726129772299453,
+          "frequency": 0.0
+        },
+        {
+          "id": "a67b53e7-26be-43d1-a26b-2ddd31265e17",
+          "content": "Unverified note: someone suggested autoscale might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5065519393938657,
+          "importance": 0.17191616625266654,
+          "recency": 0.29726138256937273,
+          "frequency": 0.0
+        },
+        {
+          "id": "bcc014c4-8860-4a52-9abd-89cd81c910d0",
+          "content": "[2020] Scale by manually adding servers the morning of a big launch.",
+          "similarity": 0.6164626202121086,
+          "importance": 0.050534417526517515,
+          "recency": 0.29726127956767057,
+          "frequency": 0.0
+        },
+        {
+          "id": "62b2397c-e6de-4547-9281-46af8b17cf9f",
+          "content": "Unverified note: someone suggested capacity might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.47080773773301615,
+          "importance": 0.1857883540156114,
+          "recency": 0.2972613664248987,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how should application secrets and credentials be stored and rotated",
+      "target_id": "efa934a0-fb9d-461d-8b7f-40618899a07c",
+      "relevant_ids": [
+        "0a1d5217-1627-44fd-8ec1-2ddaae9a0662",
+        "6afdfd78-6aba-40e0-b5f0-9a550a05ca76",
+        "784be34a-a670-42b8-a842-9183cc107bc3",
+        "a5fb364d-0101-4630-8d07-3c7c3969e62e",
+        "efa934a0-fb9d-461d-8b7f-40618899a07c",
+        "f1645918-3447-41a8-9da5-9957a875179e"
+      ],
+      "memories": [
+        {
+          "id": "efa934a0-fb9d-461d-8b7f-40618899a07c",
+          "content": "Secrets live in the managed secret manager, injected at runtime and never committed; they are rotated on a schedule and immediately on suspected exposure, after a key was once leaked in a committed .env file.",
+          "similarity": 0.7098751195075081,
+          "importance": 0.463,
+          "recency": 0.2972613708856489,
+          "frequency": 0.0
+        },
+        {
+          "id": "784be34a-a670-42b8-a842-9183cc107bc3",
+          "content": "On a suspected leak, the runbook is to rotate the credential first and investigate second.",
+          "similarity": 0.5968694051356771,
+          "importance": 0.32896933040100257,
+          "recency": 0.2972614431333565,
+          "frequency": 0.0
+        },
+        {
+          "id": "f1645918-3447-41a8-9da5-9957a875179e",
+          "content": "Production secrets are never readable by developers directly; access goes through the secret manager.",
+          "similarity": 0.5625763512307398,
+          "importance": 0.3507685240133601,
+          "recency": 0.2972614610281918,
+          "frequency": 0.0
+        },
+        {
+          "id": "0a1d5217-1627-44fd-8ec1-2ddaae9a0662",
+          "content": "Secret access is scoped per service and audit-logged so a leak's blast radius is bounded.",
+          "similarity": 0.5056329785640293,
+          "importance": 0.3656315342886923,
+          "recency": 0.29726140999072725,
+          "frequency": 0.0
+        },
+        {
+          "id": "a5fb364d-0101-4630-8d07-3c7c3969e62e",
+          "content": "Short-lived dynamically issued credentials are preferred over long-lived static keys.",
+          "similarity": 0.5466144802217938,
+          "importance": 0.32451034827840297,
+          "recency": 0.29726138773586214,
+          "frequency": 0.0
+        },
+        {
+          "id": "6afdfd78-6aba-40e0-b5f0-9a550a05ca76",
+          "content": "Pre-commit and CI secret scanning block credentials from entering the repo.",
+          "similarity": 0.5281031701978105,
+          "importance": 0.31658342015646684,
+          "recency": 0.29726142737688466,
+          "frequency": 0.0
+        },
+        {
+          "id": "cea33560-2207-4000-af76-d9cfc6d587f5",
+          "content": "A separate change to rotation touched the same area but addressed env var rather than the question of how to how should application secrets and credentials b.",
+          "similarity": 0.7607482240600525,
+          "importance": 0.07976519043978818,
+          "recency": 0.29726157927863417,
+          "frequency": 0.0
+        },
+        {
+          "id": "c98ba34d-9c0f-4b69-bc42-db9bf8bb2085",
+          "content": "A separate change to vault touched the same area but addressed rotation rather than the question of how to how should application secrets and credentials b.",
+          "similarity": 0.7536002679563313,
+          "importance": 0.03220333595303921,
+          "recency": 0.29726156264335934,
+          "frequency": 0.0
+        },
+        {
+          "id": "72bfff0d-7ada-4fec-926b-256a25de2158",
+          "content": "Committing secrets to a private repo is acceptable since only employees can read it.",
+          "similarity": 0.5575790693463383,
+          "importance": 0.183,
+          "recency": 0.29726165624557893,
+          "frequency": 0.0
+        },
+        {
+          "id": "6b616228-8222-4681-8e95-ef6f23e5d960",
+          "content": "A separate change to secret touched the same area but addressed vault rather than the question of how to how should application secrets and credentials b.",
+          "similarity": 0.6819822045480384,
+          "importance": 0.055984257967431235,
+          "recency": 0.2972615467296439,
+          "frequency": 0.0
+        },
+        {
+          "id": "2a9d1ee3-69c7-4d18-bf11-0590fddf4384",
+          "content": "[2021] Keep secrets in a shared encrypted spreadsheet that the team unlocks with a master password.",
+          "similarity": 0.666942525610586,
+          "importance": 0.06539755262909827,
+          "recency": 0.2972616028594581,
+          "frequency": 0.0
+        },
+        {
+          "id": "d1fa1c2d-7da6-4e8b-a196-b259a82c4da1",
+          "content": "User passwords are hashed with bcrypt before storage.",
+          "similarity": 0.5898014766342518,
+          "importance": 0.12138177732736113,
+          "recency": 0.29726149549549885,
+          "frequency": 0.0
+        },
+        {
+          "id": "2d906f33-7ccd-4229-b172-928b17e85e30",
+          "content": "Unverified note: someone suggested secret might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.49059104763944844,
+          "importance": 0.21056036482278287,
+          "recency": 0.2972616915144375,
+          "frequency": 0.0
+        },
+        {
+          "id": "f8374f6c-4f48-46ca-b29d-673fed9ee910",
+          "content": "I believe the rotation period is 90 days, but I'm not sure it's actually enforced.",
+          "similarity": 0.45804011823159735,
+          "importance": 0.22096451113911847,
+          "recency": 0.2972616741781068,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "what are the constraints for issuing and validating JWT access tokens securely",
+      "target_id": "774aac0b-b22c-4522-802e-3d1d1c473103",
+      "relevant_ids": [
+        "774aac0b-b22c-4522-802e-3d1d1c473103",
+        "87dab9d6-83d4-4095-9033-b3e77b7f9a91",
+        "e47ff6d7-583e-41e9-a2b3-d00dc41a0b1f",
+        "f8729602-3b8c-4774-920a-8d880a1a9ef4"
+      ],
+      "memories": [
+        {
+          "id": "774aac0b-b22c-4522-802e-3d1d1c473103",
+          "content": "JWTs must be signed with an asymmetric algorithm (never 'none' or a shared HMAC secret), carry short expiries plus audience and issuer claims, and pin the expected alg; we had a near-miss where alg:none would have been accepted.",
+          "similarity": 0.7026916434581951,
+          "importance": 0.433,
+          "recency": 0.29726169832866517,
+          "frequency": 0.0
+        },
+        {
+          "id": "6e9bf358-f1b4-4a70-b105-4539e54884d6",
+          "content": "Long-lived non-expiring JWTs are fine as long as they're signed; revocation isn't needed.",
+          "similarity": 0.6885140555507361,
+          "importance": 0.293,
+          "recency": 0.29726194577432485,
+          "frequency": 0.0
+        },
+        {
+          "id": "f8729602-3b8c-4774-920a-8d880a1a9ef4",
+          "content": "Access tokens are short-lived and paired with revocable refresh tokens for logout and compromise.",
+          "similarity": 0.5820685899041321,
+          "importance": 0.3532460056515756,
+          "recency": 0.29726171583574845,
+          "frequency": 0.0
+        },
+        {
+          "id": "e47ff6d7-583e-41e9-a2b3-d00dc41a0b1f",
+          "content": "Signing keys are rotated via a JWKS endpoint with overlapping key validity.",
+          "similarity": 0.5392509190748788,
+          "importance": 0.32797879696022425,
+          "recency": 0.2972617495106977,
+          "frequency": 0.0
+        },
+        {
+          "id": "147b48b9-964f-4eee-a0a9-194201cbf874",
+          "content": "A separate change to JWT touched the same area but addressed signing rather than the question of how to what are the constraints for issuing and validat.",
+          "similarity": 0.7581938499550372,
+          "importance": 0.0990872802018944,
+          "recency": 0.2972618406056037,
+          "frequency": 0.0
+        },
+        {
+          "id": "b75373a4-80bd-4445-a21f-f92e90094f7c",
+          "content": "Unverified note: someone suggested JWT might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.6532525071613489,
+          "importance": 0.18182524481475235,
+          "recency": 0.2972619806234938,
+          "frequency": 0.0
+        },
+        {
+          "id": "87dab9d6-83d4-4095-9033-b3e77b7f9a91",
+          "content": "Validators check exp, nbf, aud, and iss, not just the signature.",
+          "similarity": 0.5704954327054566,
+          "importance": 0.25118616335026983,
+          "recency": 0.2972617317753877,
+          "frequency": 0.0
+        },
+        {
+          "id": "9d62784a-57d1-4715-ab84-01e96c0de3da",
+          "content": "[archived] The earlier JWT approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6840580387337776,
+          "importance": 0.10651885147874096,
+          "recency": 0.2972619111033837,
+          "frequency": 0.0
+        },
+        {
+          "id": "a5e62d3b-d102-47ae-a158-4e89d876e39c",
+          "content": "[2020] We sign tokens with a single shared HMAC secret embedded in every service.",
+          "similarity": 0.6140317210531853,
+          "importance": 0.1005736072344099,
+          "recency": 0.2972618933035951,
+          "frequency": 0.0
+        },
+        {
+          "id": "19bd0d07-bbca-4743-bd86-34fcc243b2ba",
+          "content": "Maybe the gateway already validates the audience claim, but I haven't checked its config.",
+          "similarity": 0.5244974222598612,
+          "importance": 0.11345498224898014,
+          "recency": 0.2972619622243226,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how do we prioritize and remediate a reported dependency vulnerability",
+      "target_id": "68806c48-161c-49ce-a7d1-44cf605c14d3",
+      "relevant_ids": [
+        "5fa201a8-1b57-4bf8-a2c7-f16f020a6c32",
+        "68806c48-161c-49ce-a7d1-44cf605c14d3",
+        "bbb8bed5-d72a-4aac-87a1-45e65e328679",
+        "f5702c97-1dd4-41ab-b7ee-ffff0a2e75fb"
+      ],
+      "memories": [
+        {
+          "id": "68806c48-161c-49ce-a7d1-44cf605c14d3",
+          "content": "Prioritize a CVE by exploitability in our context, not raw CVSS: confirm the vulnerable code path is actually reachable, then patch reachable high-severity issues within the SLA and document non-reachable ones with justification.",
+          "similarity": 0.6444705345509315,
+          "importance": 0.4815,
+          "recency": 0.2972619894415921,
+          "frequency": 0.0
+        },
+        {
+          "id": "0c1a0870-c3d9-4dd4-80b2-c7519de8362b",
+          "content": "A separate change to dependency touched the same area but addressed patch rather than the question of how to how do we prioritize and remediate a reported de.",
+          "similarity": 0.7398497259345335,
+          "importance": 0.10106912986960824,
+          "recency": 0.29726214667523887,
+          "frequency": 0.0
+        },
+        {
+          "id": "f5702c97-1dd4-41ab-b7ee-ffff0a2e75fb",
+          "content": "An SBOM lets us find every service pulling a vulnerable transitive dependency quickly.",
+          "similarity": 0.5587144132193403,
+          "importance": 0.2804171597104687,
+          "recency": 0.2972620067601347,
+          "frequency": 0.0
+        },
+        {
+          "id": "cb22cd22-6d3f-46c2-a5e6-7b34c5ed1f9f",
+          "content": "A separate change to CVE touched the same area but addressed dependency rather than the question of how to how do we prioritize and remediate a reported de.",
+          "similarity": 0.7670300419997317,
+          "importance": 0.03567145538631591,
+          "recency": 0.2972621282192197,
+          "frequency": 0.0
+        },
+        {
+          "id": "bbb8bed5-d72a-4aac-87a1-45e65e328679",
+          "content": "Reachability analysis distinguishes a vulnerable function we call from one we never invoke.",
+          "similarity": 0.516648895021896,
+          "importance": 0.26208601766580064,
+          "recency": 0.29726202381746375,
+          "frequency": 0.0
+        },
+        {
+          "id": "ebfd89a9-7c45-41ac-9a82-71bb1d8894e0",
+          "content": "[2021] Upgrade every dependency to latest immediately whenever any CVE is published anywhere.",
+          "similarity": 0.6234347061620491,
+          "importance": 0.13029992332281282,
+          "recency": 0.29726218248550446,
+          "frequency": 0.0
+        },
+        {
+          "id": "8d6219f7-84cb-4cfd-88a6-a0a9273176ed",
+          "content": "A separate change to patch touched the same area but addressed reachability rather than the question of how to how do we prioritize and remediate a reported de.",
+          "similarity": 0.6456338480985111,
+          "importance": 0.08917864930192354,
+          "recency": 0.2972621643396656,
+          "frequency": 0.0
+        },
+        {
+          "id": "8cdf99fe-5d46-4fc7-a174-889c535c6480",
+          "content": "CVSS score is the only thing that matters; patch strictly in score order regardless of reachability.",
+          "similarity": 0.4259257470333356,
+          "importance": 0.303,
+          "recency": 0.2972622335455983,
+          "frequency": 0.0
+        },
+        {
+          "id": "2c0e4bca-8294-4b04-bfb8-d3eeb0ce7ff9",
+          "content": "Unverified note: someone suggested CVE might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.4896922848120672,
+          "importance": 0.20263378567741183,
+          "recency": 0.29726227727721777,
+          "frequency": 0.0
+        },
+        {
+          "id": "5fa201a8-1b57-4bf8-a2c7-f16f020a6c32",
+          "content": "Remediation SLAs are tiered by severity and whether the service is internet-facing.",
+          "similarity": 0.3911420544054854,
+          "importance": 0.27744457126271155,
+          "recency": 0.29726204063854,
+          "frequency": 0.0
+        },
+        {
+          "id": "b242ed8a-1ac5-4366-8e66-135634d02547",
+          "content": "[archived] The earlier CVE approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.5082065822899285,
+          "importance": 0.14268585610340917,
+          "recency": 0.2972622002153563,
+          "frequency": 0.0
+        },
+        {
+          "id": "69efed5e-8bf8-453f-a458-1bdb3da82d69",
+          "content": "I think the vulnerable parser is only used in an internal tool, but I'd need to trace callers.",
+          "similarity": 0.40424012833902134,
+          "importance": 0.2427641710156142,
+          "recency": 0.2972622502231216,
+          "frequency": 0.0
+        },
+        {
+          "id": "453437f6-b689-46e4-86e0-f7815053cb58",
+          "content": "[archived] The earlier dependency approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.5435849638978864,
+          "importance": 0.08917866481807968,
+          "recency": 0.2972622160601861,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how should we validate and sanitize untrusted input to prevent injection",
+      "target_id": "c64e0b63-dadd-4201-b26c-4b203fd4c507",
+      "relevant_ids": [
+        "3b37667d-26b8-40f2-8939-c52118a84e04",
+        "65aa7604-2927-4046-a17a-8a5c2756e07f",
+        "95db909a-02ba-460b-923f-1173e5588aa9",
+        "c64e0b63-dadd-4201-b26c-4b203fd4c507"
+      ],
+      "memories": [
+        {
+          "id": "c64e0b63-dadd-4201-b26c-4b203fd4c507",
+          "content": "Treat all external input as untrusted: use parameterized queries for SQL, context-aware output encoding for HTML, and allowlist validation at the boundary; the reported bug was string-built SQL that allowed injection.",
+          "similarity": 0.6986123209205529,
+          "importance": 0.4865,
+          "recency": 0.297262284638293,
+          "frequency": 0.0
+        },
+        {
+          "id": "861453b7-d602-4adc-b5f9-af3d9d33053e",
+          "content": "A web application firewall handles injection, so input validation in code is redundant.",
+          "similarity": 0.7757218127327983,
+          "importance": 0.226,
+          "recency": 0.2972625527055652,
+          "frequency": 0.0
+        },
+        {
+          "id": "95db909a-02ba-460b-923f-1173e5588aa9",
+          "content": "Output encoding is chosen by the sink \u2014 HTML, attribute, URL, or JS context \u2014 to stop XSS.",
+          "similarity": 0.5434734394758087,
+          "importance": 0.3998178176893967,
+          "recency": 0.29726231798460206,
+          "frequency": 0.0
+        },
+        {
+          "id": "65aa7604-2927-4046-a17a-8a5c2756e07f",
+          "content": "Validation is allowlist-based (what is permitted) rather than blocklist-based (what is forbidden).",
+          "similarity": 0.5102419505710654,
+          "importance": 0.375541373243156,
+          "recency": 0.29726230072009674,
+          "frequency": 0.0
+        },
+        {
+          "id": "0688a88a-6b66-4d0d-b1d5-809640b8473b",
+          "content": "A separate change to injection touched the same area but addressed parameterized query rather than the question of how to how should we validate and sanitize untrusted in.",
+          "similarity": 0.7683304822840474,
+          "importance": 0.09561942224759017,
+          "recency": 0.29726245258310235,
+          "frequency": 0.0
+        },
+        {
+          "id": "a555ce38-04bc-4745-b590-d3fd5c125277",
+          "content": "[2020] Escaping quotes in user input is enough to stop SQL injection.",
+          "similarity": 0.7211488278005214,
+          "importance": 0.10255556364321382,
+          "recency": 0.2972625033135837,
+          "frequency": 0.0
+        },
+        {
+          "id": "ede20a76-3e08-4fa6-8761-17b14f77b51b",
+          "content": "A separate change to parameterized query touched the same area but addressed validation rather than the question of how to how should we validate and sanitize untrusted in.",
+          "similarity": 0.7444526499160995,
+          "importance": 0.04409393301211466,
+          "recency": 0.2972624697445137,
+          "frequency": 0.0
+        },
+        {
+          "id": "56d8869d-c49e-41a1-baa3-0aeced716d73",
+          "content": "A separate change to validation touched the same area but addressed allowlist rather than the question of how to how should we validate and sanitize untrusted in.",
+          "similarity": 0.7084333427288106,
+          "importance": 0.04211218561847398,
+          "recency": 0.2972624867185603,
+          "frequency": 0.0
+        },
+        {
+          "id": "3b37667d-26b8-40f2-8939-c52118a84e04",
+          "content": "ORM query builders are used so raw string concatenation into SQL is avoided by default.",
+          "similarity": 0.3364227798070747,
+          "importance": 0.3611737389096213,
+          "recency": 0.2972623365510491,
+          "frequency": 0.0
+        },
+        {
+          "id": "15a56f20-effd-4c3b-b8e9-d94dc103e857",
+          "content": "[archived] The earlier injection approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.5517558969377473,
+          "importance": 0.1352544463308385,
+          "recency": 0.2972625194083567,
+          "frequency": 0.0
+        },
+        {
+          "id": "5b81c4b2-c2f6-4168-90e7-3c4d1330a3ed",
+          "content": "Unverified note: someone suggested injection might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5306474254118643,
+          "importance": 0.14714497865149828,
+          "recency": 0.29726258313426046,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how do we design least-privilege access control and roles for our services",
+      "target_id": "cf595ecd-c0f8-4d1e-a5f4-67c0a685df3e",
+      "relevant_ids": [
+        "cf595ecd-c0f8-4d1e-a5f4-67c0a685df3e",
+        "d940e353-076e-4f86-8a5a-eae2deb89383",
+        "f1a66489-0a1a-415e-8cd4-6394e73e3619",
+        "fce9fb92-e404-4722-9d40-c30a9f279566"
+      ],
+      "memories": [
+        {
+          "id": "cf595ecd-c0f8-4d1e-a5f4-67c0a685df3e",
+          "content": "Grant least privilege via roles scoped to the minimum needed, deny by default, and authorize every request server-side; the audit found a service account with broad admin it never used, which we scoped down.",
+          "similarity": 0.6593491105069843,
+          "importance": 0.439,
+          "recency": 0.29726258999548916,
+          "frequency": 0.0
+        },
+        {
+          "id": "f1a66489-0a1a-415e-8cd4-6394e73e3619",
+          "content": "Roles are reviewed quarterly and unused permissions are revoked.",
+          "similarity": 0.5278289148434347,
+          "importance": 0.3359067636392362,
+          "recency": 0.29726262268951004,
+          "frequency": 0.0
+        },
+        {
+          "id": "d429fea2-1ef7-45a2-9fd9-6860ccad6473",
+          "content": "A separate change to RBAC touched the same area but addressed least privilege rather than the question of how to how do we design least-privilege access control .",
+          "similarity": 0.7558669684920543,
+          "importance": 0.0911605790770008,
+          "recency": 0.29726275785970574,
+          "frequency": 0.0
+        },
+        {
+          "id": "b69d48c4-c6fd-46e9-9b63-f5ee926d79c6",
+          "content": "A separate change to role touched the same area but addressed scope rather than the question of how to how do we design least-privilege access control .",
+          "similarity": 0.7381688448345196,
+          "importance": 0.10404197687020661,
+          "recency": 0.2972627910576537,
+          "frequency": 0.0
+        },
+        {
+          "id": "974c2a7f-aba9-433d-bdd0-0091de578869",
+          "content": "A separate change to least privilege touched the same area but addressed role rather than the question of how to how do we design least-privilege access control .",
+          "similarity": 0.7637458531364474,
+          "importance": 0.07233394179414307,
+          "recency": 0.2972627744963989,
+          "frequency": 0.0
+        },
+        {
+          "id": "d940e353-076e-4f86-8a5a-eae2deb89383",
+          "content": "Service-to-service calls use narrowly scoped tokens rather than a shared admin credential.",
+          "similarity": 0.5336535423418193,
+          "importance": 0.3002352671093281,
+          "recency": 0.2972626407022255,
+          "frequency": 0.0
+        },
+        {
+          "id": "7023f037-d52a-4623-9f8b-cd4d091c7359",
+          "content": "Unverified note: someone suggested RBAC might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5980634512191457,
+          "importance": 0.23136961862456507,
+          "recency": 0.2972628933077128,
+          "frequency": 0.0
+        },
+        {
+          "id": "fce9fb92-e404-4722-9d40-c30a9f279566",
+          "content": "Authorization is enforced on the server for every action, never assumed from a hidden UI control.",
+          "similarity": 0.5082721795492737,
+          "importance": 0.2838857888821,
+          "recency": 0.29726260615918754,
+          "frequency": 0.0
+        },
+        {
+          "id": "9e1763b3-d666-4dfc-83fd-1458e02bf4f3",
+          "content": "[archived] The earlier RBAC approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6395835223981163,
+          "importance": 0.14813597487835362,
+          "recency": 0.2972628258427706,
+          "frequency": 0.0
+        },
+        {
+          "id": "6bb40748-8bb8-4478-90ad-54c5a4795cd1",
+          "content": "[archived] The earlier least privilege approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6373867928148138,
+          "importance": 0.11444619475157193,
+          "recency": 0.2972628435104969,
+          "frequency": 0.0
+        },
+        {
+          "id": "fa2ed38b-d501-4a86-97bc-7da6af4789ef",
+          "content": "Client-side checks that hide unauthorized actions are sufficient; server-side authorization is overkill.",
+          "similarity": 0.5115156449788326,
+          "importance": 0.2285,
+          "recency": 0.2972628602883751,
+          "frequency": 0.0
+        },
+        {
+          "id": "a709ae52-0cfd-427f-8462-310f601f481b",
+          "content": "Unverified note: someone suggested least privilege might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5203164757867766,
+          "importance": 0.21650648652268836,
+          "recency": 0.29726291055738735,
+          "frequency": 0.0
+        },
+        {
+          "id": "7813cc9b-5187-4453-9d68-05b81aa6d975",
+          "content": "I believe the billing service still has write access to user records, but it may have been revoked.",
+          "similarity": 0.42074179295013103,
+          "importance": 0.2412783687672911,
+          "recency": 0.29726287733128537,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how do we decide service boundaries and ownership to avoid coupling",
+      "target_id": "0e6fb212-5669-4fd4-9458-0c1188afa384",
+      "relevant_ids": [
+        "0e6fb212-5669-4fd4-9458-0c1188afa384",
+        "101e3d8c-90e5-4da3-b268-63e817eeae2b",
+        "649a31e8-6533-43c7-b9db-b6f50daed12a",
+        "7ee26132-e672-4a23-a9dd-ec6e53f89c1c",
+        "b0807985-d119-4086-a096-37103c34b853",
+        "fe90492a-23e0-4422-b85d-dc138dae4f5c"
+      ],
+      "memories": [
+        {
+          "id": "0e6fb212-5669-4fd4-9458-0c1188afa384",
+          "content": "Draw service boundaries around business capabilities with a single owning team and no shared database between services; the coupling pain came from two services writing the same tables, which we split behind an owned API.",
+          "similarity": 0.6876511280697244,
+          "importance": 0.4915,
+          "recency": 0.2972629051108161,
+          "frequency": 0.0
+        },
+        {
+          "id": "101e3d8c-90e5-4da3-b268-63e817eeae2b",
+          "content": "Each service has one owning team accountable for its contract and on-call.",
+          "similarity": 0.680919917700191,
+          "importance": 0.37455130269925807,
+          "recency": 0.2972629386501253,
+          "frequency": 0.0
+        },
+        {
+          "id": "7ee26132-e672-4a23-a9dd-ec6e53f89c1c",
+          "content": "A service registry records each service's owner and its public contract for coordination.",
+          "similarity": 0.621828499278447,
+          "importance": 0.41814997073787497,
+          "recency": 0.29726301237281744,
+          "frequency": 0.0
+        },
+        {
+          "id": "fe90492a-23e0-4422-b85d-dc138dae4f5c",
+          "content": "Cross-service data access goes through a published API, never directly into another service's store.",
+          "similarity": 0.5749974140499642,
+          "importance": 0.3681105853319058,
+          "recency": 0.29726292220603556,
+          "frequency": 0.0
+        },
+        {
+          "id": "649a31e8-6533-43c7-b9db-b6f50daed12a",
+          "content": "Boundaries follow domain capabilities so changes stay local to one team.",
+          "similarity": 0.5347980359763652,
+          "importance": 0.34631134446398204,
+          "recency": 0.2972629566212848,
+          "frequency": 0.0
+        },
+        {
+          "id": "aecdb6aa-7c43-4a6d-8bfd-e01ec315a1a4",
+          "content": "A separate change to coupling touched the same area but addressed domain rather than the question of how to how do we decide service boundaries and ownershi.",
+          "similarity": 0.8032331930708286,
+          "importance": 0.05350736385437896,
+          "recency": 0.29726313252432757,
+          "frequency": 0.0
+        },
+        {
+          "id": "08f18199-5d8e-4b8b-a16a-2747330f899c",
+          "content": "A separate change to ownership touched the same area but addressed coupling rather than the question of how to how do we decide service boundaries and ownershi.",
+          "similarity": 0.7876478232227402,
+          "importance": 0.04310315190203712,
+          "recency": 0.29726311656577326,
+          "frequency": 0.0
+        },
+        {
+          "id": "ade34b8c-2ab5-440e-9402-9bb21cbbe90f",
+          "content": "A separate change to service boundary touched the same area but addressed ownership rather than the question of how to how do we decide service boundaries and ownershi.",
+          "similarity": 0.7301879173112173,
+          "importance": 0.0941333148280591,
+          "recency": 0.29726309945694923,
+          "frequency": 0.0
+        },
+        {
+          "id": "b0807985-d119-4086-a096-37103c34b853",
+          "content": "When two teams kept editing the same tables, we gave one team ownership and put an API in front.",
+          "similarity": 0.49837968869869437,
+          "importance": 0.2833907214516649,
+          "recency": 0.29726299452963895,
+          "frequency": 0.0
+        },
+        {
+          "id": "cb456b0e-6268-4469-ac5d-18ce0f382d4e",
+          "content": "[archived] The earlier service boundary approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6747186663918576,
+          "importance": 0.09016982824768698,
+          "recency": 0.2972631700472402,
+          "frequency": 0.0
+        },
+        {
+          "id": "0b577f39-bfbc-4166-bae3-0af3b4856737",
+          "content": "Unverified note: someone suggested service boundary might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.6557480408379252,
+          "importance": 0.10651932705238747,
+          "recency": 0.29726323828565293,
+          "frequency": 0.0
+        },
+        {
+          "id": "aca8c8f9-5253-4129-82c1-6a19e4469ce1",
+          "content": "Microservices should share a database to avoid data duplication and keep things consistent.",
+          "similarity": 0.6145539456415627,
+          "importance": 0.109,
+          "recency": 0.29726320402276013,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how should we version a public API and manage backward compatibility",
+      "target_id": "f2bf99e9-b27f-4342-abc2-83c40221ec03",
+      "relevant_ids": [
+        "01a9e6fd-bd7c-413c-96ec-1c57fe1003d1",
+        "56f36f61-43f5-47d8-a952-ff8f55a85e46",
+        "90be6620-2f6a-4f99-9c03-551e4f849180",
+        "f2bf99e9-b27f-4342-abc2-83c40221ec03"
+      ],
+      "memories": [
+        {
+          "id": "f2bf99e9-b27f-4342-abc2-83c40221ec03",
+          "content": "Evolve APIs additively and never break a published contract within a major version: add optional fields, keep old behavior, and use a sunset header plus a deprecation window before removing anything; a silently changed response field once broke a partner.",
+          "similarity": 0.648116176860517,
+          "importance": 0.4265,
+          "recency": 0.29726324586058955,
+          "frequency": 0.0
+        },
+        {
+          "id": "7be2be3b-5a0b-42e8-9e94-807236384f23",
+          "content": "A separate change to API version touched the same area but addressed backward compatible rather than the question of how to how should we version a public api and manage ba.",
+          "similarity": 0.8414607019951523,
+          "importance": 0.0817474308975227,
+          "recency": 0.29726338508182126,
+          "frequency": 0.0
+        },
+        {
+          "id": "439cae2d-a975-4085-88d4-59ec60a65529",
+          "content": "A separate change to backward compatible touched the same area but addressed breaking change rather than the question of how to how should we version a public api and manage ba.",
+          "similarity": 0.847744145392347,
+          "importance": 0.04657126628217912,
+          "recency": 0.2972634018010638,
+          "frequency": 0.0
+        },
+        {
+          "id": "01a9e6fd-bd7c-413c-96ec-1c57fe1003d1",
+          "content": "Deprecations are announced with a sunset date and tracked usage before removal.",
+          "similarity": 0.5020934007627722,
+          "importance": 0.3879285809160421,
+          "recency": 0.297263280395355,
+          "frequency": 0.0
+        },
+        {
+          "id": "a5fd57f5-d2ab-4913-89b4-570556eb1138",
+          "content": "A separate change to breaking change touched the same area but addressed deprecation rather than the question of how to how should we version a public api and manage ba.",
+          "similarity": 0.788268171455828,
+          "importance": 0.06638883014743997,
+          "recency": 0.2972634185705472,
+          "frequency": 0.0
+        },
+        {
+          "id": "62eb1a4a-1d28-49d5-b8b2-bed388185984",
+          "content": "Unverified note: someone suggested backward compatible might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.6063918477503218,
+          "importance": 0.22889292579926665,
+          "recency": 0.2972635399989681,
+          "frequency": 0.0
+        },
+        {
+          "id": "30cdcf9d-44d0-457a-9a02-68bae0353ff1",
+          "content": "Backward compatibility is the client's problem; change response shapes whenever it's convenient.",
+          "similarity": 0.6448135579808039,
+          "importance": 0.1635,
+          "recency": 0.29726348631250016,
+          "frequency": 0.0
+        },
+        {
+          "id": "9669ed1f-64ad-417b-b9e2-e1cc1c64b740",
+          "content": "[archived] The earlier backward compatible approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6669702086845573,
+          "importance": 0.13525487882783782,
+          "recency": 0.2972634699512124,
+          "frequency": 0.0
+        },
+        {
+          "id": "90be6620-2f6a-4f99-9c03-551e4f849180",
+          "content": "Consumer-driven contract tests catch breaking changes before they ship.",
+          "similarity": 0.5354028487413929,
+          "importance": 0.25366465100808844,
+          "recency": 0.29726326290002414,
+          "frequency": 0.0
+        },
+        {
+          "id": "12006327-a479-48d8-a8a3-b7a2522e397a",
+          "content": "[2021] Just bump the major version for any change and let clients deal with it.",
+          "similarity": 0.7116271517935766,
+          "importance": 0.06539795580658371,
+          "recency": 0.2972634354843919,
+          "frequency": 0.0
+        },
+        {
+          "id": "6a505232-97b2-4c79-95bf-a35a11db58b5",
+          "content": "Our docs site shows the API version in the footer.",
+          "similarity": 0.6106010905922906,
+          "importance": 0.12187798111066003,
+          "recency": 0.2972633685625059,
+          "frequency": 0.0
+        },
+        {
+          "id": "56f36f61-43f5-47d8-a952-ff8f55a85e46",
+          "content": "New required fields are introduced as optional first, then enforced after consumers migrate.",
+          "similarity": 0.4415185944693109,
+          "importance": 0.27397767281253976,
+          "recency": 0.29726329780737776,
+          "frequency": 0.0
+        },
+        {
+          "id": "fe95041b-c44c-4e6c-af04-0cb794cdc2af",
+          "content": "I think two external partners still call v1, but the usage metrics might be stale.",
+          "similarity": 0.4999233696839757,
+          "importance": 0.21551604021175677,
+          "recency": 0.29726350374027466,
+          "frequency": 0.0
+        },
+        {
+          "id": "3a54de3f-e7ee-4373-8e14-4ff3cf79419d",
+          "content": "Unverified note: someone suggested API version might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5500991307511887,
+          "importance": 0.15209983511036063,
+          "recency": 0.2972635213882474,
+          "frequency": 0.0
+        },
+        {
+          "id": "964d7e8e-4aac-45c1-8252-e7e0781dfd48",
+          "content": "[archived] The earlier API version approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6236570830305521,
+          "importance": 0.055489177870897785,
+          "recency": 0.29726345287973005,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "what constraints govern adding a new third-party dependency or service",
+      "target_id": "424ed369-be8d-409e-a86e-1f2ed0ed15b4",
+      "relevant_ids": [
+        "424ed369-be8d-409e-a86e-1f2ed0ed15b4",
+        "afa68e78-2663-4910-8de7-76e1d8ff1a6d",
+        "cd12031e-c284-4eaf-8d11-bdf8d3d28bff",
+        "e9eb2882-52bd-4749-874b-2ce209d4a7a0"
+      ],
+      "memories": [
+        {
+          "id": "424ed369-be8d-409e-a86e-1f2ed0ed15b4",
+          "content": "A new dependency needs a justification covering maintenance health, license, supply-chain risk, and exit cost; we default to the standard library or an existing internal lib first, after a tiny abandoned package caused a painful migration.",
+          "similarity": 0.6028714734698433,
+          "importance": 0.445,
+          "recency": 0.297263528091385,
+          "frequency": 0.0
+        },
+        {
+          "id": "e9eb2882-52bd-4749-874b-2ce209d4a7a0",
+          "content": "Dependencies are pinned and their provenance verified to reduce supply-chain risk.",
+          "similarity": 0.6047064635389462,
+          "importance": 0.3458165903072148,
+          "recency": 0.2972635446766094,
+          "frequency": 0.0
+        },
+        {
+          "id": "1d4c6d77-2c2f-48ea-89fa-b25db8840efd",
+          "content": "Never write code you can pull from a package; always add a dependency to save time, no review needed.",
+          "similarity": 0.6102701711984556,
+          "importance": 0.3185,
+          "recency": 0.29726376665912696,
+          "frequency": 0.0
+        },
+        {
+          "id": "afa68e78-2663-4910-8de7-76e1d8ff1a6d",
+          "content": "We prefer a well-maintained dependency over a one-maintainer package that may be abandoned.",
+          "similarity": 0.5777565882931169,
+          "importance": 0.30172251485786805,
+          "recency": 0.2972635614362437,
+          "frequency": 0.0
+        },
+        {
+          "id": "563865f8-0332-4114-967f-e02d1a2d57d8",
+          "content": "A separate change to dependency touched the same area but addressed build vs buy rather than the question of how to what constraints govern adding a new third-party.",
+          "similarity": 0.8006586755168829,
+          "importance": 0.06837064223382515,
+          "recency": 0.2972636618861168,
+          "frequency": 0.0
+        },
+        {
+          "id": "cd12031e-c284-4eaf-8d11-bdf8d3d28bff",
+          "content": "Adopting a new datastore or queue requires an architecture review, not just a PR.",
+          "similarity": 0.5156257327967028,
+          "importance": 0.30568604722726633,
+          "recency": 0.29726357915123297,
+          "frequency": 0.0
+        },
+        {
+          "id": "b288741e-ece7-4724-b412-6ffeefea1bdf",
+          "content": "A separate change to maintenance touched the same area but addressed supply chain rather than the question of how to what constraints govern adding a new third-party.",
+          "similarity": 0.7241402170337181,
+          "importance": 0.06886608993968606,
+          "recency": 0.29726369758129917,
+          "frequency": 0.0
+        },
+        {
+          "id": "3387a1a5-7a1b-4211-901d-1bfeb56616ba",
+          "content": "Unverified note: someone suggested dependency might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5416656291430372,
+          "importance": 0.21601169617512178,
+          "recency": 0.29726380207577613,
+          "frequency": 0.0
+        },
+        {
+          "id": "558566e6-6d82-4823-b7d2-5a3232ed7c41",
+          "content": "[2020] Add whatever dependency unblocks you fastest; we can always clean it up later.",
+          "similarity": 0.6392205743789532,
+          "importance": 0.09165631204993156,
+          "recency": 0.29726371475645524,
+          "frequency": 0.0
+        },
+        {
+          "id": "0b8df023-62c1-4193-908c-680c95900021",
+          "content": "[archived] The earlier dependency approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.5964444251339406,
+          "importance": 0.12732796525405407,
+          "recency": 0.29726373211063206,
+          "frequency": 0.0
+        },
+        {
+          "id": "fd3af1b9-70ed-49b9-b4f8-f49901673d74",
+          "content": "A separate change to build vs buy touched the same area but addressed maintenance rather than the question of how to what constraints govern adding a new third-party.",
+          "similarity": 0.6863078958418224,
+          "importance": 0.028735489022490217,
+          "recency": 0.29726367954292277,
+          "frequency": 0.0
+        },
+        {
+          "id": "2e2e5518-9c99-43f4-812d-67e30113e7c6",
+          "content": "The design team added a new font dependency to the marketing site.",
+          "similarity": 0.5452350861989366,
+          "importance": 0.11791455905058022,
+          "recency": 0.2972635942450807,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "when should communication between services be event-driven versus synchronous",
+      "target_id": "e7ac8733-db42-4fce-8502-524dac7a2040",
+      "relevant_ids": [
+        "3a2ed22b-f841-4ef0-a60a-dfda788b6b74",
+        "858fd4c7-53ff-4f85-a5bd-eb05dc4feac6",
+        "a8af2d44-8531-491f-8997-ececbc98613b",
+        "e7ac8733-db42-4fce-8502-524dac7a2040"
+      ],
+      "memories": [
+        {
+          "id": "e7ac8733-db42-4fce-8502-524dac7a2040",
+          "content": "Use synchronous calls only when the caller needs an immediate answer and can tolerate the dependency's availability; prefer events for side effects and fan-out to decouple services and absorb load, accepting eventual consistency.",
+          "similarity": 0.7120821871553478,
+          "importance": 0.4525,
+          "recency": 0.29726380779852474,
+          "frequency": 0.0
+        },
+        {
+          "id": "9012e4ff-8789-4777-aea6-7a206761f76d",
+          "content": "A separate change to event-driven touched the same area but addressed synchronous rather than the question of how to when should communication between services be ev.",
+          "similarity": 0.8650837430957423,
+          "importance": 0.06688438794993765,
+          "recency": 0.2972639464440878,
+          "frequency": 0.0
+        },
+        {
+          "id": "858fd4c7-53ff-4f85-a5bd-eb05dc4feac6",
+          "content": "Asynchronous events let a slow or down consumer not take the producer with it.",
+          "similarity": 0.6673898976691621,
+          "importance": 0.2576286483442184,
+          "recency": 0.29726382501248017,
+          "frequency": 0.0
+        },
+        {
+          "id": "a8af2d44-8531-491f-8997-ececbc98613b",
+          "content": "Events carry enough payload to be processed without a synchronous callback to the producer.",
+          "similarity": 0.5909256146955743,
+          "importance": 0.3175768898917933,
+          "recency": 0.29726385949301876,
+          "frequency": 0.0
+        },
+        {
+          "id": "f4b8ff73-f31c-4f4a-9a7a-5a07f66ce04a",
+          "content": "Make every interaction event-driven, including request/response reads, to be fully decoupled.",
+          "similarity": 0.6663888904796398,
+          "importance": 0.214,
+          "recency": 0.2972640472220026,
+          "frequency": 0.0
+        },
+        {
+          "id": "ece84e80-b023-4d7b-aadd-6131268b2af4",
+          "content": "I think the order service emits an event on completion, but it may still be a sync call.",
+          "similarity": 0.5855152757019122,
+          "importance": 0.24028845195395196,
+          "recency": 0.29726406427285074,
+          "frequency": 0.0
+        },
+        {
+          "id": "2bc8c150-0bc5-48c2-b061-334137306040",
+          "content": "A separate change to synchronous touched the same area but addressed coupling rather than the question of how to when should communication between services be ev.",
+          "similarity": 0.7582239513026151,
+          "importance": 0.06341631231909131,
+          "recency": 0.297263963995661,
+          "frequency": 0.0
+        },
+        {
+          "id": "04efd195-2fe1-4164-b0c7-ecef9d368a93",
+          "content": "Unverified note: someone suggested synchronous might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5978498399074419,
+          "importance": 0.1917353443919913,
+          "recency": 0.29726409983246516,
+          "frequency": 0.0
+        },
+        {
+          "id": "3a2ed22b-f841-4ef0-a60a-dfda788b6b74",
+          "content": "Synchronous chains multiply failure probability and latency, so we keep them short.",
+          "similarity": 0.525099315183091,
+          "importance": 0.2625830605543555,
+          "recency": 0.2972638421369267,
+          "frequency": 0.0
+        },
+        {
+          "id": "270b8d19-fd37-4b7a-804e-affe644dce9b",
+          "content": "Unverified note: someone suggested event-driven might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.6782216470462805,
+          "importance": 0.10899683008839366,
+          "recency": 0.2972640820591759,
+          "frequency": 0.0
+        },
+        {
+          "id": "006ca1fe-d72f-4fe0-a32f-60b8a3804b89",
+          "content": "A separate change to coupling touched the same area but addressed eventual consistency rather than the question of how to when should communication between services be ev.",
+          "similarity": 0.6879719686795165,
+          "importance": 0.038644317451119264,
+          "recency": 0.29726398039314555,
+          "frequency": 0.0
+        },
+        {
+          "id": "26e5d8c7-0d5d-4dbf-a895-a0302195bb83",
+          "content": "[2021] Everything should be a synchronous REST call; message queues are too hard to debug.",
+          "similarity": 0.653896602011564,
+          "importance": 0.0683707195101541,
+          "recency": 0.29726399787015567,
+          "frequency": 0.0
+        },
+        {
+          "id": "518c449f-c889-4cae-b597-382a12bba973",
+          "content": "[archived] The earlier event-driven approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.641633042180939,
+          "importance": 0.064407202974839,
+          "recency": 0.29726401372994665,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how do we choose a caching strategy and handle cache invalidation",
+      "target_id": "e89ebcd9-b605-42d2-b059-b3fead05b52f",
+      "relevant_ids": [
+        "34d801d2-d25c-45dc-b7c8-58d5eff4c18e",
+        "4aa27f62-e9f8-437a-853f-71b9dd752c63",
+        "ba0e3b1a-f9bb-487d-af48-f7d92cc9e24e",
+        "e89ebcd9-b605-42d2-b059-b3fead05b52f"
+      ],
+      "memories": [
+        {
+          "id": "e89ebcd9-b605-42d2-b059-b3fead05b52f",
+          "content": "Cache only what's hot and tolerant of staleness, with an explicit TTL and a clear invalidation trigger on write; the stale-data bug came from caching with no invalidation, so we now use write-through plus short TTLs and stampede protection.",
+          "similarity": 0.6583542539082027,
+          "importance": 0.429,
+          "recency": 0.2972641101307998,
+          "frequency": 0.0
+        },
+        {
+          "id": "4aa27f62-e9f8-437a-853f-71b9dd752c63",
+          "content": "Each cached entry documents its staleness tolerance so we know what TTL is safe.",
+          "similarity": 0.6091285457772286,
+          "importance": 0.39734307283020187,
+          "recency": 0.2972641442619169,
+          "frequency": 0.0
+        },
+        {
+          "id": "ba0e3b1a-f9bb-487d-af48-f7d92cc9e24e",
+          "content": "Cache stampedes are prevented with request coalescing or a short randomized TTL jitter.",
+          "similarity": 0.6509735794082685,
+          "importance": 0.32500877994245125,
+          "recency": 0.29726412799606494,
+          "frequency": 0.0
+        },
+        {
+          "id": "194bc730-7dee-4a0f-aa58-4bee0fb437e4",
+          "content": "Cache invalidation isn't worth the complexity; serve whatever is cached and let it go stale.",
+          "similarity": 0.7241680430780267,
+          "importance": 0.251,
+          "recency": 0.2972643524263144,
+          "frequency": 0.0
+        },
+        {
+          "id": "bc5c38af-080b-4b4f-bc06-12028efdc7be",
+          "content": "A separate change to cache touched the same area but addressed invalidation rather than the question of how to how do we choose a caching strategy and handle c.",
+          "similarity": 0.8581077543082299,
+          "importance": 0.044094196981181805,
+          "recency": 0.2972642493112585,
+          "frequency": 0.0
+        },
+        {
+          "id": "34d801d2-d25c-45dc-b7c8-58d5eff4c18e",
+          "content": "Write-through or explicit invalidation keeps the cache from serving stale records after an update.",
+          "similarity": 0.596206767673125,
+          "importance": 0.2913188786188324,
+          "recency": 0.2972641618558719,
+          "frequency": 0.0
+        },
+        {
+          "id": "795d0f75-cfd5-4165-a562-f7657ae970be",
+          "content": "A separate change to invalidation touched the same area but addressed TTL rather than the question of how to how do we choose a caching strategy and handle c.",
+          "similarity": 0.7895021269942873,
+          "importance": 0.055984770156826,
+          "recency": 0.29726426631935055,
+          "frequency": 0.0
+        },
+        {
+          "id": "468b31d1-ba53-480b-b1d3-a51710356bc9",
+          "content": "Unverified note: someone suggested cache might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.6030924129505992,
+          "importance": 0.17439510620222506,
+          "recency": 0.29726438557189505,
+          "frequency": 0.0
+        },
+        {
+          "id": "ab303f2f-d09c-43d0-8cfc-b531a4bfae47",
+          "content": "A separate change to TTL touched the same area but addressed stampede rather than the question of how to how do we choose a caching strategy and handle c.",
+          "similarity": 0.7100370889027298,
+          "importance": 0.04706684516892582,
+          "recency": 0.2972642852773467,
+          "frequency": 0.0
+        },
+        {
+          "id": "e217293b-0369-4053-af41-fa38b28f889e",
+          "content": "[archived] The earlier cache approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6906357333977375,
+          "importance": 0.06341638810072545,
+          "recency": 0.297264319222071,
+          "frequency": 0.0
+        },
+        {
+          "id": "c17dd54f-398a-468b-a832-2fa3c29f27c4",
+          "content": "[2020] Cache everything forever and just restart the service when data looks wrong.",
+          "similarity": 0.6360036809415043,
+          "importance": 0.10503338636120718,
+          "recency": 0.29726430102220497,
+          "frequency": 0.0
+        },
+        {
+          "id": "3c025303-d8cd-4c3c-af69-e244f6725d75",
+          "content": "[archived] The earlier invalidation approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6177121043890793,
+          "importance": 0.08818841934619001,
+          "recency": 0.29726433487471826,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "what retrieval strategy best supports long-horizon agent memory",
+      "target_id": "5faa7872-c547-4eb6-8a77-1f2d0bfecfc6",
+      "relevant_ids": [
+        "30a2505e-3a4a-4289-8857-867c1adb767d",
+        "5faa7872-c547-4eb6-8a77-1f2d0bfecfc6",
+        "a9e69823-f95a-4112-87a0-a33bd2f3d403",
+        "c800c4c0-1ef3-481b-ad08-aa5407d76a6f",
+        "c974ac60-ae44-4f60-8f7e-47ea61b7c392",
+        "d6bddeec-7fb9-4612-a086-f4136bcc0be6"
+      ],
+      "memories": [
+        {
+          "id": "5faa7872-c547-4eb6-8a77-1f2d0bfecfc6",
+          "content": "Long-horizon recall should weight importance and recency alongside semantic similarity so critical-but-distant memories surface; similarity-only retrieval buries an important decision under many superficially similar but low-value notes.",
+          "similarity": 0.5786080939750974,
+          "importance": 0.4265,
+          "recency": 0.2972643934976671,
+          "frequency": 0.0
+        },
+        {
+          "id": "c7ba488b-0f03-41e3-8fe2-332babf8e9c6",
+          "content": "Always return the single most semantically similar memory; ranking by importance hurts relevance.",
+          "similarity": 0.5435131856220127,
+          "importance": 0.335,
+          "recency": 0.29726466475701024,
+          "frequency": 0.0
+        },
+        {
+          "id": "30a2505e-3a4a-4289-8857-867c1adb767d",
+          "content": "Importance is a stored signal on each memory so the ranker doesn't have to infer it at query time.",
+          "similarity": 0.4992160927232659,
+          "importance": 0.34829486132076,
+          "recency": 0.297264462009104,
+          "frequency": 0.0
+        },
+        {
+          "id": "c800c4c0-1ef3-481b-ad08-aa5407d76a6f",
+          "content": "Retrieval is evaluated on recall and ranking, not just top-1 similarity.",
+          "similarity": 0.5594874965271064,
+          "importance": 0.2804194610570687,
+          "recency": 0.2972644463501701,
+          "frequency": 0.0
+        },
+        {
+          "id": "c974ac60-ae44-4f60-8f7e-47ea61b7c392",
+          "content": "A pure-similarity baseline is kept as a control arm so any salience gain is measured against it.",
+          "similarity": 0.42323257798170555,
+          "importance": 0.3869392643664297,
+          "recency": 0.2972644796668319,
+          "frequency": 0.0
+        },
+        {
+          "id": "a9e69823-f95a-4112-87a0-a33bd2f3d403",
+          "content": "Recency weighting helps the latest decision win over an outdated but similar one.",
+          "similarity": 0.5102310525405287,
+          "importance": 0.2739787156480689,
+          "recency": 0.2972644292744979,
+          "frequency": 0.0
+        },
+        {
+          "id": "d6bddeec-7fb9-4612-a086-f4136bcc0be6",
+          "content": "Salience-weighted ranking promotes high-importance memories that aren't the closest match by embedding.",
+          "similarity": 0.5158577779452745,
+          "importance": 0.26109724132552053,
+          "recency": 0.2972644113762247,
+          "frequency": 0.0
+        },
+        {
+          "id": "d59e3077-0e57-4df6-9f4c-40e6b2b390c2",
+          "content": "[archived] The earlier retrieval approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.5759818696681203,
+          "importance": 0.14120069941431931,
+          "recency": 0.2972646303458559,
+          "frequency": 0.0
+        },
+        {
+          "id": "47e8f2c6-b482-4c7a-98fb-91c1d1f321f4",
+          "content": "A separate change to retrieval touched the same area but addressed salience rather than the question of how to what retrieval strategy best supports long-horiz.",
+          "similarity": 0.6101850583647674,
+          "importance": 0.10404259754967013,
+          "recency": 0.2972645644275495,
+          "frequency": 0.0
+        },
+        {
+          "id": "beeaeefb-a2e6-48a4-8e19-99c4d7bdf344",
+          "content": "A separate change to importance touched the same area but addressed recency rather than the question of how to what retrieval strategy best supports long-horiz.",
+          "similarity": 0.6014733670425584,
+          "importance": 0.094133789379768,
+          "recency": 0.2972645980412931,
+          "frequency": 0.0
+        },
+        {
+          "id": "e5659428-0f54-4669-b9c3-0f07057047e9",
+          "content": "Maybe adding frequency-of-access to the score helps, but we haven't measured it.",
+          "similarity": 0.4473969793794133,
+          "importance": 0.22393939379802916,
+          "recency": 0.2972646820327025,
+          "frequency": 0.0
+        },
+        {
+          "id": "af0488d2-b419-404c-9664-e6cba8b33d6d",
+          "content": "The retrieval latency benchmark records p95 over the corpus.",
+          "similarity": 0.5512070088732859,
+          "importance": 0.11097876434600416,
+          "recency": 0.2972645473552888,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how should we engineer the context window for an agent task to stay relevant",
+      "target_id": "1fe529b1-f952-4640-bee4-2c50129dd96a",
+      "relevant_ids": [
+        "1fe529b1-f952-4640-bee4-2c50129dd96a",
+        "235255f0-4a98-4423-9d83-241d0dbca87f",
+        "3768e813-cabc-4e96-ae4a-e5f1b3365f54",
+        "c54fa768-8947-4656-885b-66b48908c547"
+      ],
+      "memories": [
+        {
+          "id": "1fe529b1-f952-4640-bee4-2c50129dd96a",
+          "content": "Fill the context with the most task-relevant material under a token budget and compact or drop the rest; a bloated window of marginally related text measurably degraded task accuracy, so we rank-and-trim before each call.",
+          "similarity": 0.6186690782395113,
+          "importance": 0.4865,
+          "recency": 0.2972647082046378,
+          "frequency": 0.0
+        },
+        {
+          "id": "3768e813-cabc-4e96-ae4a-e5f1b3365f54",
+          "content": "Irrelevant context is actively harmful, not neutral, so the window is curated rather than stuffed.",
+          "similarity": 0.592878655362626,
+          "importance": 0.3889213477589684,
+          "recency": 0.2972647244016798,
+          "frequency": 0.0
+        },
+        {
+          "id": "235255f0-4a98-4423-9d83-241d0dbca87f",
+          "content": "Retrieved context is ranked by relevance and truncated to a budget before the prompt is built.",
+          "similarity": 0.5754484517924652,
+          "importance": 0.2843832848091536,
+          "recency": 0.29726475764015076,
+          "frequency": 0.0
+        },
+        {
+          "id": "765f10df-7715-469e-b8b9-79a153627446",
+          "content": "Unverified note: someone suggested context window might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5757827579502245,
+          "importance": 0.24326184496043304,
+          "recency": 0.2972649836582908,
+          "frequency": 0.0
+        },
+        {
+          "id": "c54fa768-8947-4656-885b-66b48908c547",
+          "content": "Long histories are summarized into compact checkpoints to preserve the token budget.",
+          "similarity": 0.39067065957042585,
+          "importance": 0.38892136963621743,
+          "recency": 0.297264741123144,
+          "frequency": 0.0
+        },
+        {
+          "id": "1ffe1067-a357-4a60-9385-d99de061f0e8",
+          "content": "A separate change to token budget touched the same area but addressed relevance rather than the question of how to how should we engineer the context window for an.",
+          "similarity": 0.6439619353012581,
+          "importance": 0.10107005275740119,
+          "recency": 0.29726486105110045,
+          "frequency": 0.0
+        },
+        {
+          "id": "eba9d672-971d-41c9-ac2a-3eac808938bf",
+          "content": "A separate change to relevance touched the same area but addressed compaction rather than the question of how to how should we engineer the context window for an.",
+          "similarity": 0.6746946933612098,
+          "importance": 0.059948417356642546,
+          "recency": 0.2972648794543463,
+          "frequency": 0.0
+        },
+        {
+          "id": "e585a7db-13e3-4afa-84aa-a44239768c3c",
+          "content": "[archived] The earlier context window approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6403648347581696,
+          "importance": 0.06638916401480836,
+          "recency": 0.29726491349906237,
+          "frequency": 0.0
+        },
+        {
+          "id": "34a38466-abda-4812-abc5-66696c0cc0d6",
+          "content": "A separate change to context window touched the same area but addressed token budget rather than the question of how to how should we engineer the context window for an.",
+          "similarity": 0.6145471835266454,
+          "importance": 0.07084812106645808,
+          "recency": 0.29726484363540895,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how do we design an evaluation benchmark that can discriminate between strategies",
+      "target_id": "fabe97d5-0058-4ba0-a4ee-b48b07fbae49",
+      "relevant_ids": [
+        "011ecc88-d110-4667-aa50-89b382449fb3",
+        "51446997-341f-4143-a385-e594977f8fc0",
+        "51db019e-ac42-44da-bc36-de05635daf12",
+        "fabe97d5-0058-4ba0-a4ee-b48b07fbae49"
+      ],
+      "memories": [
+        {
+          "id": "fabe97d5-0058-4ba0-a4ee-b48b07fbae49",
+          "content": "A discriminating benchmark must avoid saturation: include more relevant items than k and many plausible distractors so a metric like recall@k can't trivially hit 1.0 for every strategy, which is exactly why the 13-memory smoke test couldn't separate retrievers.",
+          "similarity": 0.6625878146774922,
+          "importance": 0.453,
+          "recency": 0.29726498090398357,
+          "frequency": 0.0
+        },
+        {
+          "id": "011ecc88-d110-4667-aa50-89b382449fb3",
+          "content": "Gold labels separate target memories from supporting-relevant ones for fine-grained scoring.",
+          "similarity": 0.48901877917206504,
+          "importance": 0.3923898254365105,
+          "recency": 0.29726501926992477,
+          "frequency": 0.0
+        },
+        {
+          "id": "8adbf576-c1d6-429f-abe5-3118bd0a2a8a",
+          "content": "A separate change to discriminating touched the same area but addressed distractor rather than the question of how to how do we design an evaluation benchmark that ca.",
+          "similarity": 0.7094375814206539,
+          "importance": 0.07183908698008716,
+          "recency": 0.29726518750372943,
+          "frequency": 0.0
+        },
+        {
+          "id": "f616172e-3833-4552-af60-6d56861acc35",
+          "content": "Unverified note: someone suggested benchmark might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5689051889785223,
+          "importance": 0.20759026063189576,
+          "recency": 0.2972652896875994,
+          "frequency": 0.0
+        },
+        {
+          "id": "c3341780-b90f-41a7-a9e0-fc91073b9fd1",
+          "content": "A separate change to saturation touched the same area but addressed discriminating rather than the question of how to how do we design an evaluation benchmark that ca.",
+          "similarity": 0.6507881726755248,
+          "importance": 0.08868410917064751,
+          "recency": 0.29726517040432554,
+          "frequency": 0.0
+        },
+        {
+          "id": "40ac9f66-dc96-4cdb-8747-ffd5705e6c2a",
+          "content": "A separate change to benchmark touched the same area but addressed saturation rather than the question of how to how do we design an evaluation benchmark that ca.",
+          "similarity": 0.6826688432455995,
+          "importance": 0.0386444699488926,
+          "recency": 0.297265153452861,
+          "frequency": 0.0
+        },
+        {
+          "id": "51db019e-ac42-44da-bc36-de05635daf12",
+          "content": "Distractors should be plausible and semantically close so they actually challenge similarity-only retrieval.",
+          "similarity": 0.42483737384453674,
+          "importance": 0.27893365956076743,
+          "recency": 0.29726500130722583,
+          "frequency": 0.0
+        },
+        {
+          "id": "1cde8d25-841e-4e33-86f3-8c7e25f6676e",
+          "content": "Benchmark size doesn't matter; if recall is 1.0 the retriever is perfect, no need for distractors.",
+          "similarity": 0.5169409979762348,
+          "importance": 0.173,
+          "recency": 0.29726525577949053,
+          "frequency": 0.0
+        },
+        {
+          "id": "51446997-341f-4143-a385-e594977f8fc0",
+          "content": "Multiple cutoffs (recall@1/3/5/10) reveal coverage differences a single k hides.",
+          "similarity": 0.43547460728813414,
+          "importance": 0.25267528119656685,
+          "recency": 0.2972650367017638,
+          "frequency": 0.0
+        },
+        {
+          "id": "2a44e04d-e670-4cb4-9ecd-a0ceaccb4edd",
+          "content": "[archived] The earlier benchmark approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6089646649701755,
+          "importance": 0.0510305295902024,
+          "recency": 0.2972652209137209,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how do we make agent evaluation runs reproducible and replayable",
+      "target_id": "9cc50fdf-23d9-4901-b362-af19452f0ba3",
+      "relevant_ids": [
+        "4b52ce12-8648-4a57-939f-be39892a4e61",
+        "69897634-77ff-46e8-b0bb-58c40b37bddf",
+        "8af2751b-5210-4201-8e6b-0b83ebfed6f5",
+        "9cc50fdf-23d9-4901-b362-af19452f0ba3"
+      ],
+      "memories": [
+        {
+          "id": "9cc50fdf-23d9-4901-b362-af19452f0ba3",
+          "content": "Every run must persist enough metadata \u2014 model, prompt, context package, and seed \u2014 to replay it later against new strategies; reproducibility is a first-class requirement, so the luck roll is seeded by (agent, case, trial) and never by the strategy under test.",
+          "similarity": 0.5870273761459781,
+          "importance": 0.466,
+          "recency": 0.2972652939594511,
+          "frequency": 0.0
+        },
+        {
+          "id": "eccda0b6-9675-4201-bfd7-7bbc5f0ae5f3",
+          "content": "A separate change to reproducible touched the same area but addressed replay rather than the question of how to how do we make agent evaluation runs reproducibl.",
+          "similarity": 0.8825330055336739,
+          "importance": 0.10751099965901653,
+          "recency": 0.2972654368451275,
+          "frequency": 0.0
+        },
+        {
+          "id": "69897634-77ff-46e8-b0bb-58c40b37bddf",
+          "content": "Stored run records link the case, context version, and agent run for deterministic replay.",
+          "similarity": 0.5339221693170265,
+          "importance": 0.3443323415201532,
+          "recency": 0.2972653308086859,
+          "frequency": 0.0
+        },
+        {
+          "id": "0ffc839a-dcd7-4f65-abee-c76313016205",
+          "content": "A separate change to replay touched the same area but addressed seed rather than the question of how to how do we make agent evaluation runs reproducibl.",
+          "similarity": 0.8113678647256342,
+          "importance": 0.03765362429037252,
+          "recency": 0.2972654549239141,
+          "frequency": 0.0
+        },
+        {
+          "id": "4b52ce12-8648-4a57-939f-be39892a4e61",
+          "content": "Synthetic results are flagged as non-production so they aren't mistaken for real evidence.",
+          "similarity": 0.44240419082101423,
+          "importance": 0.40626264174800225,
+          "recency": 0.29726534762040996,
+          "frequency": 0.0
+        },
+        {
+          "id": "526f8cb9-8596-425e-b2ec-0161121d8087",
+          "content": "[2024] Just rerun the agent; if results differ, average a few runs and move on.",
+          "similarity": 0.7331301116398796,
+          "importance": 0.10652013365934851,
+          "recency": 0.29726548928182334,
+          "frequency": 0.0
+        },
+        {
+          "id": "db297b38-e616-4f1f-947d-e3e204f2d5c4",
+          "content": "A separate change to seed touched the same area but addressed metadata rather than the question of how to how do we make agent evaluation runs reproducibl.",
+          "similarity": 0.714982207059826,
+          "importance": 0.06936194343100761,
+          "recency": 0.2972654718470959,
+          "frequency": 0.0
+        },
+        {
+          "id": "d36a11a3-1a27-4bbd-ac64-20b3301e29d9",
+          "content": "Unverified note: someone suggested reproducible might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.4722598148621663,
+          "importance": 0.2422714504197561,
+          "recency": 0.29726558333704456,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how should the eval platform stay decoupled from execution and retrieval providers",
+      "target_id": "3f7f497b-3089-48a4-80d3-e2526db0afe7",
+      "relevant_ids": [
+        "12219c81-b34c-4f9f-8a4c-d07735e49158",
+        "3f7f497b-3089-48a4-80d3-e2526db0afe7",
+        "a4a7e5e3-0666-4464-9e10-d47dd22b9465",
+        "c3aad94c-eed6-45b8-abeb-7bdf7929f445"
+      ],
+      "memories": [
+        {
+          "id": "3f7f497b-3089-48a4-80d3-e2526db0afe7",
+          "content": "Execution and retrieval must sit behind provider interfaces with mock and real MCP implementations that are drop-in equivalents; the eval platform measures outcomes and must not absorb workspace management or context generation that belong to other systems.",
+          "similarity": 0.7888762205768028,
+          "importance": 0.455,
+          "recency": 0.29726559004134157,
+          "frequency": 0.0
+        },
+        {
+          "id": "c3aad94c-eed6-45b8-abeb-7bdf7929f445",
+          "content": "Retrieval/memory logic stays behind the Cortex provider, not inside the eval engine.",
+          "similarity": 0.673523433320922,
+          "importance": 0.3869407761807313,
+          "recency": 0.29726564111195747,
+          "frequency": 0.0
+        },
+        {
+          "id": "731ca7cf-0038-4216-8266-d9ac14273136",
+          "content": "The eval platform should run the agent and generate context itself to avoid coordinating with other teams.",
+          "similarity": 0.7449181809539024,
+          "importance": 0.102,
+          "recency": 0.29726583873186074,
+          "frequency": 0.0
+        },
+        {
+          "id": "3b68c290-62da-4f7b-9ecb-ef117de42d6f",
+          "content": "A separate change to provider interface touched the same area but addressed boundary rather than the question of how to how should the eval platform stay decoupled from.",
+          "similarity": 0.7677186978772043,
+          "importance": 0.050039730738469027,
+          "recency": 0.2972657271591424,
+          "frequency": 0.0
+        },
+        {
+          "id": "12219c81-b34c-4f9f-8a4c-d07735e49158",
+          "content": "Mock providers let the full pipeline run end-to-end without a live backend.",
+          "similarity": 0.4895976945132348,
+          "importance": 0.2819068842724468,
+          "recency": 0.2972656073170876,
+          "frequency": 0.0
+        },
+        {
+          "id": "a4a7e5e3-0666-4464-9e10-d47dd22b9465",
+          "content": "Real MCP providers are selected from the environment and fall back to mocks independently.",
+          "similarity": 0.4543085049270785,
+          "importance": 0.3116334617385217,
+          "recency": 0.29726562327990935,
+          "frequency": 0.0
+        },
+        {
+          "id": "4e61d705-7583-4656-ad75-d123b37e1f8d",
+          "content": "A separate change to MCP touched the same area but addressed mock rather than the question of how to how should the eval platform stay decoupled from.",
+          "similarity": 0.6830439734623852,
+          "importance": 0.08273897022126055,
+          "recency": 0.2972657612739104,
+          "frequency": 0.0
+        },
+        {
+          "id": "9ab3c024-b059-4f3a-b2f6-bae54893bff5",
+          "content": "Unverified note: someone suggested provider interface might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5058778277639812,
+          "importance": 0.17290964962011998,
+          "recency": 0.2972658732723331,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "what guidelines keep pull request diffs small and focused",
+      "target_id": "492ea060-9de0-4e8a-9223-8cb777eabbcc",
+      "relevant_ids": [
+        "0809d578-e6aa-4757-ae84-58455f8bd898",
+        "207d4fd5-e6df-44b9-8dab-7dfc6c9344fd",
+        "492ea060-9de0-4e8a-9223-8cb777eabbcc",
+        "94a97f47-d4f2-47d6-88bb-42c862a3d425",
+        "a542dd42-7347-4270-b41c-47b8c58c46d7",
+        "e8ccb1fd-cd91-4482-9838-9b46f9ce7495"
+      ],
+      "memories": [
+        {
+          "id": "492ea060-9de0-4e8a-9223-8cb777eabbcc",
+          "content": "A PR must touch only files required by its task; unrelated edits, drive-by refactors, and whitespace churn are rejected in review because they hide the real change and bloat the diff.",
+          "similarity": 0.6947055363606928,
+          "importance": 0.4385,
+          "recency": 0.2972658776785384,
+          "frequency": 0.0
+        },
+        {
+          "id": "e8ccb1fd-cd91-4482-9838-9b46f9ce7495",
+          "content": "Large changes are split into a stack of small, independently reviewable PRs.",
+          "similarity": 0.6861138714537844,
+          "importance": 0.3101474334302755,
+          "recency": 0.2972659106359673,
+          "frequency": 0.0
+        },
+        {
+          "id": "a542dd42-7347-4270-b41c-47b8c58c46d7",
+          "content": "Reviewers approve faster when the diff is small, so focus is also a velocity win.",
+          "similarity": 0.5958451674397991,
+          "importance": 0.37950958106323307,
+          "recency": 0.2972659903888759,
+          "frequency": 0.0
+        },
+        {
+          "id": "94a97f47-d4f2-47d6-88bb-42c862a3d425",
+          "content": "Mechanical reformatting goes in its own commit, separate from behavior changes.",
+          "similarity": 0.5537424046972748,
+          "importance": 0.3928864675433255,
+          "recency": 0.2972659275232437,
+          "frequency": 0.0
+        },
+        {
+          "id": "207d4fd5-e6df-44b9-8dab-7dfc6c9344fd",
+          "content": "Reviewers flag trailing-newline and reformat-only changes as noise that obscures intent.",
+          "similarity": 0.5950091880872779,
+          "importance": 0.32897425634474947,
+          "recency": 0.29726589428742417,
+          "frequency": 0.0
+        },
+        {
+          "id": "a24edec8-177d-47f7-a24b-acc2cfbc6b82",
+          "content": "A separate change to focused touched the same area but addressed scope creep rather than the question of how to what guidelines keep pull request diffs small an.",
+          "similarity": 0.796925577477936,
+          "importance": 0.11742010767596524,
+          "recency": 0.29726609538211096,
+          "frequency": 0.0
+        },
+        {
+          "id": "fa7ce891-b952-4701-865b-2f680e055dd2",
+          "content": "A separate change to diff touched the same area but addressed focused rather than the question of how to what guidelines keep pull request diffs small an.",
+          "similarity": 0.8506633770977745,
+          "importance": 0.05598511136980653,
+          "recency": 0.2972660780696897,
+          "frequency": 0.0
+        },
+        {
+          "id": "0809d578-e6aa-4757-ae84-58455f8bd898",
+          "content": "A PR that touches files outside the task's scope is sent back to trim the unrelated edits.",
+          "similarity": 0.547448812128671,
+          "importance": 0.3299652260160117,
+          "recency": 0.2972659693837148,
+          "frequency": 0.0
+        },
+        {
+          "id": "f7d0b7a8-4d29-4ea1-9651-c418a173207a",
+          "content": "Maybe our guideline caps PRs at 400 lines, but the number might have changed.",
+          "similarity": 0.6717157242010231,
+          "importance": 0.16101919911478868,
+          "recency": 0.2972662137502996,
+          "frequency": 0.0
+        },
+        {
+          "id": "41b11a0d-60d0-44f8-a4a1-68ce29ccafc8",
+          "content": "[2021] Big PRs are fine if they're well described; reviewers should just read more carefully.",
+          "similarity": 0.6745104060682561,
+          "importance": 0.14417407242092217,
+          "recency": 0.29726612870285285,
+          "frequency": 0.0
+        },
+        {
+          "id": "2d9bdf78-b50d-4601-902b-4713cc82ff1c",
+          "content": "A separate change to scope creep touched the same area but addressed whitespace rather than the question of how to what guidelines keep pull request diffs small an.",
+          "similarity": 0.7232280488934021,
+          "importance": 0.05003979550091655,
+          "recency": 0.29726611188655344,
+          "frequency": 0.0
+        },
+        {
+          "id": "f1a018e4-7be3-4737-8469-60eb189fd20b",
+          "content": "Bundle unrelated cleanups into the same PR; it saves opening multiple reviews.",
+          "similarity": 0.6327116143506222,
+          "importance": 0.137,
+          "recency": 0.29726619604429516,
+          "frequency": 0.0
+        },
+        {
+          "id": "88533328-b189-4e36-a5a8-d3dc7a2671e9",
+          "content": "We squash-merge so the main branch has one commit per PR.",
+          "similarity": 0.6122919050991994,
+          "importance": 0.1139519763143115,
+          "recency": 0.2972660251677691,
+          "frequency": 0.0
+        },
+        {
+          "id": "9533cdb8-d964-4e83-896a-6fd4e7cf5654",
+          "content": "The PR template lists a checklist of sections to fill in before requesting review.",
+          "similarity": 0.66198116043508,
+          "importance": 0.0416172409934432,
+          "recency": 0.29726600709594336,
+          "frequency": 0.0
+        },
+        {
+          "id": "dd44ca72-0946-429d-b45c-57d42b09187f",
+          "content": "Unverified note: someone suggested diff might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.45023779732346136,
+          "importance": 0.24524464067580717,
+          "recency": 0.29726623112211104,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "what testing is required before a change can be merged",
+      "target_id": "795ec92a-e677-430e-ba8a-33dc5f143e06",
+      "relevant_ids": [
+        "795ec92a-e677-430e-ba8a-33dc5f143e06",
+        "799820ec-e996-470e-bb73-85c34fca0901",
+        "b2b8365e-26c7-4339-8f92-f9708942fa5d",
+        "c7ae81d0-e9b5-4c62-9f50-26947a1ae358"
+      ],
+      "memories": [
+        {
+          "id": "795ec92a-e677-430e-ba8a-33dc5f143e06",
+          "content": "A change merges only with tests covering the new behavior and a regression test for any bug it fixes; CI must be green, and a bug fix without a failing-then-passing test is sent back.",
+          "similarity": 0.7379506259962635,
+          "importance": 0.495,
+          "recency": 0.2972662291865041,
+          "frequency": 0.0
+        },
+        {
+          "id": "799820ec-e996-470e-bb73-85c34fca0901",
+          "content": "CI runs the full suite as a required merge gate, not an optional check.",
+          "similarity": 0.6647617887087085,
+          "importance": 0.38050086731220834,
+          "recency": 0.2972663025875833,
+          "frequency": 0.0
+        },
+        {
+          "id": "399f3889-f4ce-449f-b913-e8372b920e08",
+          "content": "Coverage percentage is all that matters; a high number means the change is safe to merge untested.",
+          "similarity": 0.7022103062009595,
+          "importance": 0.273,
+          "recency": 0.2972664982903629,
+          "frequency": 0.0
+        },
+        {
+          "id": "c7ae81d0-e9b5-4c62-9f50-26947a1ae358",
+          "content": "Bug fixes add a test that fails before the fix and passes after, proving the fix works.",
+          "similarity": 0.6427159157673632,
+          "importance": 0.327983760087772,
+          "recency": 0.2972662478136111,
+          "frequency": 0.0
+        },
+        {
+          "id": "adb888af-2be6-4c30-ab0a-442c154b187f",
+          "content": "A separate change to tests touched the same area but addressed coverage rather than the question of how to what testing is required before a change can be .",
+          "similarity": 0.7795042501296089,
+          "importance": 0.09710702014537437,
+          "recency": 0.29726638820004614,
+          "frequency": 0.0
+        },
+        {
+          "id": "430b4535-054e-4884-bec9-ef8945e33b37",
+          "content": "A separate change to regression touched the same area but addressed CI rather than the question of how to what testing is required before a change can be .",
+          "similarity": 0.7690246498634955,
+          "importance": 0.09958425323681014,
+          "recency": 0.29726642757248806,
+          "frequency": 0.0
+        },
+        {
+          "id": "f824f073-a32c-42fb-b23a-6f451980db9f",
+          "content": "A separate change to coverage touched the same area but addressed regression rather than the question of how to what testing is required before a change can be .",
+          "similarity": 0.7244917029785282,
+          "importance": 0.08273915001404286,
+          "recency": 0.2972664072360026,
+          "frequency": 0.0
+        },
+        {
+          "id": "99169f46-b66c-4b22-8352-bde8d2248332",
+          "content": "Unverified note: someone suggested tests might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.590585246502171,
+          "importance": 0.1961959131262304,
+          "recency": 0.2972665350396635,
+          "frequency": 0.0
+        },
+        {
+          "id": "78462ce2-ced1-4a93-b9d5-eccab6f6ffd7",
+          "content": "[archived] The earlier tests approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6201737346757404,
+          "importance": 0.14714689884688129,
+          "recency": 0.2972664623168524,
+          "frequency": 0.0
+        },
+        {
+          "id": "b2b8365e-26c7-4339-8f92-f9708942fa5d",
+          "content": "New behavior is covered at the level it lives \u2014 unit for logic, integration for wiring.",
+          "similarity": 0.43765532660217765,
+          "importance": 0.27843940696050473,
+          "recency": 0.29726627077626006,
+          "frequency": 0.0
+        },
+        {
+          "id": "cbbf4c69-1b6f-4cfd-b1f0-ce26cbfee435",
+          "content": "I think the merge gate requires 80% coverage, but the threshold may not be enforced.",
+          "similarity": 0.5911363797655479,
+          "importance": 0.11444760920145526,
+          "recency": 0.2972665174062978,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "what makes a good code review and how many approvals are needed",
+      "target_id": "322bfaf0-3681-4dfe-bf0a-29deecd89143",
+      "relevant_ids": [
+        "322bfaf0-3681-4dfe-bf0a-29deecd89143",
+        "63c990d6-eda5-446d-8bcf-e5bafcba0807",
+        "660887b1-0fa9-460e-9409-2dadb958fc10",
+        "e4d134f0-2ea7-4635-8d2c-74a8db39e88c"
+      ],
+      "memories": [
+        {
+          "id": "322bfaf0-3681-4dfe-bf0a-29deecd89143",
+          "content": "A good review checks correctness, edge cases, and design against the task's intent \u2014 not just style \u2014 and risky or cross-cutting changes need an owning-area reviewer's approval, not just any rubber-stamp.",
+          "similarity": 0.5895422276896138,
+          "importance": 0.426,
+          "recency": 0.2972665423490138,
+          "frequency": 0.0
+        },
+        {
+          "id": "e4d134f0-2ea7-4635-8d2c-74a8db39e88c",
+          "content": "Review feedback references the task's acceptance criteria, not personal preference.",
+          "similarity": 0.5532415259488145,
+          "importance": 0.350774580365649,
+          "recency": 0.2972665935301315,
+          "frequency": 0.0
+        },
+        {
+          "id": "e82455d6-4a81-4db2-8186-3d83c0912034",
+          "content": "A separate change to review quality touched the same area but addressed approval rather than the question of how to what makes a good code review and how many appro.",
+          "similarity": 0.760567562943353,
+          "importance": 0.11692489254753394,
+          "recency": 0.29726667596822715,
+          "frequency": 0.0
+        },
+        {
+          "id": "6a49dcc2-f4d7-42c8-8282-d0ee82d5fc26",
+          "content": "Reviews should only check formatting and style; design and correctness are the author's job alone.",
+          "similarity": 0.6406102908357336,
+          "importance": 0.2155,
+          "recency": 0.2972667812679965,
+          "frequency": 0.0
+        },
+        {
+          "id": "660887b1-0fa9-460e-9409-2dadb958fc10",
+          "content": "Reviewers distinguish blocking concerns from optional nits so authors know what must change.",
+          "similarity": 0.5390612796518028,
+          "importance": 0.31658888548331554,
+          "recency": 0.29726655913918393,
+          "frequency": 0.0
+        },
+        {
+          "id": "52eb4d17-44bb-40de-a921-0fea77e55624",
+          "content": "A separate change to approval touched the same area but addressed ownership rather than the question of how to what makes a good code review and how many appro.",
+          "similarity": 0.7304398653078388,
+          "importance": 0.12187934475665543,
+          "recency": 0.29726669452834836,
+          "frequency": 0.0
+        },
+        {
+          "id": "63c990d6-eda5-446d-8bcf-e5bafcba0807",
+          "content": "Changes to a critical area require sign-off from that area's owner.",
+          "similarity": 0.4265616021508671,
+          "importance": 0.38446477251798356,
+          "recency": 0.297266576689083,
+          "frequency": 0.0
+        },
+        {
+          "id": "5ad38d11-3c1f-4831-b8b7-c8367094934d",
+          "content": "A separate change to ownership touched the same area but addressed feedback rather than the question of how to what makes a good code review and how many appro.",
+          "similarity": 0.691749333727286,
+          "importance": 0.08174834592815806,
+          "recency": 0.2972667124659498,
+          "frequency": 0.0
+        },
+        {
+          "id": "0c97f9cb-4053-469a-81d8-bcbcf1f87f65",
+          "content": "Unverified note: someone suggested review quality might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5702562805001239,
+          "importance": 0.19817787682441046,
+          "recency": 0.2972668152365362,
+          "frequency": 0.0
+        },
+        {
+          "id": "e5363a63-9914-4f58-a7e8-0ad557251217",
+          "content": "[archived] The earlier review quality approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6031326011664199,
+          "importance": 0.11989758803961509,
+          "recency": 0.2972667472055777,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "how do we keep naming and code style consistent across the codebase",
+      "target_id": "88207704-0b45-47bd-9666-5a382cbef7c3",
+      "relevant_ids": [
+        "2c2d01bb-dab9-4eef-be41-e6cc87ba7e04",
+        "4a67c5d8-15a9-4c20-966d-6a3d89bb2e23",
+        "88207704-0b45-47bd-9666-5a382cbef7c3",
+        "bd8f2609-f396-4867-b16a-091f18db09be"
+      ],
+      "memories": [
+        {
+          "id": "2c2d01bb-dab9-4eef-be41-e6cc87ba7e04",
+          "content": "Names follow the surrounding file's conventions rather than a contributor's personal habit.",
+          "similarity": 0.6392495384273061,
+          "importance": 0.4077510391995994,
+          "recency": 0.29726685725357743,
+          "frequency": 0.0
+        },
+        {
+          "id": "88207704-0b45-47bd-9666-5a382cbef7c3",
+          "content": "New code should read like the code around it: match the existing module's naming, idioms, and structure, with automated formatting and linting enforcing the mechanical rules so reviews focus on substance.",
+          "similarity": 0.6158264155156269,
+          "importance": 0.429,
+          "recency": 0.29726681783107656,
+          "frequency": 0.0
+        },
+        {
+          "id": "4a67c5d8-15a9-4c20-966d-6a3d89bb2e23",
+          "content": "Public APIs follow documented naming conventions for discoverability.",
+          "similarity": 0.6803288548589769,
+          "importance": 0.35325213784887727,
+          "recency": 0.29726687617008374,
+          "frequency": 0.0
+        },
+        {
+          "id": "d93545a2-9a75-4da1-89a3-9ba29c12b4d0",
+          "content": "A separate change to style touched the same area but addressed convention rather than the question of how to how do we keep naming and code style consistent .",
+          "similarity": 0.7930240065163537,
+          "importance": 0.11395234535712487,
+          "recency": 0.2972669878880723,
+          "frequency": 0.0
+        },
+        {
+          "id": "bd8f2609-f396-4867-b16a-091f18db09be",
+          "content": "Formatters and linters run in CI so style isn't argued in review.",
+          "similarity": 0.5438435338145711,
+          "importance": 0.3086620650743034,
+          "recency": 0.2972668363475642,
+          "frequency": 0.0
+        },
+        {
+          "id": "d3c48089-61b5-4538-91d7-4de44fbfc068",
+          "content": "A separate change to naming touched the same area but addressed style rather than the question of how to how do we keep naming and code style consistent .",
+          "similarity": 0.8131467623691538,
+          "importance": 0.02724947222800595,
+          "recency": 0.2972669697599854,
+          "frequency": 0.0
+        },
+        {
+          "id": "b5a7dd28-86a4-470a-bb3a-d1303fd3d4f0",
+          "content": "A separate change to convention touched the same area but addressed linter rather than the question of how to how do we keep naming and code style consistent .",
+          "similarity": 0.7385096411250338,
+          "importance": 0.08125298131668618,
+          "recency": 0.29726700481706503,
+          "frequency": 0.0
+        },
+        {
+          "id": "c4002d7c-850f-4122-a2bc-54e1e740e3e9",
+          "content": "Consistency doesn't matter; write each file in whatever personal style you prefer.",
+          "similarity": 0.5480560502964459,
+          "importance": 0.1965,
+          "recency": 0.29726707876597364,
+          "frequency": 0.0
+        },
+        {
+          "id": "55d6a585-30ff-4a2d-97fa-7674881f2b0e",
+          "content": "Unverified note: someone suggested style might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.5331779027058647,
+          "importance": 0.20907788466710092,
+          "recency": 0.2972671345976944,
+          "frequency": 0.0
+        },
+        {
+          "id": "fe0d9c6f-fd1a-4c94-a1d1-da10a849a38e",
+          "content": "[2021] Everyone formats code their own way; we'll standardize someday.",
+          "similarity": 0.6166701296662179,
+          "importance": 0.11890680996763303,
+          "recency": 0.2972670249190031,
+          "frequency": 0.0
+        },
+        {
+          "id": "61200789-3f38-4cb5-8650-741d15f404aa",
+          "content": "The docs use a consistent voice per the style guide.",
+          "similarity": 0.6609800153567438,
+          "importance": 0.07084862334642882,
+          "recency": 0.2972669511038971,
+          "frequency": 0.0
+        },
+        {
+          "id": "92090e33-727d-4877-a4a4-1b6c9c0523b8",
+          "content": "[archived] The earlier naming approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.6231787700795984,
+          "importance": 0.10354801991005967,
+          "recency": 0.2972670428039196,
+          "frequency": 0.0
+        },
+        {
+          "id": "5c707b14-f765-4b2a-9792-1a596c65d70a",
+          "content": "I think we settled on snake_case for module-level constants, but it's not in the style doc.",
+          "similarity": 0.5887832375005894,
+          "importance": 0.13377019328517087,
+          "recency": 0.29726709618918906,
+          "frequency": 0.0
+        },
+        {
+          "id": "d7e090b0-ebf3-4cdb-9c7a-5a107acd877f",
+          "content": "[archived] The earlier style approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.5643358254416896,
+          "importance": 0.13773373832870112,
+          "recency": 0.29726706114100204,
+          "frequency": 0.0
+        }
+      ]
+    },
+    {
+      "query": "what should a pull request description contain to be reviewable",
+      "target_id": "26542a45-63eb-4e18-9e72-94826dfad19e",
+      "relevant_ids": [
+        "26542a45-63eb-4e18-9e72-94826dfad19e",
+        "5141e12e-d166-4406-ad65-3aefab3085a8",
+        "82e2fd13-4c76-4fb7-86ae-949841ad2228",
+        "9a77c394-1f4b-4830-9df7-cc2a7c077d73"
+      ],
+      "memories": [
+        {
+          "id": "26542a45-63eb-4e18-9e72-94826dfad19e",
+          "content": "A PR description states what changed and why, links the task and its acceptance criteria, and notes how it was tested; reviewers can't evaluate intent without the why, so a description that only restates the diff is sent back.",
+          "similarity": 0.7149225297387177,
+          "importance": 0.4565,
+          "recency": 0.29726712425076324,
+          "frequency": 0.0
+        },
+        {
+          "id": "82e2fd13-4c76-4fb7-86ae-949841ad2228",
+          "content": "Linking the originating issue lets the reviewer check the change against its acceptance criteria.",
+          "similarity": 0.5908081124736472,
+          "importance": 0.41914667032736347,
+          "recency": 0.29726714207606486,
+          "frequency": 0.0
+        },
+        {
+          "id": "9a77c394-1f4b-4830-9df7-cc2a7c077d73",
+          "content": "Out-of-scope follow-ups are called out so they aren't expected in this PR.",
+          "similarity": 0.6069273050020586,
+          "importance": 0.3324437962856614,
+          "recency": 0.29726717998709906,
+          "frequency": 0.0
+        },
+        {
+          "id": "d2b0643c-2670-4a27-8e65-778934f438a4",
+          "content": "A separate change to PR description touched the same area but addressed context rather than the question of how to what should a pull request description contain t.",
+          "similarity": 0.781007364545762,
+          "importance": 0.12138413492062503,
+          "recency": 0.2972672691932879,
+          "frequency": 0.0
+        },
+        {
+          "id": "c9e8d69c-21f2-4908-8902-7a06ae41d92a",
+          "content": "Just paste the list of changed files as the description; explaining why is unnecessary detail.",
+          "similarity": 0.5857964134885123,
+          "importance": 0.28,
+          "recency": 0.29726737548623466,
+          "frequency": 0.0
+        },
+        {
+          "id": "b4facdf0-4564-416f-9aa5-9397ee4d167e",
+          "content": "[archived] The earlier PR description approach was the accepted answer before the last replatform; it has since been superseded and should not be relied on.",
+          "similarity": 0.7049866751872759,
+          "importance": 0.14169743223706863,
+          "recency": 0.29726734035740715,
+          "frequency": 0.0
+        },
+        {
+          "id": "9985dd4c-9626-4c47-82b4-7f7406a06c3e",
+          "content": "Unverified note: someone suggested PR description might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.6004617412660405,
+          "importance": 0.16498343281657504,
+          "recency": 0.2972674465162719,
+          "frequency": 0.0
+        },
+        {
+          "id": "7ae046d7-ecb9-4089-8017-c83eb391fd1d",
+          "content": "[2021] The diff speaks for itself; a description is optional busywork.",
+          "similarity": 0.6163263717574263,
+          "importance": 0.1486336610813809,
+          "recency": 0.2972673221626823,
+          "frequency": 0.0
+        },
+        {
+          "id": "b6722e2a-5bed-45b1-8184-177fd8b392bd",
+          "content": "A separate change to acceptance criteria touched the same area but addressed what and why rather than the question of how to what should a pull request description contain t.",
+          "similarity": 0.7358067537848916,
+          "importance": 0.02625861184041236,
+          "recency": 0.2972673038536453,
+          "frequency": 0.0
+        },
+        {
+          "id": "5141e12e-d166-4406-ad65-3aefab3085a8",
+          "content": "Testing notes tell the reviewer what was verified and what wasn't.",
+          "similarity": 0.46669836092238587,
+          "importance": 0.29478993539492293,
+          "recency": 0.29726716174269996,
+          "frequency": 0.0
+        },
+        {
+          "id": "f4bb7967-379f-4a3b-ad5b-8b7a9c046725",
+          "content": "A separate change to context touched the same area but addressed acceptance criteria rather than the question of how to what should a pull request description contain t.",
+          "similarity": 0.6953314324933446,
+          "importance": 0.03319484692060328,
+          "recency": 0.29726728585606926,
+          "frequency": 0.0
+        },
+        {
+          "id": "d09146a4-f9f3-4f64-808c-9d2c288f80c2",
+          "content": "Maybe the template already requires a testing section, but I'm not sure it's enforced.",
+          "similarity": 0.5772245116628419,
+          "importance": 0.1446701313049992,
+          "recency": 0.2972673930923846,
+          "frequency": 0.0
+        },
+        {
+          "id": "faa9b734-79b1-4429-8e13-14502fdcfb2c",
+          "content": "Unverified note: someone suggested context might be relevant here, but it was never confirmed and no owner stands behind it.",
+          "similarity": 0.48309012594388,
+          "importance": 0.2293913937071956,
+          "recency": 0.2972674648472582,
+          "frequency": 0.0
+        },
+        {
+          "id": "6429244c-8bb7-4026-84cd-f58baed628e4",
+          "content": "The PR title is used as the squash-merge commit subject.",
+          "similarity": 0.5767501743560974,
+          "importance": 0.11890687923075298,
+          "recency": 0.2972671980768029,
+          "frequency": 0.0
+        }
+      ]
+    }
+  ]
+}

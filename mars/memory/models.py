@@ -23,10 +23,12 @@ class MemoryItem:
     id: str
     content: str
     similarity: float  # semantic similarity to the query, 0-1
-    recency: float = 0.0  # 1 = just written, 0 = old
+    recency: float = 0.0  # 1 = just written, 0 = old (normalized within a pool)
     importance: float = 0.0  # salience / importance signal, 0-1
     frequency: float = 0.0  # normalized access frequency, 0-1
     relevant: bool = False  # ground-truth: does this memory help the task?
+    age_days: float = 0.0  # age in days for the temporal-salience study (0 = newest)
+    confidence: float = 0.0  # trust in this memory, 0-1 (confidence & contradiction study)
 
 
 @dataclass

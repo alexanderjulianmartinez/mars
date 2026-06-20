@@ -21,6 +21,10 @@ mars list-experiments | experiment --experiment salience-memory [--trials N --se
 mars list-fixtures | score-fixture bootstrap-typo-and-rename                             # Track A (no paid models)
 mars experiments run salience-memory-v1 [--cortex-provider mcp --strict-semantic] | experiments report ...  # Track B
 mars corpus validate salience-memory-v1-expanded | corpus stats salience-memory-v1-expanded             # benchmark corpus
+python experiments/run_noisy_importance.py --no-seed --db <cortex.db> | --cache-only                     # Track 1 noisy-importance
+python experiments/run_temporal_salience.py [--seeds 10]                                                 # Experiment 3 temporal salience
+python experiments/run_confidence_contradiction.py [--seeds 10]                                          # Experiment 4 confidence & contradiction
+python experiments/run_execution_impact.py [--simulate]                                                  # Experiment 5 execution impact (BLOCKED w/o AutoDev)
 ```
 
 Two evaluation tracks (kept separate): **Track A — agentic eval** scores real AutoDev runs via new
@@ -35,8 +39,42 @@ semantic baseline without embeddings). The **expanded benchmark corpus**
 categories) replaces the saturating 13-memory smoke test; it is authored reproducibly by
 `experiments/corpus/generate_expanded.py` + `scenarios_data.py`, loaded/validated via
 `mars/memory/expanded_corpus.py` (`mars corpus validate|stats`), and scored with metrics incl.
-`ndcg_at_k`. Details: `docs/AGENTIC_EVALS.md`, `docs/SALIENCE_MEMORY_V1.md`,
-`docs/SALIENCE_MEMORY_V1_EXPANDED.md`, `docs/salience-memory-v2-proposal.md`.
+`ndcg_at_k`. **Track 1 — noisy-importance study** (`mars/memory/importance_noise.py`,
+`noisy_importance_experiment.py`, `experiments/run_noisy_importance.py`) degrades the importance signal
+(shuffle model, quality 1.0→0.0) over the same corpus/retrieval to find how robust the salience win is
+to noisy importance; it materializes one real retrieval per query into a committed cache
+(`experiments/cache/`) so the quality sweep is offline + deterministic, and isolates the importance
+*signal's* contribution via an `oracle − scrambled` comparison + an importance-ablated floor.
+**Experiment 3 — temporal salience** (`mars/memory/temporal_salience.py`,
+`experiments/run_temporal_salience.py`) reuses that same cache to assign synthetic timestamps under
+four regimes (uniform / recency-aligned / misaligned / mixed-realistic) and isolates recency vs decay
+(`exp(-age/half_life)`, half-lives 7/30/90) against a `sim_plus_importance` anchor: finding — importance
+is regime-invariant and dominant, raw recency helps only when aligned and hurts symmetrically when
+misaligned (neutral in the realistic regime), so recency stays an optional short-decay/low-weight/
+importance-gated add-on, NOT a core v2 signal. **Experiment 4 — confidence & contradiction**
+(`mars/memory/confidence_contradiction.py`, `experiments/run_confidence_contradiction.py`) reuses the
+same cache (joined to the corpus by content for category+confidence) over five regimes incl. an
+adversarial "important-but-wrong" H4 stress regime, adds the `ContradictionAvoidanceRate` metric, and
+compares additive vs **gated** confidence (`effective_importance = importance × confidence`): finding —
+confidence is mostly redundant with importance UNTIL they diverge, where `importance_only` collapses to
+CAR 0.000 and gated confidence restores it to 0.964, so **confidence joins importance as a core v2
+signal in gated form** (recency stays out). **Experiment 5 — execution impact** (first downstream study;
+`mars/memory/execution_impact.py`, `experiments/run_execution_impact.py`) builds a real, provider-agnostic
+3-arm (A similarity / B +importance / C salience_v2) harness with execution/quality/efficiency metrics,
+`RetrievalToExecutionCorrelation`, and failure classification. It **runs real AutoDev** via Mars's
+existing `AutoDevMCPProvider` + `AutoDevExecutionImpactAdapter` when `MARS_AUTODEV_MCP_*` is set
+(connectivity verified: `--real-autodev --dry-run --connectivity-check` returns a real `run_id`, zero
+LLM); `evidential=true` only when a real agent is invoked; default **honest-stops** with a precise
+availability report; `--simulate` is non-evidential apparatus validation (mock success is *defined* by
+retrieval → circular). **Honest blocker for the A/B/C comparison:** `autodev_start_run` takes `issue_url`
+only (no context-injection arg), so Mars cannot vary per-arm retrieval inside a real run (arm is
+provenance only) — needs AutoDev to expose a context/retrieval-mode parameter. Wiring guide:
+`docs/AUTODEV_EXECUTION_IMPACT_WIRING.md`. Verdict: execution impact of Salience v2 is **untested/open**;
+don't claim it improves agent outcomes yet. Details: `docs/AGENTIC_EVALS.md`, `docs/SALIENCE_MEMORY_V1.md`,
+`docs/SALIENCE_MEMORY_V1_EXPANDED.md`, `docs/SALIENCE_MEMORY_NOISY_IMPORTANCE.md`,
+`docs/SALIENCE_MEMORY_TEMPORAL_SALIENCE.md`, `docs/SALIENCE_MEMORY_CONFIDENCE_AND_CONTRADICTION.md`,
+`docs/SALIENCE_MEMORY_EXECUTION_IMPACT.md`, `docs/AUTODEV_EXECUTION_IMPACT_WIRING.md`,
+`docs/salience-memory-v2-proposal.md`.
 
 Use the venv binaries directly (`.venv/bin/mars`, `.venv/bin/python -m pytest`) since there is no
 activated shell. Runs persist to SQLite (`mars.db` by default; `--db` to override) — it is gitignored.

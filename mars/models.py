@@ -195,6 +195,12 @@ class AgentRun(BaseModel):
     cost_usd: float = 0.0
     test_results: list[TestResult] = Field(default_factory=list)
     files_changed: list[str] = Field(default_factory=list)
+    # Optional enrichment AutoDev may return (None/empty = not provided by the
+    # contract, so consumers mark the metric "missing" rather than fabricate it).
+    token_usage: int | None = None
+    review_decision: str | None = None  # e.g. "approved" / "changes_requested"
+    # Memories the run actually retrieved into context: [{id, score, ...}].
+    retrieved_context: list[dict[str, Any]] = Field(default_factory=list)
 
 
 # --------------------------------------------------------------------------- #

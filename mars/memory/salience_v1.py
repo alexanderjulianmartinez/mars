@@ -171,6 +171,12 @@ def run_salience_memory_v1(
                 }
             )
 
+    if getattr(source, "name", "") == "synthetic":
+        notes.add(
+            "Synthetic corpus: simulated retrieval signals, not real Cortex memories — "
+            "illustrative only, not production evidence."
+        )
+
     if strict_semantic and not semantic:
         raise SemanticUnavailableError(
             "semantic scores unavailable (Cortex embeddings disabled) and --strict-semantic set"

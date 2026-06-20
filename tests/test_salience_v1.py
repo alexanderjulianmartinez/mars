@@ -109,6 +109,15 @@ def test_salience_beats_similarity_on_synthetic():
     assert result.candidate.recall_at_k > result.baseline.recall_at_k
     assert result.retrieval_source == "synthetic"
     assert result.execution_provider == "mock"
+    # honesty: synthetic results are clearly flagged as non-production
+    assert any("Synthetic corpus" in n for n in result.notes)
+
+
+def test_synthetic_is_reproducible():
+    a = run_salience_memory_v1(SyntheticRetrievalSource(), k=5)
+    b = run_salience_memory_v1(SyntheticRetrievalSource(), k=5)
+    assert a.candidate.recall_at_k == b.candidate.recall_at_k
+    assert a.baseline.recall_at_k == b.baseline.recall_at_k
 
 
 def test_save_and_load_result(tmp_path):

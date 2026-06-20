@@ -57,21 +57,39 @@ class CortexRetrievalSource:
 
     name = "cortex-mcp"
 
-    def __init__(self, cortex, project: str, gold_map: dict[str, dict]) -> None:
+    def __init__(
+        self,
+        cortex,
+        project: str,
+        gold_map: dict[str, dict],
+        *,
+        pools: dict[str, set[str]] | None = None,
+        limit: int = 25,
+    ) -> None:
         self._cortex = cortex
         self._project = project
         self._gold = gold_map  # query_id -> {"relevant": set[str], "target": str|None}
+        # Optional query -> {memory id} candidate pool. When set, the returned
+        # memories are restricted to the query's own pool so the strategy
+        # comparison is a controlled re-rank of one candidate set (not Cortex's
+        # global, importance-pre-filtered top-k).
+        self._pools = pools
+        self._limit = limit
 
     def fetch(self, query_id: str) -> Retrieved:
-        results = self._cortex.search_memories(self._project, query_id, limit=25)
+        results = self._cortex.search_memories(self._project, query_id, limit=self._limit)
+        pool = self._pools.get(query_id) if self._pools is not None else None
         mems: list[MemoryItem] = []
         any_semantic = False
         for r in results:
+            mid = str(r.get("id"))
+            if pool is not None and mid not in pool:
+                continue
             sem = r.get("semantic_score")
             any_semantic = any_semantic or (sem is not None)
             mems.append(
                 MemoryItem(
-                    id=str(r.get("id")),
+                    id=mid,
                     content=r.get("content", ""),
                     similarity=float(sem if sem is not None else r.get("keyword_score", 0.0)),
                     importance=float(r.get("importance_score", 0.0)),
@@ -81,6 +99,10 @@ class CortexRetrievalSource:
             )
         gold = self._gold.get(query_id, {})
         notes = []
+        if pool is not None:
+            missing = len(pool) - len(mems)
+            if missing > 0:
+                notes.append(f"{missing} pool memories not returned by search (below limit).")
         if not any_semantic:
             notes.append("Cortex returned semantic_score=null; similarity is keyword-based.")
         return Retrieved(

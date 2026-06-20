@@ -43,6 +43,9 @@ console = Console()
 experiments_app = typer.Typer(help="Retrieval experiments (Salience Memory v1).")
 app.add_typer(experiments_app, name="experiments")
 
+corpus_app = typer.Typer(help="Inspect and validate labeled benchmark corpora.")
+app.add_typer(corpus_app, name="corpus")
+
 DB_OPTION = typer.Option("mars.db", "--db", help="SQLite database path or URL.")
 
 
@@ -458,6 +461,54 @@ def experiments_report(
         console.print(f"[red]No stored result for {name!r}; run it first.[/]")
         raise typer.Exit(code=1)
     console.print(render_retrieval_report(result))
+
+
+@corpus_app.command("validate")
+def corpus_validate(
+    name: str = typer.Argument(..., help="Corpus name (salience-memory-v1-expanded)."),
+) -> None:
+    """Validate a labeled benchmark corpus; exit non-zero on any error."""
+    from mars.memory.expanded_corpus import load_expanded_corpus, validate_corpus
+
+    try:
+        corpus = load_expanded_corpus(name)
+    except FileNotFoundError:
+        console.print(f"[red]No corpus experiments/corpus/{name}.corpus.yaml[/]")
+        raise typer.Exit(code=1)
+
+    errors = validate_corpus(corpus)
+    if errors:
+        console.print(f"[red]✗ {name}: {len(errors)} validation error(s)[/]")
+        for e in errors[:50]:
+            console.print(f"  [red]- {e}[/]")
+        raise typer.Exit(code=1)
+    console.print(
+        f"[green]✓ {name} valid:[/] {corpus.n_queries} queries, {corpus.n_memories} memories"
+    )
+
+
+@corpus_app.command("stats")
+def corpus_stats(
+    name: str = typer.Argument(..., help="Corpus name."),
+) -> None:
+    """Show corpus statistics: query/memory counts and category breakdown."""
+    from mars.memory.expanded_corpus import load_expanded_corpus
+
+    try:
+        corpus = load_expanded_corpus(name)
+    except FileNotFoundError:
+        console.print(f"[red]No corpus experiments/corpus/{name}.corpus.yaml[/]")
+        raise typer.Exit(code=1)
+
+    per_query = corpus.n_memories / corpus.n_queries if corpus.n_queries else 0
+    console.print(f"[bold]{name}[/] — {corpus.n_queries} queries, {corpus.n_memories} memories "
+                  f"({per_query:.1f} per query)")
+    table = Table(title="Category breakdown")
+    table.add_column("Category")
+    table.add_column("Count", justify="right")
+    for cat, n in corpus.category_counts().items():
+        table.add_row(cat, str(n))
+    console.print(table)
 
 
 if __name__ == "__main__":  # pragma: no cover

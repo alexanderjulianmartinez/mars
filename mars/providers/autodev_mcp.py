@@ -44,7 +44,7 @@ from typing import Any
 
 from mars.models import AgentRun, AgentRunStatus, ContextPackage, EvalCase, TestResult
 from mars.providers.base import AutoDevProvider, Workspace
-from mars.providers.mcp_client import MCPServerConfig, MCPToolCaller, ToolCaller
+from mars.providers.mcp_client import MCPServerConfig, MCPToolCaller, ToolCaller, parse_kv_env
 from mars.providers.task_payload import build_task_payload
 
 logger = logging.getLogger(__name__)
@@ -90,6 +90,8 @@ def config_from_env() -> MCPServerConfig | None:
         url=url,
         command=command,
         args=os.environ.get("MARS_AUTODEV_MCP_ARGS", "").split(),
+        env=parse_kv_env(os.environ.get("MARS_AUTODEV_MCP_ENV")),
+        cwd=os.environ.get("MARS_AUTODEV_MCP_CWD"),
         transport=os.environ.get("MARS_AUTODEV_MCP_TRANSPORT", "streamable-http"),
     )
 

@@ -1,4 +1,4 @@
-# Mars Evaluation Report
+# Mars Agentic Evaluation Report
 
 **Run:** `{{ run.id }}`
 **Suite / Case:** `{{ run.suite_id }}` / `{{ run.case_id }}`
@@ -17,13 +17,41 @@
 {% if run.failure_reason %}| Failure reason | {{ run.failure_reason }} |
 {% endif %}
 
-## Score breakdown
+## Component scores
 
 | Scorer | Value | Weight | Detail |
 | --- | --- | --- | --- |
 {% for c in run.score_components -%}
 | {{ c.scorer }} | {{ "%.1f"|format(c.value) }} | {{ "%.2f"|format(c.weight) }} | {{ c.detail }} |
 {% endfor %}
+{% if run.setup_commands %}
+## Setup commands
+
+{% for cmd in run.setup_commands -%}
+- `{{ cmd }}`
+{% endfor %}
+{%- endif %}
+{% if run.acceptance_criteria %}
+## Acceptance criteria
+
+{% for c in run.acceptance_criteria -%}
+- {{ c }}
+{% endfor %}
+{%- endif %}
+{% if run.literal_results %}
+## Literal requirement results
+
+{% for name, ok in run.literal_results.items() -%}
+- [{{ "x" if ok else " " }}] {{ name }}
+{% endfor %}
+{%- endif %}
+{% if run.noisy_files %}
+## Noisy / unrelated files
+
+{% for f in run.noisy_files -%}
+- ⚠️ `{{ f }}`
+{% endfor %}
+{%- endif %}
 
 ## Success criteria
 

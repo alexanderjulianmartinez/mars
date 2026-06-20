@@ -40,6 +40,9 @@ from mars.suites import load_suite, load_suites
 app = typer.Typer(add_completion=False, help="Continuous evaluation for AI software engineering agents.")
 console = Console()
 
+experiments_app = typer.Typer(help="Retrieval experiments (Salience Memory v1).")
+app.add_typer(experiments_app, name="experiments")
+
 DB_OPTION = typer.Option("mars.db", "--db", help="SQLite database path or URL.")
 
 
@@ -300,6 +303,161 @@ def experiment(
         )
     console.print(cmp_table)
     console.print(f"\n[bold]Verdict:[/] {result.headline}")
+
+
+@app.command("list-fixtures")
+def list_fixtures_cmd() -> None:
+    """List agentic-evaluation comparison fixtures (no live model calls)."""
+    from mars.fixtures import list_fixtures
+
+    console.print("Fixtures: " + ", ".join(list_fixtures()))
+
+
+@app.command("score-fixture")
+def score_fixture_cmd(
+    name: str = typer.Argument(..., help="Comparison fixture name."),
+) -> None:
+    """Score a fixture's pre-recorded mock outputs and compare them.
+
+    Uses no live/paid models — the outputs are deterministic fixtures.
+    """
+    from mars.fixtures import get_fixture, score_fixture
+
+    fixture = get_fixture(name)
+    scores = score_fixture(name)
+    console.print(f"[bold]{fixture.case.name}[/]  ([dim]{name}[/])")
+
+    table = Table(title="Component scores")
+    table.add_column("Variant", style="cyan")
+    table.add_column("Composite", justify="right")
+    for scorer in ("test_pass", "literal_instruction", "diff_quality", "noise", "runtime", "cost"):
+        table.add_column(scorer.replace("_", " "), justify="right")
+    for s in scores:
+        comps = {c.scorer: c.value for c in s.components}
+        row = [s.variant, f"[bold]{s.composite:.1f}[/]"]
+        row += [f"{comps.get(sc, 0):.0f}" for sc in
+                ("test_pass", "literal_instruction", "diff_quality", "noise", "runtime", "cost")]
+        table.add_row(*row)
+    console.print(table)
+
+    winner = scores[0]
+    console.print(f"[green]Winner:[/] {winner.variant} (composite {winner.composite:.1f})")
+    for s in scores:
+        lit = next((c for c in s.components if c.scorer == "literal_instruction"), None)
+        noise = next((c for c in s.components if c.scorer == "noise"), None)
+        console.print(f"[dim]{s.variant}: literal[{lit.detail if lit else '-'}] "
+                      f"noise[{noise.detail if noise else '-'}][/]")
+
+
+@experiments_app.command("run")
+def experiments_run(
+    name: str = typer.Argument(..., help="Experiment name (salience-memory-v1)."),
+    cortex_provider: str = typer.Option("synthetic", "--cortex-provider", help="synthetic | mcp"),
+    autodev_provider: str = typer.Option("mock", "--autodev-provider", help="mock (only)."),
+    strict_semantic: bool = typer.Option(False, "--strict-semantic", help="Fail if no semantic scores."),
+) -> None:
+    """Run a retrieval experiment (real Cortex retrieval + mock execution)."""
+    from mars.memory.retrieval_source import SyntheticRetrievalSource
+    from mars.memory.salience_v1 import (
+        SemanticUnavailableError,
+        load_experiment_spec,
+        render_retrieval_report,
+        run_salience_memory_v1,
+        save_result,
+    )
+
+    try:
+        spec = load_experiment_spec(name)
+    except FileNotFoundError:
+        console.print(f"[red]No experiment definition experiments/{name}.yaml[/]")
+        raise typer.Exit(code=1)
+
+    query_ids = None
+    if cortex_provider == "mcp":
+        from mars.memory.corpus import load_corpus, load_gold
+        from mars.memory.retrieval_source import CortexRetrievalSource
+        from mars.providers.cortex_mcp import CortexMCPProvider
+
+        cortex = CortexMCPProvider.from_env()
+        if cortex is None:
+            console.print("[red]No Cortex MCP server configured (set MARS_CORTEX_MCP_*).[/]")
+            raise typer.Exit(code=1)
+        # Prefer a seeded labeled corpus + its captured gold labels.
+        gold = load_gold(name)
+        if gold is not None:
+            corpus = load_corpus(name)
+            query_ids = corpus.query_texts()
+            source = CortexRetrievalSource(cortex, project=corpus.project, gold_map=gold)
+        else:
+            console.print(
+                "[yellow]No seeded gold labels found. Run "
+                f"`mars experiments seed-corpus {name}` first for real metrics; "
+                "falling back to the spec's (synthetic-id) gold.[/]"
+            )
+            source = CortexRetrievalSource(cortex, project="mars", gold_map=spec.gold_map)
+    else:
+        source = SyntheticRetrievalSource()
+
+    try:
+        result = run_salience_memory_v1(
+            source, query_ids=query_ids, strict_semantic=strict_semantic,
+            execution=autodev_provider, spec=spec,
+        )
+    except SemanticUnavailableError as exc:
+        console.print(f"[red]{exc}[/]")
+        raise typer.Exit(code=2)
+
+    save_result(result)
+    console.print(render_retrieval_report(result))
+
+
+@experiments_app.command("seed-corpus")
+def experiments_seed_corpus(
+    name: str = typer.Argument(..., help="Experiment name (salience-memory-v1)."),
+) -> None:
+    """Seed the labeled corpus into Cortex and write captured gold labels.
+
+    Live, opt-in: writes memories to the Cortex project. Requires MARS_CORTEX_MCP_*.
+    """
+    from mars.memory.corpus import load_corpus, save_gold, seed_corpus
+    from mars.providers.cortex_mcp import CortexMCPProvider
+
+    try:
+        corpus = load_corpus(name)
+    except FileNotFoundError:
+        console.print(f"[red]No corpus experiments/corpus/{name}.corpus.yaml[/]")
+        raise typer.Exit(code=1)
+
+    cortex = CortexMCPProvider.from_env()
+    if cortex is None:
+        console.print("[red]No Cortex MCP server configured (set MARS_CORTEX_MCP_*).[/]")
+        raise typer.Exit(code=1)
+
+    console.print(
+        f"[yellow]Seeding {corpus.n_memories} memories into Cortex project "
+        f"'{corpus.project}' across {len(corpus.queries)} queries…[/]"
+    )
+    try:
+        gold, key_to_id = seed_corpus(cortex, corpus)
+    finally:
+        cortex.close()
+    path = save_gold(gold, name)
+    console.print(f"[green]Seeded {len(key_to_id)} memories; gold labels written to {path}[/]")
+    console.print(f"Now run: [cyan]mars experiments run {name} --cortex-provider mcp[/]")
+
+
+@experiments_app.command("report")
+def experiments_report(
+    name: str = typer.Argument(..., help="Experiment name."),
+) -> None:
+    """Render the last stored result for a retrieval experiment."""
+    from mars.memory.salience_v1 import load_result, render_retrieval_report
+
+    result = load_result(name)
+    if result is None:
+        console.print(f"[red]No stored result for {name!r}; run it first.[/]")
+        raise typer.Exit(code=1)
+    console.print(render_retrieval_report(result))
 
 
 if __name__ == "__main__":  # pragma: no cover

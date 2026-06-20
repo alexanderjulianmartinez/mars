@@ -5,8 +5,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from mars.models import AgentRun, EvalCase, ScoreComponent
+from mars.scoring.agentic import (
+    DiffQualityScorer,
+    LiteralInstructionScorer,
+    NoiseScorer,
+)
 from mars.scoring.base import Scorer
-from mars.scoring.scorers import CostScorer, DiffScorer, RuntimeScorer, TestPassScorer
+from mars.scoring.scorers import CostScorer, RuntimeScorer, TestPassScorer
 
 
 @dataclass
@@ -44,18 +49,26 @@ class CompositeScorer:
                     value=round(outcome.value, 2),
                     weight=round(norm, 4),
                     detail=outcome.detail,
+                    data=outcome.data,
                 )
             )
         return CompositeResult(score=round(weighted_sum, 2), components=components)
 
 
 def default_composite() -> CompositeScorer:
-    """The default scorer mix: tests dominate, then diff focus, runtime, cost."""
+    """Agentic-evaluation mix (Track A weights).
+
+    Tests dominate, then literal-instruction adherence and diff quality, with
+    noise/runtime/cost as modifiers. Each agentic scorer is a no-op (100) when
+    the case declares no relevant config, so this is safe as the global default.
+    """
     return CompositeScorer(
         [
-            (TestPassScorer(), 0.55),
-            (DiffScorer(), 0.20),
-            (RuntimeScorer(), 0.15),
-            (CostScorer(), 0.10),
+            (TestPassScorer(), 0.30),
+            (LiteralInstructionScorer(), 0.25),
+            (DiffQualityScorer(), 0.20),
+            (NoiseScorer(), 0.10),
+            (RuntimeScorer(), 0.075),
+            (CostScorer(), 0.075),
         ]
     )

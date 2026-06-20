@@ -18,9 +18,9 @@ def _make_run(case, repo, quality=1.0, agent="claude-code"):
 def test_render_markdown_contains_key_sections(case, repo):
     result = _make_run(case, repo)
     md = render_markdown(result)
-    assert "# Mars Evaluation Report" in md
+    assert "# Mars Agentic Evaluation Report" in md
     assert result.id in md
-    assert "Score breakdown" in md
+    assert "Component scores" in md
     assert "Success criteria" in md
 
 

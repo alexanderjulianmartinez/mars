@@ -45,3 +45,11 @@ Prioritized work, highest first. Items map to roadmap phases.
       capture exists so `run_agent` and `capture_diff` responsibilities are clean.
 - [ ] Add `ENDPOINT_EXISTS` / `NO_UNRELATED_CHANGES` real checks once AutoDev
       exposes the workspace tree (currently proxied via tests/file count).
+
+## Delivered (agentic eval + salience v1)
+
+- [x] Diff-quality / noise / literal-instruction scorers (partial of #16).
+- [x] `setup_commands` + `acceptance_criteria` propagation to AutoDev.
+- [x] Retrieval metrics + `salience-memory-v1` over real Cortex retrieval (part of #5).
+- [ ] Gold labels sourced from Cortex (still local YAML) — #7.
+- [ ] Enable Cortex embeddings (Voyage) to make the salience baseline truly semantic.

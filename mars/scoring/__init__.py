@@ -6,6 +6,11 @@ scorers into a single composite score. New scorers are added by implementing
 the interface, never by editing existing scorers.
 """
 
+from mars.scoring.agentic import (
+    DiffQualityScorer,
+    LiteralInstructionScorer,
+    NoiseScorer,
+)
 from mars.scoring.base import ScoreOutcome, Scorer
 from mars.scoring.composite import CompositeScorer, default_composite
 from mars.scoring.scorers import (
@@ -24,4 +29,7 @@ __all__ = [
     "RuntimeScorer",
     "CostScorer",
     "DiffScorer",
+    "DiffQualityScorer",
+    "NoiseScorer",
+    "LiteralInstructionScorer",
 ]

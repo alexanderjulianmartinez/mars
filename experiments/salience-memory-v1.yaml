@@ -1,0 +1,50 @@
+# Salience Memory v1 — retrieval-focused experiment (Track B).
+# Variable under test: retrieval strategy. Execution is mocked.
+id: salience-memory-v1
+
+hypothesis: >
+  Salience-weighted memory retrieval (similarity + importance + recency +
+  frequency) surfaces more of the truly-relevant memories than similarity-only
+  retrieval, especially "long-horizon" memories that are important but not the
+  most semantically similar to the query.
+
+methodology: >
+  For each query, fetch candidate memories from the retrieval source, rank them
+  with the baseline and candidate strategies, and compute retrieval metrics @k
+  against gold relevance labels. Aggregate (mean) across queries. Execution is
+  mocked; only retrieval quality is measured. If the source cannot provide
+  semantic scores (Cortex embeddings disabled), the result is flagged and must
+  not be read as semantic-vs-salience evidence.
+
+k: 5
+
+baseline:
+  strategy: similarity_only
+candidate:
+  strategy: salience_weighted_v1
+
+# Queries. `gold` labels apply to a real-Cortex source (the synthetic source
+# self-labels). Gold ids here follow the synthetic id convention for illustration.
+queries:
+  - id: migration-note-task
+    gold:
+      - { memory_id: migration-note-task-rel-0, relevant: true, target: true }
+      - { memory_id: migration-note-task-rel-1, relevant: true }
+      - { memory_id: migration-note-task-rel-2, relevant: true }
+  - id: backend-api-task
+    gold:
+      - { memory_id: backend-api-task-rel-0, relevant: true, target: true }
+      - { memory_id: backend-api-task-rel-1, relevant: true }
+  - id: infra-debug-task
+    gold:
+      - { memory_id: infra-debug-task-rel-0, relevant: true, target: true }
+      - { memory_id: infra-debug-task-rel-1, relevant: true }
+  - id: refactor-task
+    gold:
+      - { memory_id: refactor-task-rel-0, relevant: true, target: true }
+  - id: auth-bug-task
+    gold:
+      - { memory_id: auth-bug-task-rel-0, relevant: true, target: true }
+  - id: schema-change-task
+    gold:
+      - { memory_id: schema-change-task-rel-0, relevant: true, target: true }

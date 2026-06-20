@@ -1,0 +1,30 @@
+{
+  "experiment": "salience-memory-v1",
+  "retrieval_source": "synthetic",
+  "execution_provider": "mock",
+  "semantic_available": true,
+  "k": 5,
+  "n_queries": 6,
+  "baseline": {
+    "name": "similarity_only",
+    "recall_at_k": 0.5,
+    "precision_at_k": 0.5,
+    "mrr": 1.0,
+    "target_rate": 0.5,
+    "context_efficiency": 0.5
+  },
+  "candidate": {
+    "name": "salience_weighted_v1",
+    "recall_at_k": 0.9667,
+    "precision_at_k": 0.9667,
+    "mrr": 1.0,
+    "target_rate": 1.0,
+    "context_efficiency": 0.9667
+  },
+  "limitation": null,
+  "notes": [
+    "Synthetic corpus: simulated retrieval signals, not real Cortex memories \u2014 illustrative only, not production evidence."
+  ],
+  "hypothesis": "Salience-weighted memory retrieval (similarity + importance + recency + frequency) surfaces more of the truly-relevant memories than similarity-only retrieval, especially \"long-horizon\" memories that are important but not the most semantically similar to the query.",
+  "methodology": "For each query, fetch candidate memories from the retrieval source, rank them with the baseline and candidate strategies, and compute retrieval metrics @k against gold relevance labels. Aggregate (mean) across queries. Execution is mocked; only retrieval quality is measured. If the source cannot provide semantic scores (Cortex embeddings disabled), the result is flagged and must not be read as semantic-vs-salience evidence."
+}

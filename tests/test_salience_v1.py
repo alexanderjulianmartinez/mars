@@ -113,6 +113,22 @@ def test_salience_beats_similarity_on_synthetic():
     assert any("Synthetic corpus" in n for n in result.notes)
 
 
+def test_matches_locked_baseline():
+    """Guard the committed synthetic baseline against drift."""
+    import json
+    from pathlib import Path
+
+    from mars.memory.salience_v1 import load_experiment_spec
+
+    baseline_path = Path("experiments/baselines/salience-memory-v1.baseline.json")
+    locked = json.loads(baseline_path.read_text())
+    spec = load_experiment_spec("salience-memory-v1")
+    result = run_salience_memory_v1(SyntheticRetrievalSource(), spec=spec)
+    assert result.baseline.recall_at_k == locked["baseline"]["recall_at_k"]
+    assert result.candidate.recall_at_k == locked["candidate"]["recall_at_k"]
+    assert result.candidate.target_rate == locked["candidate"]["target_rate"]
+
+
 def test_synthetic_is_reproducible():
     a = run_salience_memory_v1(SyntheticRetrievalSource(), k=5)
     b = run_salience_memory_v1(SyntheticRetrievalSource(), k=5)

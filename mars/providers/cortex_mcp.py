@@ -33,6 +33,7 @@ DEFAULT_TOOL_NAMES = {
     "get_context_package": "get_context_package",
     "get_context_metadata": "get_context_metadata",
     "get_context_for_case": "get_context_for_case",
+    "search_memory": "search_memory",
 }
 
 
@@ -122,6 +123,35 @@ class CortexMCPProvider(CortexProvider):
             },
         )
         return self._to_package(data, default_profile=case.context_profile)
+
+    def search_memories(self, project: str, query: str, limit: int = 10) -> list[dict]:
+        """Ranked memory search (Track B retrieval source).
+
+        Returns one dict per memory with the ranking breakdown flattened, so the
+        retrieval source can read ``semantic_score`` (None when embeddings are
+        disabled), ``keyword_score``, ``importance_score`` and ``recency_factor``.
+        """
+        import json as _json
+
+        data = self._caller.call_tool(
+            self._tools["search_memory"], {"project": project, "query": query, "limit": limit}
+        )
+        payload = data.get("result", data) if isinstance(data, dict) else data
+        items = _json.loads(payload) if isinstance(payload, str) else (payload or [])
+        out: list[dict] = []
+        for it in items:
+            rb = it.get("ranking_breakdown", {}) or {}
+            out.append(
+                {
+                    "id": it.get("id"),
+                    "content": it.get("content", ""),
+                    "semantic_score": rb.get("semantic_score", it.get("semantic_score")),
+                    "keyword_score": rb.get("keyword_score", 0.0),
+                    "importance_score": rb.get("importance_score", it.get("importance_score", 0.0)),
+                    "recency_factor": rb.get("recency_factor", 0.0),
+                }
+            )
+        return out
 
     def close(self) -> None:
         self._caller.close()

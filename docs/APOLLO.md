@@ -91,3 +91,10 @@ salience-weighted significantly outperforms baseline-similarity
 - Single experimental arm registered; the framework supports N arms.
 - Significance via bootstrap CI (no parametric test / multiple-comparison
   correction yet). See `BACKLOG.md`.
+
+## Salience Memory v1 (retrieval-focused)
+
+The first *real* salience experiment is **Track B** — see
+`docs/SALIENCE_MEMORY_V1.md`. It uses real Cortex retrieval + mock execution and
+is judged on retrieval metrics (not the agentic composite), with honest
+`semantic_score: null` handling. Run it with `mars experiments run salience-memory-v1`.

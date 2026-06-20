@@ -99,7 +99,12 @@ class MockAutoDevProvider(AutoDevProvider):
             agent=self.agent,
             model=self.model,
             status=AgentRunStatus.SUCCESS if succeeds else AgentRunStatus.FAILURE,
-            logs=f"[{self.agent}] working on {case.id}\n" + ("done\n" if succeeds else "gave up\n"),
+            logs=(
+                f"[{self.agent}] setup: {len(case.setup_commands)} command(s) simulated ok\n"
+                f"[{self.agent}] acceptance_criteria: {len(case.acceptance_criteria)} provided\n"
+                f"[{self.agent}] working on {case.id}\n"
+                + ("done\n" if succeeds else "gave up\n")
+            ),
             diff=diff,
             runtime_ms=runtime,
             cost_usd=round(self.cost_per_run * (1 + seed % 5), 4),

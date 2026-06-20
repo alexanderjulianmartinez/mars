@@ -35,3 +35,15 @@
 - Streamlit/web dashboard consuming the Phase 3 APIs.
 - Suite authoring tooling and a shared suite registry.
 - Replay-driven evaluation of new models, prompts, and context strategies.
+
+## Delivered alongside Phase 1 — evaluation readiness
+
+**Track A — Agentic eval readiness** (`docs/AGENTIC_EVALS.md`): per-case
+`setup_commands` + `acceptance_criteria` propagation, and three new scorers
+(`DiffQualityScorer`, `NoiseScorer`, `LiteralInstructionScorer`) folded into a
+reweighted composite. `mars score-fixture` compares pre-recorded mock outputs
+with no paid models.
+
+**Track B — Salience Memory v1** (`docs/SALIENCE_MEMORY_V1.md`): retrieval metrics
+(recall@k/precision@k/MRR/target/context-efficiency), real-Cortex retrieval source,
+and honest `semantic_score: null` detection. `mars experiments run salience-memory-v1`.

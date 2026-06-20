@@ -96,7 +96,17 @@ mars list-cases --suite backend-api
 mars run --suite backend-api --agent claude-code
 mars report --run-id RUN_123
 mars compare --suite backend-api --agents claude-code,codex
+
+# Agentic evaluation (Track A) — no paid models; see docs/AGENTIC_EVALS.md
+mars score-fixture bootstrap-typo-and-rename
+
+# Salience Memory retrieval experiment (Track B) — see docs/SALIENCE_MEMORY_V1.md
+mars experiments run salience-memory-v1
+mars experiments report salience-memory-v1
 ```
+
+Two separate evaluation tracks: **agentic eval** (scoring real AutoDev runs) and
+**retrieval experiments** (salience-memory). They are kept distinct on purpose.
 
 ## Mission
 

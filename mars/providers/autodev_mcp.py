@@ -35,6 +35,7 @@ server in this project.
 
 from __future__ import annotations
 
+import logging
 import os
 import uuid
 from datetime import datetime
@@ -44,6 +45,9 @@ from typing import Any
 from mars.models import AgentRun, AgentRunStatus, ContextPackage, EvalCase, TestResult
 from mars.providers.base import AutoDevProvider, Workspace
 from mars.providers.mcp_client import MCPServerConfig, MCPToolCaller, ToolCaller
+from mars.providers.task_payload import build_task_payload
+
+logger = logging.getLogger(__name__)
 
 # Tools the provider actively calls. (review_gates/promote run *inside* the
 # start_run pipeline; Mars reads their outcome via get_run rather than calling
@@ -205,6 +209,17 @@ class AutoDevMCPProvider(AutoDevProvider):
             raise ValueError(
                 f"case {case.id!r} has no issue_url; required for agentic AutoDev runs"
             )
+        # Record the structured task payload (criteria + setup) for transparency.
+        payload = build_task_payload(case)
+        workspace.metadata["task_payload"] = payload
+        if case.acceptance_criteria:
+            logger.warning(
+                "AutoDev start_run accepts issue_url only; %d acceptance criteria for case %r "
+                "were recorded in metadata but not propagated over MCP. Put them in the issue "
+                "body to influence the run.",
+                len(case.acceptance_criteria),
+                case.id,
+            )
         started = self._call(
             "start_run",
             {
@@ -223,6 +238,14 @@ class AutoDevMCPProvider(AutoDevProvider):
 
     def run_tests(self, workspace: Workspace, case: EvalCase) -> AgentRun:
         run_id = self._run_id(workspace)
+        # A1: install dependencies (setup commands) before validation so tests
+        # can actually run. Run as a separate, gated validate call — these are
+        # not folded into the scored test results.
+        if case.setup_commands:
+            self._call(
+                "validate",
+                {"run_id": run_id, "commands": case.setup_commands, "stop_on_first_failure": True},
+            )
         commands = self.validation_commands or case.test_commands
         if commands:
             data = self._call(

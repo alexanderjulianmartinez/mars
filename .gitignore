@@ -220,3 +220,6 @@ __marimo__/
 # Mars local eval database
 mars.db
 *.db
+
+# Track B experiment results
+mars-experiments/

@@ -18,7 +18,18 @@ pytest tests/test_scoring.py                          # one file
 pytest -k composite                                   # by keyword
 mars list-suites | list-cases --suite S | run --suite S --agent A | report --run-id R | compare --suite S --agents a,b | replay --run-id R
 mars list-experiments | experiment --experiment salience-memory [--trials N --seed S]   # Apollo
+mars list-fixtures | score-fixture bootstrap-typo-and-rename                             # Track A (no paid models)
+mars experiments run salience-memory-v1 [--cortex-provider mcp --strict-semantic] | experiments report ...  # Track B
 ```
+
+Two evaluation tracks (kept separate): **Track A — agentic eval** scores real AutoDev runs via new
+case fields (`setup_commands`, `acceptance_criteria`, `expected/allowed/forbidden_files`,
+`literal_requirements`) and scorers (`DiffQualityScorer`, `NoiseScorer`, `LiteralInstructionScorer` in
+`mars/scoring/agentic.py`) folded into a reweighted `default_composite`; `mars/fixtures.py` +
+`score-fixture` compare mock outputs with no paid models. **Track B — Salience Memory v1**
+(`mars/memory/salience_v1.py`, `metrics.py`, `retrieval_source.py`) runs retrieval metrics over real
+Cortex retrieval + mock execution and is **honest about `semantic_score: null`** (never claims a
+semantic baseline without embeddings). Details: `docs/AGENTIC_EVALS.md`, `docs/SALIENCE_MEMORY_V1.md`.
 
 Use the venv binaries directly (`.venv/bin/mars`, `.venv/bin/python -m pytest`) since there is no
 activated shell. Runs persist to SQLite (`mars.db` by default; `--db` to override) — it is gitignored.

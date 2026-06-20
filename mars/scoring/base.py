@@ -3,17 +3,23 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Any
 
 from mars.models import AgentRun, EvalCase
 
 
 @dataclass
 class ScoreOutcome:
-    """A single scorer's verdict, normalized to 0-100."""
+    """A single scorer's verdict, normalized to 0-100.
+
+    ``data`` carries optional structured extras (e.g. noisy files, per-requirement
+    results) that flow into the ScoreComponent for reporting.
+    """
 
     value: float  # 0-100
     detail: str = ""
+    data: dict[str, Any] = field(default_factory=dict)
 
 
 class Scorer(ABC):

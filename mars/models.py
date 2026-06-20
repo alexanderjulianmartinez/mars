@@ -51,6 +51,50 @@ class SuccessCriterion(str, Enum):
     WITHIN_TIMEOUT = "within_timeout"
 
 
+class LiteralCheckType(str, Enum):
+    """Diff-based checks the LiteralInstructionScorer can evaluate."""
+
+    TEXT_PRESENT = "text_present"
+    TEXT_ABSENT = "text_absent"
+    FILE_EXISTS = "file_exists"
+    FILE_NOT_EXISTS = "file_not_exists"
+    FILE_RENAMED = "file_renamed"
+    CHANGED_FILE_MATCHES = "changed_file_matches"
+
+
+class LiteralCheck(BaseModel):
+    """A single machine check for a literal requirement."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    type: LiteralCheckType
+    pattern: str | None = None  # for text_present / text_absent / changed_file_matches
+    path: str | None = None  # for file_exists / file_not_exists
+    from_path: str | None = None  # for file_renamed
+    to_path: str | None = None  # for file_renamed
+
+
+class LiteralRequirement(BaseModel):
+    """An explicit, literal instruction the agent was asked to follow."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: str
+    description: str = ""
+    required: bool = True
+    check: LiteralCheck
+
+
+class GoldMemory(BaseModel):
+    """Ground-truth relevance label for a memory (Track B retrieval metrics)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    memory_id: str
+    relevant: bool = True
+    target: bool = False  # the single must-find memory, if any
+
+
 # --------------------------------------------------------------------------- #
 # Benchmark definitions (authored as YAML, see suites/)
 # --------------------------------------------------------------------------- #
@@ -75,6 +119,19 @@ class EvalCase(BaseModel):
     test_commands: list[str] = Field(default_factory=list)
     success_criteria: list[SuccessCriterion] = Field(default_factory=list)
     timeout_seconds: int = 600
+
+    # --- agentic-eval extensions (Track A) ---
+    # Free-text acceptance criteria propagated to AutoDev / shown in reports.
+    acceptance_criteria: list[str] = Field(default_factory=list)
+    # File globs (support ** ) for the diff-quality / noise scorers.
+    expected_files: list[str] = Field(default_factory=list)
+    allowed_files: list[str] = Field(default_factory=list)
+    forbidden_files: list[str] = Field(default_factory=list)
+    # Explicit literal instructions checked by LiteralInstructionScorer.
+    literal_requirements: list[LiteralRequirement] = Field(default_factory=list)
+
+    # --- retrieval-experiment extensions (Track B) ---
+    gold_memories: list[GoldMemory] = Field(default_factory=list)
 
 
 class EvalSuite(BaseModel):
@@ -154,6 +211,7 @@ class ScoreComponent(BaseModel):
     value: float  # 0-100
     weight: float
     detail: str = ""
+    data: dict[str, Any] = Field(default_factory=dict)
 
 
 class EvalRun(BaseModel):
@@ -185,5 +243,13 @@ class EvalRun(BaseModel):
     test_results: list[TestResult] = Field(default_factory=list)
     criteria_met: dict[str, bool] = Field(default_factory=dict)
     evaluation_summary: str = ""
+
+    # Propagated from the case for transparency in reports/replay.
+    setup_commands: list[str] = Field(default_factory=list)
+    acceptance_criteria: list[str] = Field(default_factory=list)
+    # Per-requirement literal-instruction results (id -> passed).
+    literal_results: dict[str, bool] = Field(default_factory=dict)
+    # Files flagged as noisy/unrelated by the noise scorer.
+    noisy_files: list[str] = Field(default_factory=list)
 
     created_at: datetime = Field(default_factory=_utcnow)

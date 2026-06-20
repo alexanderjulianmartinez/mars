@@ -59,6 +59,15 @@ class EvalRunner:
 
         status, failure_reason = self._verdict(agent_run, criteria_met)
 
+        # Surface structured scorer extras (noise + literal results) on the run.
+        noisy_files: list[str] = []
+        literal_results: dict[str, bool] = {}
+        for comp in result.components:
+            if comp.scorer == "noise":
+                noisy_files = list(comp.data.get("noisy_files", []))
+            elif comp.scorer == "literal_instruction":
+                literal_results = dict(comp.data.get("literal_results", {}))
+
         eval_run = EvalRun(
             id=f"eval-{uuid.uuid4().hex[:12]}",
             suite_id=case.suite_id,
@@ -76,6 +85,10 @@ class EvalRunner:
             test_results=agent_run.test_results,
             criteria_met=criteria_met,
             evaluation_summary=self._summary(case, status, result.score, criteria_met),
+            setup_commands=list(case.setup_commands),
+            acceptance_criteria=list(case.acceptance_criteria),
+            literal_results=literal_results,
+            noisy_files=noisy_files,
         )
 
         if self.repository is not None:

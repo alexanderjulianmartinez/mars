@@ -59,3 +59,25 @@ per-arm metrics, limitations, and an honest decision line.
 - To make it a genuine *semantic*-vs-salience result: enable Cortex embeddings
   (`--extra embeddings` + `VOYAGE_API_KEY`) so `semantic_score` is non-null.
 - To use real Cortex memories with real labels: provide `gold_memories` (issue #7).
+
+## Real Cortex corpus + gold labels (issue #7)
+
+Cortex assigns its own UUID per memory, so gold labels are produced **by seeding**,
+not authored against fixed ids:
+
+1. Author the labeled corpus: `experiments/corpus/salience-memory-v1.corpus.yaml`
+   (per-query memories with stable `key`s + `relevant`/`target` flags; relevant
+   memories are high-importance/moderate-overlap, distractors are
+   high-overlap/low-importance so salience can help).
+2. Seed it and capture gold labels (live, opt-in — writes to the Cortex project):
+   ```bash
+   mars experiments seed-corpus salience-memory-v1   # writes <name>.gold.json (gitignored)
+   ```
+3. Run against real Cortex using the seeded corpus + captured gold:
+   ```bash
+   mars experiments run salience-memory-v1 --cortex-provider mcp --strict-semantic
+   ```
+
+If no gold file exists yet, the `--cortex-provider mcp` run warns and falls back
+to the spec's (synthetic-id) gold. Seeding logic is unit-tested with a fake
+Cortex (no keys).

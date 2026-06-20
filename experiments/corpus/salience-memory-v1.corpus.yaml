@@ -1,0 +1,102 @@
+# Labeled memory corpus for Salience Memory v1 (issue #7).
+# Seed into Cortex with:  mars experiments seed-corpus salience-memory-v1
+# Seeding captures Cortex's assigned ids and writes <name>.gold.json.
+#
+# Design: for each query, "relevant" memories are important but only moderately
+# keyword-similar; "distractor" memories have heavy keyword overlap but low
+# importance. A salience-weighted ranker should beat a similarity-only ranker.
+project: mars
+
+queries:
+  - query: "how should database migrations be rolled back safely"
+    memories:
+      - key: migration-rollback-decision
+        type: decision
+        importance: 0.95
+        relevant: true
+        target: true
+        content: >
+          Every schema change ships with a tested down-migration; the prod
+          incident was caused by an irreversible change with no recovery path.
+      - key: migration-staging-gate
+        type: decision
+        importance: 0.8
+        relevant: true
+        content: >
+          Schema changes are gated on a staging dry-run plus a rehearsed
+          recovery before promotion.
+      - key: db-pagination-distractor
+        type: note
+        importance: 0.1
+        relevant: false
+        content: >
+          The database listing endpoint uses cursor-based pagination with
+          rollback of the cursor token on error.
+      - key: db-connection-pool-distractor
+        type: note
+        importance: 0.1
+        relevant: false
+        content: Database connection pool size was tuned to 20 for the migration job runner.
+
+  - query: "what caused the authentication outage and how was it fixed"
+    memories:
+      - key: auth-outage-rootcause
+        type: failure
+        importance: 0.95
+        relevant: true
+        target: true
+        content: >
+          The outage was a token-clock-skew bug; the fix pins NTP and widens the
+          JWT not-before tolerance.
+      - key: auth-session-decision
+        type: decision
+        importance: 0.75
+        relevant: true
+        content: Sessions fall back to short-lived refresh tokens when the auth cache is cold.
+      - key: auth-login-ui-distractor
+        type: note
+        importance: 0.1
+        relevant: false
+        content: The authentication login screen copy was updated and the outage banner removed.
+
+  - query: "guidelines for keeping pull request diffs small and focused"
+    memories:
+      - key: diff-focus-decision
+        type: decision
+        importance: 0.9
+        relevant: true
+        target: true
+        content: >
+          PRs must touch only files required by the task; unrelated edits and
+          whitespace churn are rejected in review.
+      - key: diff-review-noise
+        type: note
+        importance: 0.7
+        relevant: true
+        content: Reviewers flag trailing-newline and reformat-only changes as noise.
+      - key: pr-template-distractor
+        type: note
+        importance: 0.1
+        relevant: false
+        content: The pull request template lists a focused checklist of diff sections to fill in.
+
+  - query: "retrieval strategy for long horizon agent memory"
+    memories:
+      - key: salience-retrieval-decision
+        type: decision
+        importance: 0.95
+        relevant: true
+        target: true
+        content: >
+          Long-horizon recall weights importance and recency alongside
+          similarity so critical-but-distant memories surface.
+      - key: salience-experiment-note
+        type: note
+        importance: 0.7
+        relevant: true
+        content: Salience Memory v1 compares salience-weighted vs similarity-only retrieval.
+      - key: retrieval-cache-distractor
+        type: note
+        importance: 0.1
+        relevant: false
+        content: The retrieval embedding cache strategy stores vectors for the memory listing.

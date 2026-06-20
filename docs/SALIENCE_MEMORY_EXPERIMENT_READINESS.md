@@ -64,9 +64,10 @@ external (Cortex-side / data) issues, not by Mars code.
 - Live Cortex exposes retrieval metadata; transport verified.
 
 ## Missing
-- **Cortex-sourced gold labels** — gold is local YAML whose ids follow the
-  synthetic convention; they do not map to real Cortex memory ids (issue #7).
-- **A labeled memory corpus in Cortex** for the experiment queries.
+- ~~Cortex-sourced gold labels / labeled corpus~~ — **tooling now exists** (issue #7):
+  `experiments/corpus/salience-memory-v1.corpus.yaml` + `mars experiments seed-corpus`
+  seeds the corpus and captures gold labels keyed to real Cortex ids. The remaining
+  step is to *run* the seed once Cortex is reachable (blocked by the DB migration).
 - **Cortex embeddings** — `semantic_score` is null, so a real run is keyword-only.
 
 ## Blocking (only for a *real-Cortex semantic* measurement — not for the first run)

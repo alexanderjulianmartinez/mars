@@ -372,7 +372,9 @@ def experiments_run(
         console.print(f"[red]No experiment definition experiments/{name}.yaml[/]")
         raise typer.Exit(code=1)
 
+    query_ids = None
     if cortex_provider == "mcp":
+        from mars.memory.corpus import load_corpus, load_gold
         from mars.memory.retrieval_source import CortexRetrievalSource
         from mars.providers.cortex_mcp import CortexMCPProvider
 
@@ -380,13 +382,26 @@ def experiments_run(
         if cortex is None:
             console.print("[red]No Cortex MCP server configured (set MARS_CORTEX_MCP_*).[/]")
             raise typer.Exit(code=1)
-        source = CortexRetrievalSource(cortex, project="mars", gold_map=spec.gold_map)
+        # Prefer a seeded labeled corpus + its captured gold labels.
+        gold = load_gold(name)
+        if gold is not None:
+            corpus = load_corpus(name)
+            query_ids = corpus.query_texts()
+            source = CortexRetrievalSource(cortex, project=corpus.project, gold_map=gold)
+        else:
+            console.print(
+                "[yellow]No seeded gold labels found. Run "
+                f"`mars experiments seed-corpus {name}` first for real metrics; "
+                "falling back to the spec's (synthetic-id) gold.[/]"
+            )
+            source = CortexRetrievalSource(cortex, project="mars", gold_map=spec.gold_map)
     else:
         source = SyntheticRetrievalSource()
 
     try:
         result = run_salience_memory_v1(
-            source, strict_semantic=strict_semantic, execution=autodev_provider, spec=spec
+            source, query_ids=query_ids, strict_semantic=strict_semantic,
+            execution=autodev_provider, spec=spec,
         )
     except SemanticUnavailableError as exc:
         console.print(f"[red]{exc}[/]")
@@ -394,6 +409,41 @@ def experiments_run(
 
     save_result(result)
     console.print(render_retrieval_report(result))
+
+
+@experiments_app.command("seed-corpus")
+def experiments_seed_corpus(
+    name: str = typer.Argument(..., help="Experiment name (salience-memory-v1)."),
+) -> None:
+    """Seed the labeled corpus into Cortex and write captured gold labels.
+
+    Live, opt-in: writes memories to the Cortex project. Requires MARS_CORTEX_MCP_*.
+    """
+    from mars.memory.corpus import load_corpus, save_gold, seed_corpus
+    from mars.providers.cortex_mcp import CortexMCPProvider
+
+    try:
+        corpus = load_corpus(name)
+    except FileNotFoundError:
+        console.print(f"[red]No corpus experiments/corpus/{name}.corpus.yaml[/]")
+        raise typer.Exit(code=1)
+
+    cortex = CortexMCPProvider.from_env()
+    if cortex is None:
+        console.print("[red]No Cortex MCP server configured (set MARS_CORTEX_MCP_*).[/]")
+        raise typer.Exit(code=1)
+
+    console.print(
+        f"[yellow]Seeding {corpus.n_memories} memories into Cortex project "
+        f"'{corpus.project}' across {len(corpus.queries)} queries…[/]"
+    )
+    try:
+        gold, key_to_id = seed_corpus(cortex, corpus)
+    finally:
+        cortex.close()
+    path = save_gold(gold, name)
+    console.print(f"[green]Seeded {len(key_to_id)} memories; gold labels written to {path}[/]")
+    console.print(f"Now run: [cyan]mars experiments run {name} --cortex-provider mcp[/]")
 
 
 @experiments_app.command("report")

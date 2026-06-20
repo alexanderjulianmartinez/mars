@@ -223,3 +223,6 @@ mars.db
 
 # Track B experiment results
 mars-experiments/
+
+# Generated gold labels from live corpus seeding
+experiments/corpus/*.gold.json

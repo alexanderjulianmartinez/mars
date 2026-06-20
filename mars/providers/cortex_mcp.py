@@ -34,6 +34,7 @@ DEFAULT_TOOL_NAMES = {
     "get_context_metadata": "get_context_metadata",
     "get_context_for_case": "get_context_for_case",
     "search_memory": "search_memory",
+    "add_memory": "add_memory",
 }
 
 
@@ -152,6 +153,31 @@ class CortexMCPProvider(CortexProvider):
                 }
             )
         return out
+
+    def add_memory(
+        self,
+        project: str,
+        mem_type: str,
+        content: str,
+        importance: float = 0.5,
+        summary: str | None = None,
+    ) -> str:
+        """Persist a memory and return its Cortex-assigned id (corpus seeding)."""
+        import json as _json
+
+        data = self._caller.call_tool(
+            self._tools["add_memory"],
+            {
+                "project": project,
+                "type": mem_type,
+                "content": content,
+                "importance": importance,
+                "summary": summary,
+            },
+        )
+        payload = data.get("result", data) if isinstance(data, dict) else data
+        obj = _json.loads(payload) if isinstance(payload, str) else payload
+        return str(obj.get("id")) if isinstance(obj, dict) else str(obj)
 
     def close(self) -> None:
         self._caller.close()

@@ -124,6 +124,9 @@ class AutoDevMCPProvider(AutoDevProvider):
         poll_interval_s: float = 5.0,
         poll_timeout_s: float = 1800.0,
         tool_names: dict[str, str] | None = None,
+        retrieval_strategy: str | None = None,
+        retrieval_arg_name: str = "retrieval_strategy",
+        send_retrieval: bool = False,
     ) -> None:
         self._caller = caller
         self.agent = agent
@@ -138,6 +141,13 @@ class AutoDevMCPProvider(AutoDevProvider):
         self.poll_interval_s = poll_interval_s
         self.poll_timeout_s = poll_timeout_s
         self._tools = {**DEFAULT_TOOL_NAMES, **(tool_names or {})}
+        # Per-run retrieval control. ``start_run``'s schema is additionalProperties:
+        # false today, so the extra arg is sent ONLY when ``send_retrieval`` is
+        # explicitly enabled (i.e. once the AutoDev side accepts it). The arg name
+        # is configurable so Mars need not be re-released when AutoDev names it.
+        self.retrieval_strategy = retrieval_strategy
+        self.retrieval_arg_name = retrieval_arg_name
+        self.send_retrieval = send_retrieval
 
     # -- construction helpers --------------------------------------------- #
 
@@ -222,15 +232,18 @@ class AutoDevMCPProvider(AutoDevProvider):
                 len(case.acceptance_criteria),
                 case.id,
             )
-        started = self._call(
-            "start_run",
-            {
-                "issue_url": case.issue_url,
-                "dry_run": self.dry_run,
-                "isolation_mode": self.isolation_mode,
-                "max_iterations": self.max_iterations,
-            },
-        )
+        start_args = {
+            "issue_url": case.issue_url,
+            "dry_run": self.dry_run,
+            "isolation_mode": self.isolation_mode,
+            "max_iterations": self.max_iterations,
+        }
+        if self.send_retrieval and self.retrieval_strategy:
+            # Only sent when explicitly enabled (start_run rejects unknown args
+            # until the AutoDev side adds this parameter). Recorded for provenance.
+            start_args[self.retrieval_arg_name] = self.retrieval_strategy
+            workspace.metadata["retrieval_strategy"] = self.retrieval_strategy
+        started = self._call("start_run", start_args)
         run_id = started.get("run_id") or (started.get("run") or {}).get("run_id")
         if not run_id:
             raise RuntimeError(f"start_run returned no run_id: {started!r}")
@@ -319,7 +332,38 @@ class AutoDevMCPProvider(AutoDevProvider):
             runtime_ms=runtime_ms,
             cost_usd=cost,
             files_changed=self._extract_files(data),
+            token_usage=self._extract_tokens(data, meta),
+            review_decision=self._extract_review_decision(data),
+            retrieved_context=self._extract_retrieved_context(data, meta),
         )
+
+    @staticmethod
+    def _extract_tokens(data: dict, meta: dict) -> int | None:
+        for src in (meta, data, data.get("usage") or {}):
+            for key in ("token_usage", "tokens", "total_tokens"):
+                if src.get(key) is not None:
+                    try:
+                        return int(src[key])
+                    except (TypeError, ValueError):
+                        return None
+        return None
+
+    @staticmethod
+    def _extract_review_decision(data: dict) -> str | None:
+        reviews = data.get("review_results") or []
+        if reviews:
+            last = reviews[-1]
+            decision = last.get("decision") or (last.get("metadata") or {}).get("decision")
+            return str(decision) if decision else None
+        return None
+
+    @staticmethod
+    def _extract_retrieved_context(data: dict, meta: dict) -> list[dict]:
+        for src in (data.get("retrieved_context"), meta.get("retrieved_context"),
+                    (data.get("context") or {}).get("memories")):
+            if isinstance(src, list):
+                return [m if isinstance(m, dict) else {"id": str(m)} for m in src]
+        return []
 
     @staticmethod
     def _extract_diff(data: dict) -> str:

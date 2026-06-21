@@ -660,15 +660,15 @@ class AutoDevExecutionImpactAdapter:
       AutoDev contract does not expose (token usage, review quality, a focused-diff
       judgement without file globs) are **marked in ``missing_fields``**, never
       fabricated.
-    - ``setup_commands`` and ``test_commands`` are propagated to AutoDev's
-      ``validate``; ``acceptance_criteria`` ride in the issue body (the real
-      ``start_run`` contract takes ``issue_url`` only — it has no context/criteria
-      parameter, so Mars cannot inject them over MCP).
-    - **The retrieval arm cannot be injected into a real agentic run**: ``start_run``
-      accepts only ``issue_url`` (no context-package parameter). The arm is recorded
-      as provenance and drives Mars-side retrieval metrics only; it does *not* change
-      what the real agent retrieves. Honest per-arm execution comparison needs
-      AutoDev to expose a context/retrieval-mode parameter.
+    - Under the Experiment 5.1 contract ``start_run`` accepts the full per-run task
+      spec (``acceptance_criteria``/``acceptance_checks``/``validation_commands``/
+      ``setup_commands``/``expected_files``/``forbidden_files``/``context_metadata``);
+      the provider sends them so the review gate renders a real verdict instead of
+      auto-blocking. ``setup_commands``/``validation_commands`` are also re-run via
+      ``validate`` for an independent Mars-side validation signal.
+    - The retrieval arm IS injected (``retrieval_strategy`` + ``context_package_id``)
+      so arms A/B/C inject different contexts; the Phase-3 ``arms_distinct`` gate
+      refuses the comparison unless the injected contexts actually differ.
     """
 
     #: review decisions counted as a pass.
@@ -700,13 +700,33 @@ class AutoDevExecutionImpactAdapter:
         test_results = tests.test_results
         validation_pass = bool(test_results) and all(t.passed for t in test_results)
         agent_ok = agent_run.status == AgentRunStatus.SUCCESS
-        success = agent_ok and (validation_pass if test_results else True)
         acceptance = (
             round(sum(1 for t in test_results if t.passed) / len(test_results), 4)
             if test_results else None
         )
 
         missing: list[str] = []
+
+        # review_pass = AutoDev's review.review_passed (the contract signal). It is
+        # recorded and reported, but it additionally blocks whenever the agent edits
+        # a forbidden file (e.g. it rewrites the oracle test) — a behaviour that, in
+        # this benchmark, occurs across all arms and would mask any retrieval effect.
+        if agent_run.review_decision is None:
+            review_pass = False
+            missing += ["review_pass", "review_quality"]
+        else:
+            review_pass = agent_run.review_decision.lower() in self._REVIEW_PASS
+            missing.append("review_quality")  # decision yes, numeric quality no
+
+        # PRIMARY task success = the agent's IMPLEMENTATION passes the *pristine*
+        # oracle test (Mars restores forbidden test files before validating, so
+        # this measures the implementation, not the agent's rewritten tests). This
+        # is the discriminating, oracle-grounded signal for the A/B/C comparison.
+        # When no validation ran, fall back to agent status + review.
+        if test_results:
+            success = agent_ok and validation_pass
+        else:
+            success = agent_ok and (review_pass if agent_run.review_decision else True)
 
         # Retrieval metrics: prefer what the run ACTUALLY retrieved (real), else the
         # Mars-side provenance dict, else mark missing.
@@ -723,15 +743,7 @@ class AutoDevExecutionImpactAdapter:
         if token is None:
             missing.append("token_usage")
 
-        # review (real when AutoDev returns a decision)
-        if agent_run.review_decision is None:
-            review_pass = False
-            missing += ["review_pass", "review_quality"]
-        else:
-            review_pass = agent_run.review_decision.lower() in self._REVIEW_PASS
-            missing.append("review_quality")  # decision yes, numeric quality no
-
-        if not case.allowed_files and not case.forbidden_files:
+        if not case.allowed_files and not case.expected_files and not case.forbidden_files:
             missing.append("focused_diff")
         if not test_results:
             missing.append("acceptance_pass_rate")
@@ -799,6 +811,7 @@ def run_execution_impact_real(
     trials: int = 1,
     experiment: str = "salience-memory-execution-impact",
     notes: list[str] | None = None,
+    arms: list[RetrievalArm] | None = None,
 ) -> ExecutionImpactResult:
     """Run the three arms over real issue-backed ``cases`` via real AutoDev.
 
@@ -809,7 +822,7 @@ def run_execution_impact_real(
     run actually retrieved. Produces an ``evidential=True`` result iff a real agent
     was actually invoked.
     """
-    arms = retrieval_arms()
+    arms = arms or retrieval_arms()
     per_arm: dict[str, list[SampleRecord]] = {a.name: [] for a in arms}
     agent_invoked_any = False
     # per (case, trial) -> {arm -> tuple of retrieved memory ids}, for the gate
@@ -836,15 +849,15 @@ def run_execution_impact_real(
 
     arms_distinct = _arms_distinct(injected)
 
-    baseline = next(a for a in arms if a.baseline)
-    base_success = [1.0 if r.success else 0.0 for r in per_arm[baseline.name]]
-    base_revq = [r.review_quality for r in per_arm[baseline.name]]
+    baseline = next((a for a in arms if a.baseline), None)
+    base_success = [1.0 if r.success else 0.0 for r in per_arm[baseline.name]] if baseline else []
+    base_revq = [r.review_quality for r in per_arm[baseline.name]] if baseline else []
 
     arm_metrics, failure_breakdown = [], {}
     for arm in arms:
         recs = per_arm[arm.name]
         m = _aggregate(arm, recs)
-        if not arm.baseline and recs:
+        if baseline and not arm.baseline and recs:
             m.success_delta = _paired([1.0 if r.success else 0.0 for r in recs], base_success, seed=7)
             m.review_quality_delta = _paired([r.review_quality for r in recs], base_revq, seed=8)
         arm_metrics.append(m)

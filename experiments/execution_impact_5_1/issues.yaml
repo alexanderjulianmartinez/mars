@@ -1,0 +1,374 @@
+# Execution Impact study (Experiment 5.1) — Mars task + memory fixture.
+#
+# This is Mars's *richer* superset of AutoDev's
+# experiments/execution_impact_5_1/issues.yaml: it adds, per task, a controlled
+# memory set (`seed_memories`) and the retrieval gold (`gold`) so the three arms
+# retrieve genuinely *task-relevant* context and the A/B/C comparison is real.
+#
+# Design (per task — a controlled, isolated 5-record store, reseeded per run):
+#   * one CORRECT decision/postmortem/convention — importance 3.5, OLD, and
+#     deliberately LOW term-overlap with the issue query. A pure-similarity ranker
+#     buries it (recency/overlap favour the distractors); importance-aware rankers
+#     (sim_importance, salience_v2) surface it.
+#   * four RECENT, higher-overlap distractors — short, unhelpful run summaries.
+#     For tasks where the repo actively misleads (stale docs / a reverted bad PR)
+#     one or two distractors ECHO that wrong path; they are the `contradictory`
+#     gold (for ContradictionAvoidanceRate / failure attribution).
+#
+# Verified offline with AutoDev's REAL scorers at retrieval_limit=3
+# (experiments/verify_exec_impact_5_1_divergence.py):
+#   similarity_only → distractors only (MISSES the corrective decision)
+#   sim_importance  → SURFACES the decision (importance lifts it past distractors)
+#   salience_v2     → SURFACES the decision (recency keeps a recent distractor on
+#                     top, ranking the decision a touch lower than sim_importance —
+#                     the honest "recency adds no execution value here" sub-result)
+#
+# Memory namespace = the issue's owner/repo. Reseed ONLY the current task's
+# records before each run (clean, isolated store; AutoDev write-back isolated).
+# Success oracle = the targeted test (validation_passes); the test file is
+# forbidden so a run cannot pass by editing the test.
+# Bench repo: github.com/alexanderjulianmartinez/mars-exec-impact-bench
+
+name: execution_impact_5_1
+repo: alexanderjulianmartinez/mars-exec-impact-bench
+tasks:
+  # ---------------------------------------------------------------- task 1
+  - id: bench-1-audit-log-table
+    title: Add an audit_log table for admin actions
+    category: long_horizon_pattern_reuse
+    repo: alexanderjulianmartinez/mars-exec-impact-bench
+    issue_url: https://github.com/alexanderjulianmartinez/mars-exec-impact-bench/issues/1
+    body: >
+      Record admin actions in a new `audit_log` table. Add the table and a
+      migration to create it, following the repo's existing table conventions
+      in `bench/db.py`.
+    validation_commands:
+      - pytest -q tests/test_audit_log.py
+    acceptance_criteria:
+      - An `audit_log` table is added following the conventions in bench/db.py.
+      - A migration creates the table.
+      - Targeted tests pass.
+    acceptance_checks:
+      - criterion: Targeted tests pass.
+        check: validation_passes
+    expected_files:
+      - bench/db.py
+    forbidden_files:
+      - tests/test_audit_log.py
+    seed_memories:
+      - id: dec-uuid-keys-reversible
+        kind: failure_pattern
+        importance: 3.5
+        recent: false
+        content: >
+          Standing decision: persisted entities key on a UUID column, never an
+          integer sequence; every schema change ships a paired forward/rollback
+          step registered together. Adopted after an irreversible change blocked
+          rollback during an outage.
+      - id: d1-cols-deferred
+        kind: run_summary
+        recent: true
+        content: Drafted new audit_log columns; migration deferred.
+      - id: d1-conventions-rename
+        kind: run_summary
+        recent: true
+        content: Renamed an admin column in an existing table.
+      - id: d1-discussion-notes
+        kind: run_summary
+        recent: true
+        content: Notes on which admin actions to record.
+      - id: d1-unrelated
+        kind: run_summary
+        recent: true
+        content: Discussed creating a new unrelated migration.
+    gold:
+      target_memory: dec-uuid-keys-reversible
+      relevant_memories: [dec-uuid-keys-reversible]
+      contradictory_memories: []
+    memory_dependencies:
+      target_memory: UUID primary-key + reversible-migration decision
+      obsolete_memory: ""
+
+  # ---------------------------------------------------------------- task 2
+  - id: bench-2-payments-retry
+    title: Make PaymentsClient.charge resilient to transient gateway failures
+    category: repo_evolution
+    repo: alexanderjulianmartinez/mars-exec-impact-bench
+    issue_url: https://github.com/alexanderjulianmartinez/mars-exec-impact-bench/issues/2
+    body: >
+      Charges occasionally fail when the payment gateway has a transient hiccup.
+      Make `PaymentsClient.charge` (`bench/payments.py`) survive transient
+      failures so a charge succeeds once the gateway recovers.
+    validation_commands:
+      - pytest -q tests/test_payments_retry.py
+    acceptance_criteria:
+      - PaymentsClient.charge retries transient gateway failures and eventually succeeds.
+      - Non-transient failures are not silently swallowed.
+      - Targeted tests pass.
+    acceptance_checks:
+      - criterion: Targeted tests pass.
+        check: validation_passes
+    expected_files:
+      - bench/payments.py
+    forbidden_files:
+      - tests/test_payments_retry.py
+    seed_memories:
+      - id: dec-reuse-backoff-no-tenacity
+        kind: failure_pattern
+        importance: 3.5
+        recent: false
+        content: >
+          Standing decision: flaky external calls reuse the shared exponential
+          backoff helper and raise the existing retryable-error type; introducing
+          a third-party library such as tenacity is banned. A PR that added one
+          was reverted.
+      - id: d2-simple-loop
+        kind: run_summary
+        recent: true
+        content: Wrapped the charge in an inline try/except loop.
+      - id: d2-tenacity
+        kind: run_summary
+        recent: true
+        content: Used tenacity to retry the gateway charge.
+      - id: d2-logging
+        kind: run_summary
+        recent: true
+        content: Added logging around the payment gateway.
+      - id: d2-notes
+        kind: run_summary
+        recent: true
+        content: Notes on how often charges fail.
+    gold:
+      target_memory: dec-reuse-backoff-no-tenacity
+      relevant_memories: [dec-reuse-backoff-no-tenacity]
+      contradictory_memories: [d2-tenacity]
+    memory_dependencies:
+      target_memory: reuse bench.retry.with_backoff; do not add tenacity
+      obsolete_memory: add a new retry library
+
+  # ---------------------------------------------------------------- task 3
+  - id: bench-3-locale-backfill
+    title: Backfill users.locale for existing users
+    category: repo_evolution
+    repo: alexanderjulianmartinez/mars-exec-impact-bench
+    issue_url: https://github.com/alexanderjulianmartinez/mars-exec-impact-bench/issues/3
+    body: >
+      A `locale` column was added to users. Backfill it for all existing rows
+      via `bench.users.backfill_locale`. There can be a very large number of
+      users, so the backfill must be batched rather than load everything at once.
+    validation_commands:
+      - pytest -q tests/test_locale_backfill.py
+    acceptance_criteria:
+      - bench.users.backfill_locale backfills locale for all existing rows.
+      - The backfill is batched and does not load all users into memory at once.
+      - Targeted tests pass.
+    acceptance_checks:
+      - criterion: Targeted tests pass.
+        check: validation_passes
+    expected_files:
+      - bench/users.py
+    forbidden_files:
+      - tests/test_locale_backfill.py
+    seed_memories:
+      - id: dec-chunk-bulk-updates
+        kind: failure_pattern
+        importance: 3.5
+        recent: false
+        content: >
+          Postmortem decision: a single blocking write across an entire dataset
+          caused a production outage; bulk writes now run in fixed-size chunks
+          through the shared chunking helper (default size 500), never in a single
+          sweep.
+      - id: d3-one-update
+        kind: run_summary
+        recent: true
+        content: Ran the locale backfill as one update over all rows.
+      - id: d3-column-add
+        kind: run_summary
+        recent: true
+        content: Added the locale column to users.
+      - id: d3-count
+        kind: run_summary
+        recent: true
+        content: Counted existing users still missing a locale.
+      - id: d3-notes
+        kind: run_summary
+        recent: true
+        content: Notes on the default locale value.
+    gold:
+      target_memory: dec-chunk-bulk-updates
+      relevant_memories: [dec-chunk-bulk-updates]
+      contradictory_memories: [d3-one-update]
+    memory_dependencies:
+      target_memory: batch large backfills with bench.users.batched
+      obsolete_memory: one big blocking update
+
+  # ---------------------------------------------------------------- task 4
+  - id: bench-4-protect-admin-reports
+    title: Protect the /admin/reports endpoint
+    category: contradiction_resolution
+    repo: alexanderjulianmartinez/mars-exec-impact-bench
+    issue_url: https://github.com/alexanderjulianmartinez/mars-exec-impact-bench/issues/4
+    body: >
+      `bench.admin.admin_reports` is currently unauthenticated. Protect it with
+      our authentication mechanism — see `docs/AUTH.md` for how routes are
+      authenticated in this repo.
+    validation_commands:
+      - pytest -q tests/test_admin_auth.py
+    acceptance_criteria:
+      - bench.admin.admin_reports requires authentication using the repo's current mechanism.
+      - Unauthenticated requests are rejected.
+      - Targeted tests pass.
+    acceptance_checks:
+      - criterion: Targeted tests pass.
+        check: validation_passes
+    expected_files:
+      - bench/admin.py
+    forbidden_files:
+      - tests/test_admin_auth.py
+    seed_memories:
+      - id: dec-jwt-replaces-cookie
+        kind: failure_pattern
+        importance: 3.5
+        recent: false
+        content: >
+          Migration outcome: secured handlers check a signed bearer token via
+          bench.auth.verify_jwt; cookie-session login was deleted. Written pages
+          describing cookie-session login are out of date — ignore them.
+      - id: d4-followed-authmd
+        kind: run_summary
+        recent: true
+        content: Followed AUTH.md; used the session cookie middleware.
+      - id: d4-authmd-reject
+        kind: run_summary
+        recent: true
+        content: Per AUTH.md, reject a missing session cookie.
+      - id: d4-unauth-list
+        kind: run_summary
+        recent: true
+        content: Listed which admin endpoints stay unauthenticated.
+      - id: d4-routes-notes
+        kind: run_summary
+        recent: true
+        content: Notes on how routes are protected here.
+    gold:
+      target_memory: dec-jwt-replaces-cookie
+      relevant_memories: [dec-jwt-replaces-cookie]
+      contradictory_memories: [d4-followed-authmd, d4-authmd-reject]
+    memory_dependencies:
+      target_memory: auth migrated to JWT bearer (bench.auth.verify_jwt)
+      obsolete_memory: docs/AUTH.md session-cookie guidance
+
+  # ---------------------------------------------------------------- task 5
+  - id: bench-5-feature-x-flag
+    title: Add a FEATURE_X feature flag
+    category: contradiction_resolution
+    repo: alexanderjulianmartinez/mars-exec-impact-bench
+    issue_url: https://github.com/alexanderjulianmartinez/mars-exec-impact-bench/issues/5
+    body: >
+      Add a `FEATURE_X` feature flag and make `bench.features.feature_x_enabled()`
+      return whether it is enabled. See `docs/CONFIG.md` for how configuration is
+      read in this repo.
+    validation_commands:
+      - pytest -q tests/test_feature_x_flag.py
+    acceptance_criteria:
+      - bench.features.feature_x_enabled() reflects the FEATURE_X flag.
+      - The flag is read using the repo's current configuration mechanism.
+      - Targeted tests pass.
+    acceptance_checks:
+      - criterion: Targeted tests pass.
+        check: validation_passes
+    expected_files:
+      - bench/features.py
+    forbidden_files:
+      - tests/test_feature_x_flag.py
+    seed_memories:
+      - id: dec-settings-replaces-env
+        kind: failure_pattern
+        importance: 3.5
+        recent: false
+        content: >
+          Migration outcome: settings live as fields on the central settings
+          object (bench.settings.Settings); the legacy environment helper
+          bench.legacy_env.get_env is deprecated. Pages telling you to pull values
+          from environment variables directly are out of date.
+      - id: d5-followed-configmd
+        kind: run_summary
+        recent: true
+        content: Followed CONFIG.md; read the flag with get_env.
+      - id: d5-configmd-env
+        kind: run_summary
+        recent: true
+        content: Per CONFIG.md, read flags from the environment.
+      - id: d5-default-notes
+        kind: run_summary
+        recent: true
+        content: Notes on the default for FEATURE_X.
+      - id: d5-naming
+        kind: run_summary
+        recent: true
+        content: Discussed naming the feature accessor.
+    gold:
+      target_memory: dec-settings-replaces-env
+      relevant_memories: [dec-settings-replaces-env]
+      contradictory_memories: [d5-followed-configmd, d5-configmd-env]
+    memory_dependencies:
+      target_memory: config read via bench.settings.Settings
+      obsolete_memory: docs/CONFIG.md legacy_env guidance
+
+  # ---------------------------------------------------------------- task 6
+  - id: bench-6-order-refunded-event
+    title: Emit an order.refunded event when a refund completes
+    category: long_horizon_pattern_reuse
+    repo: alexanderjulianmartinez/mars-exec-impact-bench
+    issue_url: https://github.com/alexanderjulianmartinez/mars-exec-impact-bench/issues/6
+    body: >
+      When a refund completes (`bench.events.refund_completed`), emit an
+      `order.refunded` domain event so downstream consumers can react. It should
+      fit the existing event system in `bench/events.py`.
+    validation_commands:
+      - pytest -q tests/test_order_refunded_event.py
+    acceptance_criteria:
+      - bench.events.refund_completed emits an order.refunded domain event.
+      - The event is emitted through the repo's existing event system.
+      - Targeted tests pass.
+    acceptance_checks:
+      - criterion: Targeted tests pass.
+        check: validation_passes
+    expected_files:
+      - bench/events.py
+    forbidden_files:
+      - tests/test_order_refunded_event.py
+    seed_memories:
+      - id: dec-publish-via-bus-versioned
+        kind: failure_pattern
+        importance: 3.5
+        recent: false
+        content: >
+          Standing convention: notifications publish only through the shared
+          in-process bus, and every envelope carries a schema_version integer.
+          Calling a message broker directly, or publishing an unversioned
+          envelope, is forbidden.
+      - id: d6-broker-direct
+        kind: run_summary
+        recent: true
+        content: Emitted order.refunded by calling a broker directly.
+      - id: d6-naming
+        kind: run_summary
+        recent: true
+        content: Discussed the refund payload fields.
+      - id: d6-consumers
+        kind: run_summary
+        recent: true
+        content: Listed downstream refund consumers.
+      - id: d6-notes
+        kind: run_summary
+        recent: true
+        content: Notes on when a refund completes.
+    gold:
+      target_memory: dec-publish-via-bus-versioned
+      relevant_memories: [dec-publish-via-bus-versioned]
+      contradictory_memories: [d6-broker-direct]
+    memory_dependencies:
+      target_memory: publish via events.bus with schema_version
+      obsolete_memory: call a broker directly / unversioned

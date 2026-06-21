@@ -69,22 +69,31 @@ def _gold_from_task(t: dict) -> dict | None:
     }
 
 
-def _load_issue_cases(path: Path, limit: int | None):
+def _load_issue_cases(path: Path, limit: int | None, only: set[str] | None = None):
     import yaml
 
     from mars.models import EvalCase
 
     data = yaml.safe_load(path.read_text()) or {}
     raw = data.get("tasks") or data.get("cases") or []
+    if only:
+        raw = [t for t in raw if t.get("id") in only]
     cases, gold_map = [], {}
     for t in raw[: limit or None]:
+        # Accept both the 5.1 fixture field names (validation_commands / title) and
+        # the older ones (test_commands / name).
+        validation = t.get("validation_commands") or t.get("test_commands", [])
         cases.append(EvalCase(
             id=t["id"], suite_id=t.get("suite_id", "execution-impact"),
-            name=t.get("name", t["id"]), task_prompt=t.get("task_prompt", t.get("name", t["id"])),
+            name=t.get("title", t.get("name", t["id"])),
+            task_prompt=t.get("task_prompt", t.get("body", t.get("title", t.get("name", t["id"])))),
             repo=t.get("repo", ""), issue_url=t.get("issue_url"),
-            setup_commands=t.get("setup_commands", []), test_commands=t.get("test_commands", []),
+            setup_commands=t.get("setup_commands", []), test_commands=validation,
             acceptance_criteria=t.get("acceptance_criteria", []),
-            allowed_files=t.get("allowed_files", []), forbidden_files=t.get("forbidden_files", []),
+            acceptance_checks=t.get("acceptance_checks", []),
+            expected_files=t.get("expected_files", []),
+            allowed_files=t.get("allowed_files", []),
+            forbidden_files=t.get("forbidden_files", []),
         ))
         gold = _gold_from_task(t)
         if gold:
@@ -156,7 +165,9 @@ def main() -> int:
             )
             return 3
 
-        cases, gold_map = _load_issue_cases(Path(issues_file), limit_tasks)
+        only_tasks = _arg("--only-tasks")
+        only = set(only_tasks.split(",")) if only_tasks else None
+        cases, gold_map = _load_issue_cases(Path(issues_file), limit_tasks, only)
         if not cases:
             print(f"No tasks found in {issues_file}.", file=sys.stderr)
             return 3
@@ -171,10 +182,15 @@ def main() -> int:
             "B_sim_importance": "sim_importance",
             "C_salience_v2": "salience_v2",
         }
+        # Top-k injected. Default 3 so the similarity arm EXCLUDES the buried
+        # high-importance record from the controlled 5-record store (the whole
+        # point of the contrast); 0 = let AutoDev use its default.
+        retrieval_limit = int(_arg("--retrieval-limit", 3)) or None
         from mars.providers.autodev_mcp import AutoDevMCPProvider
         autodev = AutoDevMCPProvider.from_env(
             agentic=True, dry_run=dry_run, model=model,
             retrieval_arg_name=retrieval_arg_name, send_retrieval=send_retrieval,
+            retrieval_limit=retrieval_limit,
         )
         adapter = AutoDevExecutionImpactAdapter(
             autodev, dry_run=dry_run, arm_retrieval=arm_retrieval, send_retrieval=send_retrieval,
@@ -188,13 +204,21 @@ def main() -> int:
             inject = "Per-arm retrieval NOT injected (--no-send-retrieval); arm is provenance only."
         notes = [
             f"REAL AutoDev agentic run (dry_run={dry_run}); model={model}.",
+            f"retrieval_limit={retrieval_limit} (top-k injected; <store size so the "
+            "similarity arm excludes the buried high-importance record).",
             inject,
             "Execution metrics are real; token usage / review / retrieved context are "
             "used when AutoDev returns them, else marked missing (never fabricated).",
         ]
-        arms = retrieval_arms()[: limit_arms or None]
-        if limit_arms:
-            notes.append(f"limited to {len(arms)} arm(s).")
+        arms = retrieval_arms()
+        only_arms = _arg("--only-arms")
+        if only_arms:
+            wanted = {x.strip().lower() for x in only_arms.split(",")}
+            arms = [a for a in arms
+                    if a.name.lower() in wanted or a.name.split("_")[0].lower() in wanted]
+        arms = arms[: limit_arms or None]
+        if only_arms or limit_arms:
+            notes.append(f"limited to arm(s): {', '.join(a.name for a in arms)}.")
         if gold_map:
             notes.append(f"{len(gold_map)} task(s) carry gold → real retrieval metrics "
                          "+ ContradictionAvoidanceRate computed from get_run retrieved_context.")
@@ -211,17 +235,23 @@ def main() -> int:
             seeder = str(Path(__file__).with_name("seed_autodev_memory.py"))
 
             def before_each(arm, case, trial):  # noqa: ARG001
+                # Reseed ONLY this task's records → an isolated, controlled store so
+                # other tasks' memories don't pollute retrieval, and AutoDev's
+                # post-run writeback is wiped before the next arm.
                 subprocess.run(
-                    [seed_py, seeder, "--issues-file", issues_file, "--work-dir", seed_workdir],
+                    [seed_py, seeder, "--issues-file", issues_file,
+                     "--work-dir", seed_workdir, "--task-id", case.id],
                     check=True, capture_output=True,
                 )
-            notes.append("memory re-seeded before each run (controlled store; AutoDev "
-                         "writeback isolated).")
+            notes.append("per-task memory re-seeded before each run (isolated controlled "
+                         "store; AutoDev writeback isolated).")
 
+        trials = int(_arg("--trials", 1))
         result = run_execution_impact_real(
-            adapter, cases, trials=1, notes=notes,
+            adapter, cases, trials=trials, notes=notes,
             gold_for=lambda case: gold_map.get(case.id),
-            before_each=before_each,
+            before_each=before_each, arms=arms,
+            experiment=_arg("--experiment", "salience-memory-execution-impact"),
         )
         try:
             autodev.close()

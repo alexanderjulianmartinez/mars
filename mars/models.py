@@ -123,6 +123,11 @@ class EvalCase(BaseModel):
     # --- agentic-eval extensions (Track A) ---
     # Free-text acceptance criteria propagated to AutoDev / shown in reports.
     acceptance_criteria: list[str] = Field(default_factory=list)
+    # Deterministic review checks for AutoDev's review gate (Experiment 5.1
+    # contract): {criterion, check, value?} where check ∈ validation_passes /
+    # files_include / files_exclude / diff_contains / diff_absent. Propagated to
+    # autodev_start_run; empty for non-agentic cases.
+    acceptance_checks: list[dict[str, Any]] = Field(default_factory=list)
     # File globs (support ** ) for the diff-quality / noise scorers.
     expected_files: list[str] = Field(default_factory=list)
     allowed_files: list[str] = Field(default_factory=list)

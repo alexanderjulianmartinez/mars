@@ -9,6 +9,36 @@ established that salience-weighted retrieval improves *retrieval quality*
 thesis is whether those gains reach the agent: better task success, review
 quality, fewer contradiction failures, better efficiency.
 
+## Status update 5.1 (RUN — first evidential result — 2026-06-21)
+
+The execution study has now actually **run** against a purpose-built,
+memory-dependent benchmark. Full write-up + tables:
+`docs/reports/SALIENCE_MEMORY_EXECUTION_IMPACT_5_1_RESULTS.md`; data:
+`mars-experiments/salience-memory-execution-impact-5-1.json` (+ `…-behavioral.json`).
+
+- **18 real AutoDev agent runs** (6 tasks × 3 arms, dry-run, `retrieval_limit=3`);
+  `evidential=true`, `arms_distinct=true`, `valid_comparison=true`. Cost ≈ $1.3.
+- **Result = Outcome B with a behavioural twist.** Retrieval improved markedly
+  (importance arms surface the corrective record the similarity arm never sees:
+  target-found 0.83 vs 0.00, MRR 0.56 vs 0.00) and **steered the agent's approach**
+  (right-approach 1.00 for B/C vs 0.83 for A; the clean case is `bench-4`, where the
+  similarity arm followed the **stale doc** → session cookie while both importance
+  arms used JWT). **But task-success did not move** (0.333 in every arm; the same 2
+  of 6 tasks pass), and retrieval quality did not positively predict success
+  (recall↔success Pearson −0.32).
+- **Verdict:** Salience improves retrieval and changes agent behaviour, but on this
+  benchmark it did **not** raise downstream task-success. Do not claim a downstream
+  execution win. Caveats: single trial; 4/6 tasks floored at `max_iterations=3`;
+  B≈C (recency adds nothing); `review_passed` unusable (agent edits forbidden files
+  across all arms) so success = restored-oracle validation.
+- **Apparatus advances in 5.1:** Mars sends the full per-run task spec on
+  `start_run`; per-arm `retrieval_limit` (critical — at the default limit=5 every
+  arm injects the whole store); **oracle-restoration** before validation (the agent
+  rewrites the test file, which otherwise invalidated the success signal and faked a
+  0% floor); per-task isolated memory reseeding; offline divergence proof
+  (`experiments/verify_exec_impact_5_1_divergence.py`). Benchmark + memory fixture:
+  `experiments/execution_impact_5_1/issues.yaml`.
+
 ## Status update v2 (context injection RESOLVED — 2026-06-20)
 
 Re-audited per the v2 brief: **AutoDev now exposes context injection**, so the

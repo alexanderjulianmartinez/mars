@@ -69,10 +69,18 @@ def main() -> int:
     ap.add_argument("--issues-file", required=True)
     ap.add_argument("--work-dir", default="~/.autodev/mcp")
     ap.add_argument("--keep-existing", action="store_true")
+    ap.add_argument("--task-id", default=None,
+                    help="Seed ONLY this task's memories (controlled, isolated "
+                         "per-task store so other tasks' records don't act as "
+                         "distractors). Default: seed all tasks.")
     args = ap.parse_args()
 
     data = yaml.safe_load(Path(args.issues_file).read_text()) or {}
     tasks = data.get("tasks") or data.get("cases") or []
+    if args.task_id:
+        tasks = [t for t in tasks if t.get("id") == args.task_id]
+        if not tasks:
+            print(f"no task with id {args.task_id!r} in issues file"); return 1
     if not tasks:
         print("no tasks in issues file"); return 1
 

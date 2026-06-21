@@ -1,0 +1,45 @@
+cff-version: 1.2.0
+title: "Mars: Salience-Weighted Memory Retrieval for Long-Horizon Software Agents"
+message: "If you use this software, benchmark, or results, please cite it as below."
+type: software
+authors:
+  - family-names: Martinez
+    given-names: Alexander Julian
+repository-code: "https://github.com/alexanderjulianmartinez/mars"
+abstract: >-
+  Mars is the evaluation layer for AI software engineering agents — a benchmark,
+  scoring, and regression-testing platform. This release accompanies the
+  Salience-Weighted Memory Retrieval study: a controlled investigation of whether
+  computational salience signals (importance, confidence) improve memory retrieval
+  for long-horizon agents over similarity-only ranking, evaluated on the frozen,
+  hash-pinned Salience Memory Benchmark v1.0.0 (30 queries, 552 memories).
+keywords:
+  - memory retrieval
+  - retrieval-augmented generation
+  - agent evaluation
+  - salience
+  - long-horizon agents
+  - benchmark
+license: Apache-2.0
+license-url: "https://www.apache.org/licenses/LICENSE-2.0"
+version: 0.1.0
+date-released: "2026-06-21"
+references:
+  - type: data
+    title: "Salience Memory Benchmark v1.0.0"
+    authors:
+      - family-names: Martinez
+        given-names: Alexander Julian
+    license: CC-BY-4.0
+    notes: >-
+      Frozen corpus, SHA256
+      a464085c3daa64c97d2764c47f8758931b2a51c2adc1e143fcfc98d9faa74d59.
+    year: 2026
+  - type: report
+    title: >-
+      Salience-Weighted Memory Retrieval for Long-Horizon Software Agents:
+      Benchmark Design, Retrieval Studies, and Initial Agent Execution Results
+    authors:
+      - family-names: Martinez
+        given-names: Alexander Julian
+    year: 2026

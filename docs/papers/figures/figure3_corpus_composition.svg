@@ -1,0 +1,23 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='880' height='420' viewBox='0 0 880 420' role='img' aria-label='Benchmark composition'>
+<rect width='880' height='420' fill='white'/>
+<text x='40' y='34' font-family='Helvetica,Arial,sans-serif' font-size='17' font-weight='bold' text-anchor='start' fill='#111827'>Figure 3 — Benchmark Composition (552 memories, 30 queries)</text>
+<rect x='150' y='60.0' width='670.0' height='36.2' fill='#f59e0b'/>
+<text x='140' y='85.31666666666666' font-family='Helvetica,Arial,sans-serif' font-size='13' font-weight='normal' text-anchor='end' fill='#111827'>distractor</text>
+<text x='828.0' y='85.31666666666666' font-family='Helvetica,Arial,sans-serif' font-size='12' font-weight='normal' text-anchor='start' fill='#374151'>210</text>
+<rect x='150' y='111.7' width='325.4' height='36.2' fill='#2563eb'/>
+<text x='140' y='136.98333333333332' font-family='Helvetica,Arial,sans-serif' font-size='13' font-weight='normal' text-anchor='end' fill='#111827'>relevant</text>
+<text x='483.42857142857144' y='136.98333333333332' font-family='Helvetica,Arial,sans-serif' font-size='12' font-weight='normal' text-anchor='start' fill='#374151'>102</text>
+<rect x='150' y='163.3' width='287.1' height='36.2' fill='#9aa3af'/>
+<text x='140' y='188.64999999999998' font-family='Helvetica,Arial,sans-serif' font-size='13' font-weight='normal' text-anchor='end' fill='#111827'>stale</text>
+<text x='445.14285714285717' y='188.64999999999998' font-family='Helvetica,Arial,sans-serif' font-size='12' font-weight='normal' text-anchor='start' fill='#374151'>90</text>
+<rect x='150' y='215.0' width='287.1' height='36.2' fill='#a855f7'/>
+<text x='140' y='240.31666666666666' font-family='Helvetica,Arial,sans-serif' font-size='13' font-weight='normal' text-anchor='end' fill='#111827'>low_confidence</text>
+<text x='445.14285714285717' y='240.31666666666666' font-family='Helvetica,Arial,sans-serif' font-size='12' font-weight='normal' text-anchor='start' fill='#374151'>90</text>
+<rect x='150' y='266.7' width='95.7' height='36.2' fill='#dc2626'/>
+<text x='140' y='291.9833333333333' font-family='Helvetica,Arial,sans-serif' font-size='13' font-weight='normal' text-anchor='end' fill='#111827'>contradictory</text>
+<text x='253.71428571428572' y='291.9833333333333' font-family='Helvetica,Arial,sans-serif' font-size='12' font-weight='normal' text-anchor='start' fill='#374151'>30</text>
+<rect x='150' y='318.3' width='95.7' height='36.2' fill='#16a34a'/>
+<text x='140' y='343.65' font-family='Helvetica,Arial,sans-serif' font-size='13' font-weight='normal' text-anchor='end' fill='#111827'>target</text>
+<text x='253.71428571428572' y='343.65' font-family='Helvetica,Arial,sans-serif' font-size='12' font-weight='normal' text-anchor='start' fill='#374151'>30</text>
+<text x='150' y='402' font-family='Helvetica,Arial,sans-serif' font-size='11' font-weight='normal' text-anchor='start' fill='#374151'>Adversarial by design: 210 high-overlap distractors carry low importance.</text>
+</svg>

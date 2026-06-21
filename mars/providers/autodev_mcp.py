@@ -127,6 +127,7 @@ class AutoDevMCPProvider(AutoDevProvider):
         retrieval_strategy: str | None = None,
         retrieval_arg_name: str = "retrieval_strategy",
         send_retrieval: bool = False,
+        context_package_id: str | None = None,
     ) -> None:
         self._caller = caller
         self.agent = agent
@@ -148,6 +149,7 @@ class AutoDevMCPProvider(AutoDevProvider):
         self.retrieval_strategy = retrieval_strategy
         self.retrieval_arg_name = retrieval_arg_name
         self.send_retrieval = send_retrieval
+        self.context_package_id = context_package_id
 
     # -- construction helpers --------------------------------------------- #
 
@@ -239,10 +241,13 @@ class AutoDevMCPProvider(AutoDevProvider):
             "max_iterations": self.max_iterations,
         }
         if self.send_retrieval and self.retrieval_strategy:
-            # Only sent when explicitly enabled (start_run rejects unknown args
-            # until the AutoDev side adds this parameter). Recorded for provenance.
+            # AutoDev's StartRunRequest accepts retrieval_strategy + context_package_id
+            # (the experiment's variable of variation). Recorded for provenance.
             start_args[self.retrieval_arg_name] = self.retrieval_strategy
             workspace.metadata["retrieval_strategy"] = self.retrieval_strategy
+            if self.context_package_id:
+                start_args["context_package_id"] = self.context_package_id
+                workspace.metadata["context_package_id"] = self.context_package_id
         started = self._call("start_run", start_args)
         run_id = started.get("run_id") or (started.get("run") or {}).get("run_id")
         if not run_id:

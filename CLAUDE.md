@@ -66,11 +66,15 @@ existing `AutoDevMCPProvider` + `AutoDevExecutionImpactAdapter` when `MARS_AUTOD
 (connectivity verified: `--real-autodev --dry-run --connectivity-check` returns a real `run_id`, zero
 LLM); `evidential=true` only when a real agent is invoked; default **honest-stops** with a precise
 availability report; `--simulate` is non-evidential apparatus validation (mock success is *defined* by
-retrieval → circular). **Honest blocker for the A/B/C comparison:** `autodev_start_run` takes `issue_url`
-only (no context-injection arg), so Mars cannot vary per-arm retrieval inside a real run (arm is
-provenance only) — needs AutoDev to expose a context/retrieval-mode parameter. Wiring guide:
-`docs/AUTODEV_EXECUTION_IMPACT_WIRING.md`. Verdict: execution impact of Salience v2 is **untested/open**;
-don't claim it improves agent outcomes yet. Details: `docs/AGENTIC_EVALS.md`, `docs/SALIENCE_MEMORY_V1.md`,
+retrieval → circular). **v2 (context injection RESOLVED):** AutoDev now exposes `retrieval_strategy` +
+`context_package_id` on `start_run` (strategies `similarity_only`/`sim_importance`/`salience_v2` =
+arms A/B/C); Mars injects them by default on `--real-autodev` and applies a **Phase-3 divergence gate**
+(`arms_distinct`→`valid_comparison`) that refuses the A/B/C comparison unless the arms inject different
+contexts. Arms verified to diverge at the retrieval layer (AutoDev's `score_records`). The execution
+study itself is **not run** (no model key / `GITHUB_TOKEN` / issue tasks here) → `evidential=false`,
+0 runs. Wiring guide: `docs/AUTODEV_EXECUTION_IMPACT_WIRING.md`; v2 results:
+`docs/reports/SALIENCE_MEMORY_EXECUTION_IMPACT_RESULTS.md`. Verdict: execution impact of Salience v2 is
+**untested/open**; don't claim it improves agent outcomes yet. Details: `docs/AGENTIC_EVALS.md`, `docs/SALIENCE_MEMORY_V1.md`,
 `docs/SALIENCE_MEMORY_V1_EXPANDED.md`, `docs/SALIENCE_MEMORY_NOISY_IMPORTANCE.md`,
 `docs/SALIENCE_MEMORY_TEMPORAL_SALIENCE.md`, `docs/SALIENCE_MEMORY_CONFIDENCE_AND_CONTRADICTION.md`,
 `docs/SALIENCE_MEMORY_EXECUTION_IMPACT.md`, `docs/AUTODEV_EXECUTION_IMPACT_WIRING.md`,

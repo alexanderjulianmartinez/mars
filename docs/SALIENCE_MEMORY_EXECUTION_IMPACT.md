@@ -9,6 +9,22 @@ established that salience-weighted retrieval improves *retrieval quality*
 thesis is whether those gains reach the agent: better task success, review
 quality, fewer contradiction failures, better efficiency.
 
+## Status update v2 (context injection RESOLVED — 2026-06-20)
+
+Re-audited per the v2 brief: **AutoDev now exposes context injection**, so the
+remaining blocker from the prior update is gone. `StartRunRequest` accepts
+`retrieval_strategy` + `context_package_id` (+ `retrieval_limit`, `memory_kinds`);
+the memory provider implements `similarity_only` / `sim_importance` / `salience_v2`
+— mapping exactly to arms A/B/C. Mars now injects these by default on `--real-autodev`
+and applies a **Phase-3 divergence gate** (`arms_distinct` → `valid_comparison`):
+the A/B/C comparison is refused unless the arms actually inject different contexts.
+The arms are **verified to diverge** at the retrieval layer (AutoDev's own
+`score_records`). The execution study itself is **not run** — this environment has
+no model API key / `GITHUB_TOKEN` / issue-backed tasks — so `evidential=false`,
+`real_agent_runs=0`, and no execution numbers are claimed. Full v2 write-up:
+`docs/reports/SALIENCE_MEMORY_EXECUTION_IMPACT_RESULTS.md`; data:
+`mars-experiments/salience-memory-execution-impact-v2.json`.
+
 ## Status update (AutoDev wiring fixed)
 
 The earlier "blocked on AutoDev unavailable" diagnosis was **wrong** and has been

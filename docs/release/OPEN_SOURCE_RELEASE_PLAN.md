@@ -92,8 +92,12 @@ README.md                  # external-facing overview [DONE — research/repro/l
 - **Benchmark:** semantic, hash-pinned. Bugfix → `v1.0.x`; redesign/expansion → `v2`.
   Corpus **bytes are never silently mutated**; the SHA256 in the manifest is the
   contract, guarded by `verify-frozen` + a CI regression test.
-- **Framework (Mars):** SemVer. Tag the release commit (e.g. `v0.1.0`) so result
-  JSONs reference a reproducible code state.
+- **Framework (Mars):** SemVer; the installable `mars` package version (`0.1.0`) is an
+  axis **independent** of the research-release tag. The package stays `0.1.0` (early-stage
+  library, not a stable 1.0 API).
+- **Research release:** git tag (`v1.0.0-rc1`) + GitHub release over a frozen benchmark
+  version, so result JSONs reference a reproducible code+data state. This is the axis the
+  public release advertises, distinct from the package version above.
 - **Results:** each `mars-experiments/*.json` is immutable for a given benchmark
   version; re-runs that change numbers require a version note, not an in-place edit.
 - **Paper/reports:** versioned by filename suffix (`_v1`, outline `v2`) and dated.

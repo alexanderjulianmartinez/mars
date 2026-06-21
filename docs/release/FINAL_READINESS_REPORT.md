@@ -25,11 +25,10 @@ self-assessment.
 ## The five release questions
 
 ### 1. What remains before public release?
-Three deliberate, user-owned mechanical steps — no content work:
-1. **Merge PR #28** into `main`.
-2. **Flip repository visibility to public** (irreversible; held for explicit go-ahead).
-3. **Cut the `v1.0.0-rc1` tag** (after merge), reconciling framework version metadata
-   (`0.1.0`) with the tag.
+One deliberate, user-owned step. Done so far: PR #28 merged (`c4ee136`), `v1.0.0-rc1`
+tagged + pushed, GitHub prerelease created, version metadata resolved (Option B — package
+stays `0.1.0`, documented). **Remaining: flip repository visibility to public** (irreversible;
+held for explicit go-ahead — see `PUBLIC_VISIBILITY_CHECKLIST.md`).
 Optional: SVG→PNG export for the blog platform; mint a Zenodo DOI if desired.
 
 ### 2. What remains before arXiv submission?
@@ -41,10 +40,10 @@ Only a **mechanical formatting pass — no new experiments or analysis**:
 - Optional camera-ready polish (Fig 5 CI whiskers; abstract trim if length-capped).
 
 ### 3. What remains before OSS release?
-Nothing in content or legal — verified clean. Remaining is the same merge → tag → flip
-sequence as (1), plus reconciling the version metadata. The secret scan, license split
-(Apache-2.0 + CC-BY-4.0), `NOTICE`, `CITATION.cff`/`citation.bib`, and README sections
-are all in place; reproducibility is verified.
+Nothing in content or legal — verified clean. Merge, tag, prerelease, and version
+reconciliation are done; the only remaining step is the visibility flip from (1). The
+secret scan, license split (Apache-2.0 + CC-BY-4.0), `NOTICE`, `CITATION.cff`/`citation.bib`,
+and README sections are all in place; reproducibility is verified.
 
 ### 4. What remains before interview usage?
 Nothing blocking — the packet is usable today. Recommended (under an hour): one timed

@@ -91,7 +91,13 @@ See `docs/release/REPRODUCIBILITY_CHECKLIST.md`. Tier 0 (tests, integrity, Exper
 
 ## RC scope & next step
 
-This is a **release candidate**. Pending before `v1.0.0`: merge to `main`, cut the
-`v1.0.0-rc1` tag, flip repository visibility to public, and a short soak for external
-reproduction feedback. Framework version metadata (`0.1.0`) to be reconciled with the
-release tag at tag time.
+This is a **release candidate**. Pending before `v1.0.0`: flip repository visibility to
+public and a short soak for external reproduction feedback. (PR merged and the
+`v1.0.0-rc1` tag is pushed.)
+
+**Versioning (resolved):** two independent axes are tracked deliberately — the **Mars
+framework package** (`pyproject`/`CITATION.cff` version `0.1.0`, an early-stage installable
+library) and the **research release** (git tag `v1.0.0-rc1`) over the **frozen benchmark**
+(`v1.0.0`, SHA256 `a464085c…`). The package version is intentionally *not* bumped to the
+release tag: `name = "mars"` is the framework package and is not at a stable 1.0 API. See
+`OPEN_SOURCE_RELEASE_PLAN.md` (Versioning) and `POST_TAG_STATUS.md`.

@@ -1,0 +1,72 @@
+# Salience Memory Benchmark v1 — frozen reference manifest.
+#
+# This file pins the benchmark corpus to a content hash so it can be cited as a
+# stable research artifact. DO NOT edit the corpus and re-hash silently:
+# bug fixes require v1.0.x / v1.1, expanded designs require v2. See
+# docs/SALIENCE_MEMORY_BENCHMARK_V1.md (Versioning Policy).
+#
+# Verify with: mars corpus verify-frozen salience-memory-benchmark-v1
+
+benchmark_id: salience-memory-benchmark-v1
+benchmark_name: Salience Memory Benchmark v1
+version: 1.0.0
+frozen_at: 2026-06-21
+
+corpus_path: experiments/corpus/salience-memory-v1-expanded.corpus.yaml
+corpus_sha256: a464085c3daa64c97d2764c47f8758931b2a51c2adc1e143fcfc98d9faa74d59
+
+query_count: 30
+memory_count: 552
+
+category_counts:
+  target: 30
+  relevant: 102
+  distractor: 210
+  stale: 90
+  contradictory: 30
+  low_confidence: 90
+
+intended_use: >-
+  A synthetic, labeled retrieval benchmark for measuring salience-weighted
+  retrieval (importance/confidence-aware ranking) against semantic-similarity-only
+  retrieval. Each of the 30 queries has one target memory, relevant support
+  memories, and engineered adversarial distractors (high lexical/semantic overlap
+  but low utility), plus stale, contradictory, and low-confidence memories. Used
+  to compute recall@k, precision@k, MRR, nDCG@k, contradiction-avoidance, and
+  related retrieval metrics for Experiments 1-5.
+
+known_limitations:
+  - Synthetic corpus authored by hand, not sampled from real production memory traces.
+  - Importance/novelty/urgency/confidence labels are authored, not learned or observed.
+  - Distractors are controlled/adversarial by construction, not naturally occurring.
+  - Retrieval quality depends on a fixed embedding model when run with real Cortex.
+  - Measures retrieval quality, not downstream task success on its own (see Exp 5).
+  - ~18 memories per query is small relative to production memory stores.
+
+related_experiments:
+  - id: experiment-1
+    name: Salience Memory v1
+    doc: docs/SALIENCE_MEMORY_V1.md
+  - id: experiment-2
+    name: Noisy Importance
+    doc: docs/SALIENCE_MEMORY_NOISY_IMPORTANCE.md
+  - id: experiment-3
+    name: Temporal Salience
+    doc: docs/SALIENCE_MEMORY_TEMPORAL_SALIENCE.md
+  - id: experiment-4
+    name: Confidence & Contradiction
+    doc: docs/SALIENCE_MEMORY_CONFIDENCE_AND_CONTRADICTION.md
+  - id: experiment-5
+    name: Execution Impact
+    doc: docs/SALIENCE_MEMORY_EXECUTION_IMPACT.md
+
+reproduction_commands:
+  validate: mars corpus validate salience-memory-v1-expanded
+  stats: mars corpus stats salience-memory-v1-expanded
+  hash: mars corpus hash experiments/corpus/salience-memory-v1-expanded.corpus.yaml
+  verify_frozen: mars corpus verify-frozen salience-memory-benchmark-v1
+  experiment_1: mars experiments run salience-memory-v1
+  experiment_2: python experiments/run_noisy_importance.py --cache-only
+  experiment_3: python experiments/run_temporal_salience.py
+  experiment_4: python experiments/run_confidence_contradiction.py
+  experiment_5: python experiments/run_execution_impact.py --simulate

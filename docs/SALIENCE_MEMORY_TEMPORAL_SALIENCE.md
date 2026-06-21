@@ -1,5 +1,9 @@
 # Salience Memory — Temporal Salience Study (Experiment 3)
 
+> All results are reported against Salience Memory Benchmark v1.0.0
+> (`salience-memory-benchmark-v1`). See
+> [SALIENCE_MEMORY_BENCHMARK_V1.md](SALIENCE_MEMORY_BENCHMARK_V1.md).
+
 > Does time improve or degrade salience-weighted memory retrieval?
 
 Experiment 1 showed salience beats semantic retrieval when importance is

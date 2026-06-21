@@ -1,5 +1,9 @@
 # Salience Memory — Confidence & Contradiction Study (Experiment 4)
 
+> All results are reported against Salience Memory Benchmark v1.0.0
+> (`salience-memory-benchmark-v1`). See
+> [SALIENCE_MEMORY_BENCHMARK_V1.md](SALIENCE_MEMORY_BENCHMARK_V1.md).
+
 > Can confidence-aware retrieval improve memory prioritization — and can it help
 > agents avoid retrieving outdated, incorrect, or contradictory memories?
 

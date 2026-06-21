@@ -511,5 +511,59 @@ def corpus_stats(
     console.print(table)
 
 
+@corpus_app.command("hash")
+def corpus_hash(
+    path: str = typer.Argument(..., help="Path to a .corpus.yaml file."),
+) -> None:
+    """Print the SHA256 of a corpus file (for pinning a frozen benchmark)."""
+    from mars.memory.benchmark_manifest import corpus_sha256
+
+    file_path = Path(path)
+    if not file_path.exists():
+        console.print(f"[red]No such file: {path}[/]")
+        raise typer.Exit(code=1)
+    console.print(f"{corpus_sha256(file_path)}  {path}")
+
+
+@corpus_app.command("verify-frozen")
+def corpus_verify_frozen(
+    benchmark_id: str = typer.Argument(
+        ..., help="Frozen benchmark id (salience-memory-benchmark-v1)."
+    ),
+) -> None:
+    """Verify a frozen benchmark: recompute the corpus hash, validate it, and
+    confirm the manifest's recorded stats still hold. Exit non-zero on drift."""
+    from mars.memory.benchmark_manifest import verify_frozen
+
+    try:
+        result = verify_frozen(benchmark_id)
+    except FileNotFoundError as exc:
+        console.print(f"[red]{exc}[/]")
+        raise typer.Exit(code=1)
+
+    if not result.ok:
+        console.print(
+            f"[red]✗ {result.benchmark_id} v{result.version}: NOT frozen-clean[/]"
+        )
+        for reason in result.failures():
+            console.print(f"  [red]- {reason}[/]")
+        raise typer.Exit(code=1)
+
+    console.print(
+        f"[green]✓ {result.benchmark_id} v{result.version} frozen & verified[/]"
+    )
+    console.print(f"  corpus: {result.corpus_name}")
+    console.print(f"  sha256: {result.actual_sha256}")
+    corpus = result.corpus
+    if corpus is not None:
+        console.print(f"  queries: {corpus.n_queries}  memories: {corpus.n_memories}")
+        table = Table(title="Category breakdown")
+        table.add_column("Category")
+        table.add_column("Count", justify="right")
+        for cat, n in corpus.category_counts().items():
+            table.add_row(cat, str(n))
+        console.print(table)
+
+
 if __name__ == "__main__":  # pragma: no cover
     app()

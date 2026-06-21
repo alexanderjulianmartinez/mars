@@ -103,10 +103,16 @@ mars score-fixture bootstrap-typo-and-rename
 # Salience Memory retrieval experiment (Track B) — see docs/SALIENCE_MEMORY_V1.md
 mars experiments run salience-memory-v1
 mars experiments report salience-memory-v1
+
+# Salience Memory Benchmark v1.0.0 (frozen) — see docs/SALIENCE_MEMORY_BENCHMARK_V1.md
+mars corpus verify-frozen salience-memory-benchmark-v1
 ```
 
 Two separate evaluation tracks: **agentic eval** (scoring real AutoDev runs) and
 **retrieval experiments** (salience-memory). They are kept distinct on purpose.
+All salience-memory results (Experiments 1–5) are reported against **Salience
+Memory Benchmark v1.0.0** (`salience-memory-benchmark-v1`), a frozen, hash-pinned
+research artifact — see [docs/SALIENCE_MEMORY_BENCHMARK_V1.md](docs/SALIENCE_MEMORY_BENCHMARK_V1.md).
 
 ## Mission
 

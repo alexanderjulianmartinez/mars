@@ -190,6 +190,9 @@ class SampleRecord:
     run_id: str | None = None
     dry_run: bool = False
     cost_usd: float | None = None
+    # ids of the memories actually injected into this run's context (for the
+    # Phase-3 "did the arms differ?" gate). Empty when AutoDev returns no telemetry.
+    injected_context_ids: tuple = ()
     # names of metrics the real run could not provide (marked, never fabricated)
     missing_fields: list[str] = field(default_factory=list)
 
@@ -441,6 +444,11 @@ class ExecutionImpactResult:
     failure_breakdown: dict[str, dict[str, int]]  # arm -> failure_class -> count
     failure_examples: list[dict]
     dry_run: bool = False
+    # Phase-3 gate: did the arms actually inject *different* contexts? A valid A/B/C
+    # comparison requires this — otherwise the only thing varied (retrieval) didn't
+    # vary. ``None`` for the simulation (n/a).
+    arms_distinct: bool | None = None
+    valid_comparison: bool = False
     notes: list[str] = field(default_factory=list)
     outcome_model: dict | None = None
 
@@ -652,15 +660,15 @@ class AutoDevExecutionImpactAdapter:
       AutoDev contract does not expose (token usage, review quality, a focused-diff
       judgement without file globs) are **marked in ``missing_fields``**, never
       fabricated.
-    - ``setup_commands`` and ``test_commands`` are propagated to AutoDev's
-      ``validate``; ``acceptance_criteria`` ride in the issue body (the real
-      ``start_run`` contract takes ``issue_url`` only — it has no context/criteria
-      parameter, so Mars cannot inject them over MCP).
-    - **The retrieval arm cannot be injected into a real agentic run**: ``start_run``
-      accepts only ``issue_url`` (no context-package parameter). The arm is recorded
-      as provenance and drives Mars-side retrieval metrics only; it does *not* change
-      what the real agent retrieves. Honest per-arm execution comparison needs
-      AutoDev to expose a context/retrieval-mode parameter.
+    - Under the Experiment 5.1 contract ``start_run`` accepts the full per-run task
+      spec (``acceptance_criteria``/``acceptance_checks``/``validation_commands``/
+      ``setup_commands``/``expected_files``/``forbidden_files``/``context_metadata``);
+      the provider sends them so the review gate renders a real verdict instead of
+      auto-blocking. ``setup_commands``/``validation_commands`` are also re-run via
+      ``validate`` for an independent Mars-side validation signal.
+    - The retrieval arm IS injected (``retrieval_strategy`` + ``context_package_id``)
+      so arms A/B/C inject different contexts; the Phase-3 ``arms_distinct`` gate
+      refuses the comparison unless the injected contexts actually differ.
     """
 
     #: review decisions counted as a pass.
@@ -692,13 +700,33 @@ class AutoDevExecutionImpactAdapter:
         test_results = tests.test_results
         validation_pass = bool(test_results) and all(t.passed for t in test_results)
         agent_ok = agent_run.status == AgentRunStatus.SUCCESS
-        success = agent_ok and (validation_pass if test_results else True)
         acceptance = (
             round(sum(1 for t in test_results if t.passed) / len(test_results), 4)
             if test_results else None
         )
 
         missing: list[str] = []
+
+        # review_pass = AutoDev's review.review_passed (the contract signal). It is
+        # recorded and reported, but it additionally blocks whenever the agent edits
+        # a forbidden file (e.g. it rewrites the oracle test) — a behaviour that, in
+        # this benchmark, occurs across all arms and would mask any retrieval effect.
+        if agent_run.review_decision is None:
+            review_pass = False
+            missing += ["review_pass", "review_quality"]
+        else:
+            review_pass = agent_run.review_decision.lower() in self._REVIEW_PASS
+            missing.append("review_quality")  # decision yes, numeric quality no
+
+        # PRIMARY task success = the agent's IMPLEMENTATION passes the *pristine*
+        # oracle test (Mars restores forbidden test files before validating, so
+        # this measures the implementation, not the agent's rewritten tests). This
+        # is the discriminating, oracle-grounded signal for the A/B/C comparison.
+        # When no validation ran, fall back to agent status + review.
+        if test_results:
+            success = agent_ok and validation_pass
+        else:
+            success = agent_ok and (review_pass if agent_run.review_decision else True)
 
         # Retrieval metrics: prefer what the run ACTUALLY retrieved (real), else the
         # Mars-side provenance dict, else mark missing.
@@ -715,15 +743,7 @@ class AutoDevExecutionImpactAdapter:
         if token is None:
             missing.append("token_usage")
 
-        # review (real when AutoDev returns a decision)
-        if agent_run.review_decision is None:
-            review_pass = False
-            missing += ["review_pass", "review_quality"]
-        else:
-            review_pass = agent_run.review_decision.lower() in self._REVIEW_PASS
-            missing.append("review_quality")  # decision yes, numeric quality no
-
-        if not case.allowed_files and not case.forbidden_files:
+        if not case.allowed_files and not case.expected_files and not case.forbidden_files:
             missing.append("focused_diff")
         if not test_results:
             missing.append("acceptance_pass_rate")
@@ -748,20 +768,37 @@ class AutoDevExecutionImpactAdapter:
             run_id=run_id,
             dry_run=self.dry_run,
             cost_usd=float(agent_run.cost_usd) if agent_run.cost_usd else None,
+            injected_context_ids=tuple(str(m.get("id")) for m in agent_run.retrieved_context),
             missing_fields=missing,
         )
         rec.failure_class = classify_failure(rec)
         return AdapterOutcome(record=rec, run_id=run_id, agent_invoked=agent_invoked)
 
     def _apply_arm_retrieval(self, arm: RetrievalArm) -> None:
-        """Set the provider's per-run retrieval strategy for this arm (no-op until
-        AutoDev supports it / ``send_retrieval`` is enabled)."""
+        """Set the provider's per-run retrieval strategy + context-package id for
+        this arm (no-op when ``send_retrieval`` is disabled)."""
         if not self.send_retrieval:
             return
         value = self.arm_retrieval.get(arm.name, arm.label)
         if hasattr(self._autodev, "retrieval_strategy"):
             self._autodev.retrieval_strategy = value
             self._autodev.send_retrieval = True
+            if hasattr(self._autodev, "context_package_id"):
+                self._autodev.context_package_id = f"exp5-{arm.name}"
+
+
+def _arms_distinct(injected: dict[tuple, dict[str, tuple]]) -> bool:
+    """Did the arms inject *different* contexts on at least one sample?
+
+    The Phase-3 gate: a valid A/B/C comparison requires retrieval to actually
+    differ across arms. Returns False when every arm injected identical context
+    (e.g. no memory to rank, or AutoDev returned no telemetry) — in which case the
+    comparison is invalid and must not be claimed.
+    """
+    for arm_ids in injected.values():
+        if len({ids for ids in arm_ids.values()}) > 1:
+            return True
+    return False
 
 
 def run_execution_impact_real(
@@ -770,9 +807,11 @@ def run_execution_impact_real(
     *,
     context_for=None,
     gold_for=None,
+    before_each=None,
     trials: int = 1,
     experiment: str = "salience-memory-execution-impact",
     notes: list[str] | None = None,
+    arms: list[RetrievalArm] | None = None,
 ) -> ExecutionImpactResult:
     """Run the three arms over real issue-backed ``cases`` via real AutoDev.
 
@@ -783,13 +822,20 @@ def run_execution_impact_real(
     run actually retrieved. Produces an ``evidential=True`` result iff a real agent
     was actually invoked.
     """
-    arms = retrieval_arms()
+    arms = arms or retrieval_arms()
     per_arm: dict[str, list[SampleRecord]] = {a.name: [] for a in arms}
     agent_invoked_any = False
+    # per (case, trial) -> {arm -> tuple of retrieved memory ids}, for the gate
+    injected: dict[tuple, dict[str, tuple]] = {}
 
     for arm in arms:
         for case in cases:
             for trial in range(trials):
+                # Restore the controlled memory set before each run so every arm
+                # retrieves from an identical store (AutoDev writes run summaries
+                # back after a run, which would otherwise pollute later arms).
+                if before_each is not None:
+                    before_each(arm, case, trial)
                 context, retrieval = (None, None)
                 if context_for is not None:
                     context, retrieval = context_for(arm, case)
@@ -798,16 +844,20 @@ def run_execution_impact_real(
                                              retrieval=retrieval, gold=gold)
                 agent_invoked_any = agent_invoked_any or outcome.agent_invoked
                 per_arm[arm.name].append(outcome.record)
+                injected.setdefault((case.id, trial), {})[arm.name] = \
+                    outcome.record.injected_context_ids
 
-    baseline = next(a for a in arms if a.baseline)
-    base_success = [1.0 if r.success else 0.0 for r in per_arm[baseline.name]]
-    base_revq = [r.review_quality for r in per_arm[baseline.name]]
+    arms_distinct = _arms_distinct(injected)
+
+    baseline = next((a for a in arms if a.baseline), None)
+    base_success = [1.0 if r.success else 0.0 for r in per_arm[baseline.name]] if baseline else []
+    base_revq = [r.review_quality for r in per_arm[baseline.name]] if baseline else []
 
     arm_metrics, failure_breakdown = [], {}
     for arm in arms:
         recs = per_arm[arm.name]
         m = _aggregate(arm, recs)
-        if not arm.baseline and recs:
+        if baseline and not arm.baseline and recs:
             m.success_delta = _paired([1.0 if r.success else 0.0 for r in recs], base_success, seed=7)
             m.review_quality_delta = _paired([r.review_quality for r in recs], base_revq, seed=8)
         arm_metrics.append(m)
@@ -829,6 +879,10 @@ def run_execution_impact_real(
         failure_breakdown=failure_breakdown,
         failure_examples=[],
         dry_run=adapter.dry_run,
+        arms_distinct=arms_distinct,
+        # a valid A/B/C comparison needs BOTH a real agent run AND demonstrably
+        # different injected contexts across arms (Phase 3).
+        valid_comparison=bool(agent_invoked_any and arms_distinct),
         notes=notes or [],
         outcome_model=None,
     )
@@ -863,6 +917,18 @@ def render_report(result: ExecutionImpactResult) -> str:
         f"**Tasks:** {result.n_tasks}  **Trials:** {result.trials}",
         "",
     ]
+    if result.execution_real:
+        lines += [
+            f"**Arms injected distinct contexts (Phase-3 gate):** {result.arms_distinct}  ",
+            f"**Valid A/B/C comparison:** {result.valid_comparison}  ",
+            "",
+        ]
+        if not result.valid_comparison:
+            lines += [
+                "> ⚠️ The arms did not demonstrably inject different contexts (or no "
+                "real agent ran). Per Phase 3, the A/B/C comparison is **not claimed**.",
+                "",
+            ]
     if not result.execution_real:
         lines += [
             "> ⚠️ **This run is a simulation, not evidence.** Real AutoDev was not "

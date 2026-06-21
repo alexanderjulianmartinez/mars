@@ -177,6 +177,46 @@ def test_simulation_is_never_evidential():
     assert res.execution_real is False and res.evidential is False
 
 
+# --- starter issues.example.yaml ------------------------------------------- #
+
+
+def _runner():
+    import importlib.util
+    from pathlib import Path
+
+    spec = importlib.util.spec_from_file_location(
+        "run_execution_impact", Path("experiments/run_execution_impact.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_example_issues_yaml_parses_with_gold():
+    from pathlib import Path
+
+    runner = _runner()
+    cases, gold = runner._load_issue_cases(Path("experiments/issues.example.yaml"), None)
+    assert len(cases) == 6 and len(gold) == 6
+    # every task carries an issue_url, acceptance criteria, and resolvable gold
+    for c in cases:
+        assert c.issue_url and c.acceptance_criteria
+        g = gold[c.id]
+        assert g["target_id"] in g["relevant_ids"]  # target counts toward relevant
+        assert g["contradictory_ids"]  # each task has an obsolete memory to suppress
+
+
+def test_gold_from_task_maps_fields():
+    runner = _runner()
+    g = runner._gold_from_task({
+        "id": "t", "task_class": "contradiction",
+        "gold": {"target_memory": "m-t", "relevant_memories": ["m-r"],
+                 "contradictory_memories": ["m-c"]}})
+    assert g["target_id"] == "m-t"
+    assert g["relevant_ids"] == {"m-t", "m-r"}
+    assert g["contradictory_ids"] == {"m-c"}
+    assert runner._gold_from_task({"id": "t"}) is None  # no gold block → None
+
+
 # --- forward-compat: per-arm retrieval control + enriched output ----------- #
 
 
@@ -236,7 +276,7 @@ def test_adapter_marks_missing_when_enrichment_absent():
     assert "retrieval_metrics" in rec.missing_fields
 
 
-def test_apply_arm_retrieval_sets_provider_strategy():
+def test_apply_arm_retrieval_sets_provider_strategy_and_package():
     prov, _ = _agentic_provider(enriched=True, send_retrieval=False)
     adapter = AutoDevExecutionImpactAdapter(
         prov, dry_run=True, send_retrieval=True,
@@ -244,3 +284,46 @@ def test_apply_arm_retrieval_sets_provider_strategy():
     adapter.run_sample(ARM_A, _issue_case(), None, 0)
     assert prov.retrieval_strategy == "similarity_only"
     assert prov.send_retrieval is True
+    assert prov.context_package_id == f"exp5-{ARM_A.name}"
+
+
+def test_start_run_carries_context_package_id_when_enabled():
+    prov, caller = _agentic_provider(send_retrieval=True, retrieval_strategy="salience_v2",
+                                     context_package_id="exp5-C")
+    prov.run_agent(prov.create_workspace(_issue_case(), None), _issue_case(), None)
+    args = next(a for n, a in caller.calls if n == "autodev_start_run")
+    assert args["retrieval_strategy"] == "salience_v2"
+    assert args["context_package_id"] == "exp5-C"
+
+
+# --- Phase 3 divergence gate ----------------------------------------------- #
+
+
+def test_arms_distinct_true_when_contexts_differ():
+    from mars.memory.execution_impact import _arms_distinct
+
+    injected = {("t1", 0): {"A": ("m1",), "B": ("m2",), "C": ("m3",)}}
+    assert _arms_distinct(injected) is True
+
+
+def test_arms_distinct_false_when_contexts_identical():
+    from mars.memory.execution_impact import _arms_distinct
+
+    # every arm injected the same memories (or none) → not a valid comparison
+    assert _arms_distinct({("t1", 0): {"A": (), "B": (), "C": ()}}) is False
+    assert _arms_distinct({("t1", 0): {"A": ("m1",), "B": ("m1",), "C": ("m1",)}}) is False
+
+
+def test_valid_comparison_requires_distinct_contexts():
+    # Deterministic provider returns no retrieved_context → arms identical → invalid.
+    caller = FakeToolCaller({
+        "autodev_prepare_workspace": env({"run_id": "run-det", "workspace_path": "/tmp/ws"}),
+        "autodev_validate": env({"commands": [{"command": "pytest", "status": "passed",
+                                               "exit_code": 0, "duration_seconds": 0.5}]}),
+    })
+    prov = AutoDevMCPProvider(caller, agentic=False, dry_run=True)
+    adapter = AutoDevExecutionImpactAdapter(prov, dry_run=True)
+    case = EvalCase(id="d1", suite_id="s", name="d1", task_prompt="x", test_commands=["pytest"])
+    result = run_execution_impact_real(adapter, [case], trials=1)
+    assert result.arms_distinct is False
+    assert result.valid_comparison is False  # no distinct contexts → comparison not claimed

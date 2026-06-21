@@ -93,6 +93,10 @@ def config_from_env() -> MCPServerConfig | None:
         env=parse_kv_env(os.environ.get("MARS_AUTODEV_MCP_ENV")),
         cwd=os.environ.get("MARS_AUTODEV_MCP_CWD"),
         transport=os.environ.get("MARS_AUTODEV_MCP_TRANSPORT", "streamable-http"),
+        # autodev_start_run BLOCKS until the whole plan→implement→validate→review
+        # pipeline finishes, so a single call can run for minutes. Default the
+        # per-call timeout generously and let MARS_AUTODEV_MCP_TIMEOUT override.
+        timeout_seconds=float(os.environ.get("MARS_AUTODEV_MCP_TIMEOUT", "1800")),
     )
 
 
@@ -127,6 +131,10 @@ class AutoDevMCPProvider(AutoDevProvider):
         retrieval_strategy: str | None = None,
         retrieval_arg_name: str = "retrieval_strategy",
         send_retrieval: bool = False,
+        context_package_id: str | None = None,
+        retrieval_limit: int | None = None,
+        send_task_spec: bool = True,
+        context_metadata: dict[str, Any] | None = None,
     ) -> None:
         self._caller = caller
         self.agent = agent
@@ -148,6 +156,20 @@ class AutoDevMCPProvider(AutoDevProvider):
         self.retrieval_strategy = retrieval_strategy
         self.retrieval_arg_name = retrieval_arg_name
         self.send_retrieval = send_retrieval
+        self.context_package_id = context_package_id
+        # Top-k memories injected. Critical for the A/B/C contrast: with the
+        # controlled 5-record store, limit must be < store size (e.g. 3) so the
+        # similarity arm actually EXCLUDES the buried high-importance record. At
+        # the AutoDev default (5) every arm injects the whole store and arms
+        # differ only in order, not content.
+        self.retrieval_limit = retrieval_limit
+        # Experiment 5.1: send the per-run task spec (acceptance criteria/checks,
+        # validation/setup commands, file checks) on start_run so AutoDev's review
+        # gate renders a real verdict instead of auto-blocking on a missing spec.
+        # Additive/optional in the contract; on by default, disable for an older
+        # server whose start_run rejects the fields.
+        self.send_task_spec = send_task_spec
+        self.context_metadata = context_metadata
 
     # -- construction helpers --------------------------------------------- #
 
@@ -224,25 +246,48 @@ class AutoDevMCPProvider(AutoDevProvider):
         # Record the structured task payload (criteria + setup) for transparency.
         payload = build_task_payload(case)
         workspace.metadata["task_payload"] = payload
-        if case.acceptance_criteria:
-            logger.warning(
-                "AutoDev start_run accepts issue_url only; %d acceptance criteria for case %r "
-                "were recorded in metadata but not propagated over MCP. Put them in the issue "
-                "body to influence the run.",
-                len(case.acceptance_criteria),
-                case.id,
-            )
         start_args = {
             "issue_url": case.issue_url,
             "dry_run": self.dry_run,
             "isolation_mode": self.isolation_mode,
             "max_iterations": self.max_iterations,
         }
+        # Experiment 5.1 contract: thread the per-run task spec to start_run. All
+        # fields are additive/optional; only non-empty ones are sent. Present
+        # acceptance criteria/checks ⇒ the review gate evaluates instead of
+        # auto-blocking, which is what lifts the success floor.
+        if self.send_task_spec:
+            spec: dict[str, Any] = {}
+            if case.acceptance_criteria:
+                spec["acceptance_criteria"] = list(case.acceptance_criteria)
+            if case.acceptance_checks:
+                spec["acceptance_checks"] = list(case.acceptance_checks)
+            validation = self.validation_commands or case.test_commands
+            if validation:
+                spec["validation_commands"] = list(validation)
+            if case.setup_commands:
+                spec["setup_commands"] = list(case.setup_commands)
+            if case.expected_files:
+                spec["expected_files"] = list(case.expected_files)
+            if case.forbidden_files:
+                spec["forbidden_files"] = list(case.forbidden_files)
+            cmeta = self._context_metadata_for(case)
+            if cmeta:
+                spec["context_metadata"] = cmeta
+                workspace.metadata["context_metadata"] = cmeta
+            start_args.update(spec)
+            workspace.metadata["task_spec_sent"] = sorted(spec)
         if self.send_retrieval and self.retrieval_strategy:
-            # Only sent when explicitly enabled (start_run rejects unknown args
-            # until the AutoDev side adds this parameter). Recorded for provenance.
+            # AutoDev's StartRunRequest accepts retrieval_strategy + context_package_id
+            # (the experiment's variable of variation). Recorded for provenance.
             start_args[self.retrieval_arg_name] = self.retrieval_strategy
             workspace.metadata["retrieval_strategy"] = self.retrieval_strategy
+            if self.context_package_id:
+                start_args["context_package_id"] = self.context_package_id
+                workspace.metadata["context_package_id"] = self.context_package_id
+            if self.retrieval_limit:
+                start_args["retrieval_limit"] = self.retrieval_limit
+                workspace.metadata["retrieval_limit"] = self.retrieval_limit
         started = self._call("start_run", start_args)
         run_id = started.get("run_id") or (started.get("run") or {}).get("run_id")
         if not run_id:
@@ -251,8 +296,29 @@ class AutoDevMCPProvider(AutoDevProvider):
         run = self._poll_until_terminal(run_id)
         return self._agent_run_from(run_id, run)
 
+    def _context_metadata_for(self, case: EvalCase) -> dict[str, Any]:
+        """Arm tag stamped on the run record + event journal (5.1 provenance).
+
+        Combines any caller-supplied ``context_metadata`` with the active arm
+        (``retrieval_strategy``) and the task id so a run is auditable as
+        "which task, under which arm?".
+        """
+        meta: dict[str, Any] = dict(self.context_metadata or {})
+        if self.send_retrieval and self.retrieval_strategy:
+            meta.setdefault("arm", self.retrieval_strategy)
+        meta.setdefault("task_id", case.id)
+        return meta
+
     def run_tests(self, workspace: Workspace, case: EvalCase) -> AgentRun:
         run_id = self._run_id(workspace)
+        # Restore forbidden files (the oracle tests) to their pristine committed
+        # state before validation. The agent sometimes rewrites the test file in
+        # its workspace; without this, validation would run the AGENT's tests, not
+        # the benchmark oracle — measuring the wrong thing. AutoDev's validate
+        # runs commands through a supervisor allowlist that blocks ``git``, so we
+        # restore directly on the (co-located) workspace filesystem instead.
+        if case.forbidden_files:
+            self._restore_forbidden_files(run_id, case.forbidden_files)
         # A1: install dependencies (setup commands) before validation so tests
         # can actually run. Run as a separate, gated validate call — these are
         # not folded into the scored test results.
@@ -282,6 +348,31 @@ class AutoDevMCPProvider(AutoDevProvider):
             status=AgentRunStatus.SUCCESS if passed else AgentRunStatus.FAILURE,
             test_results=results,
         )
+
+    def _workspace_path(self, run_id: str) -> str | None:
+        data = self._call("get_run", {"run_id": run_id})
+        run = data.get("run") or {}
+        return run.get("workspace_path") or data.get("workspace_path")
+
+    def _restore_forbidden_files(self, run_id: str, forbidden: list[str]) -> None:
+        """Revert forbidden paths to their committed state on the workspace fs.
+
+        Best-effort and only when the workspace is local (AutoDev co-located with
+        Mars, as in the execution-impact study). Leaves the implementation diff
+        intact — only the named paths are checked out from HEAD.
+        """
+        import subprocess
+
+        ws = self._workspace_path(run_id)
+        if not ws or not Path(ws).is_dir():
+            logger.warning("cannot restore forbidden files for %s: workspace %r not local",
+                           run_id, ws)
+            return
+        try:
+            subprocess.run(["git", "checkout", "HEAD", "--", *forbidden],
+                           cwd=ws, check=False, capture_output=True, text=True)
+        except OSError as exc:  # git missing, etc. — non-fatal
+            logger.warning("forbidden-file restore failed for %s: %s", run_id, exc)
 
     def capture_diff(self, workspace: Workspace) -> str:
         data = self._call("get_run", {"run_id": self._run_id(workspace)})
@@ -321,7 +412,10 @@ class AutoDevMCPProvider(AutoDevProvider):
         if start and end:
             runtime_ms = max(0, int((end - start).total_seconds() * 1000))
         meta = run.get("metadata") or {}
-        cost = float(meta.get("cost_usd") or meta.get("cost") or 0.0)
+        # cost_usd is exposed both top-level (5.1) and in run.metadata (older).
+        cost = float(
+            data.get("cost_usd") or meta.get("cost_usd") or meta.get("cost") or 0.0
+        )
         return AgentRun(
             id=run_id,
             agent=self.agent,
@@ -350,6 +444,17 @@ class AutoDevMCPProvider(AutoDevProvider):
 
     @staticmethod
     def _extract_review_decision(data: dict) -> str | None:
+        # 5.1 contract: a singular ``review`` object with ``decision`` +
+        # ``review_passed`` (the primary task-success signal).
+        review = data.get("review")
+        if isinstance(review, dict):
+            decision = review.get("decision")
+            if decision:
+                return str(decision)
+            passed = review.get("review_passed")
+            if passed is not None:
+                return "approved" if passed else "blocked"
+        # Older schema: a ``review_results`` list.
         reviews = data.get("review_results") or []
         if reviews:
             last = reviews[-1]
@@ -382,14 +487,35 @@ class AutoDevMCPProvider(AutoDevProvider):
                     return ""
         return ""
 
-    @staticmethod
-    def _extract_files(data: dict) -> list[str]:
+    @classmethod
+    def _extract_files(cls, data: dict) -> list[str]:
+        review = data.get("review")
+        if isinstance(review, dict):
+            files = review.get("changed_files") or (review.get("metadata") or {}).get("files_modified")
+            if files:
+                return list(files)
         for review in reversed(data.get("review_results") or []):
             files = (review.get("metadata") or {}).get("files_modified")
             if files:
                 return list(files)
         changed = data.get("changed_files")
-        return list(changed) if changed else []
+        if changed:
+            return list(changed)
+        # 5.1: get_run exposes the diff but not always changed_files — derive the
+        # touched paths from the unified diff so focused-diff metrics are real.
+        return cls._files_from_diff(cls._extract_diff(data))
+
+    @staticmethod
+    def _files_from_diff(diff: str) -> list[str]:
+        files: list[str] = []
+        for line in (diff or "").splitlines():
+            if line.startswith("+++ ") and not line.startswith("+++ /dev/null"):
+                path = line[4:].strip()
+                if path.startswith("b/"):
+                    path = path[2:]
+                if path and path not in files:
+                    files.append(path)
+        return files
 
     @staticmethod
     def _parse_validation(cmd_results: list) -> list[TestResult]:

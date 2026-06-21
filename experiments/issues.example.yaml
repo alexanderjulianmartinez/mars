@@ -1,0 +1,177 @@
+# Execution Impact (Experiment 5) — starter task suite.
+#
+# Copy to issues.yaml, replace <owner>/<repo> + issue numbers with REAL ones, and
+# run:  python experiments/run_execution_impact.py --real-autodev --dry-run \
+#         --issues-file issues.yaml --limit-tasks 30
+#
+# Each task is MEMORY-DEPENDENT: succeeding requires retrieving the right prior
+# memory and NOT being misled by an obsolete/contradictory one. The arms
+# (similarity_only / sim_importance / salience_v2) only diverge if that prior
+# memory is seeded in AutoDev's store for the repo — so `seed_memories` below is
+# the spec the AutoDev session must seed (ids must match what get_run's
+# retrieved_context reports). `gold` is what Mars scores retrieval against
+# (recall@k, MRR, TargetFound, ContradictionAvoidanceRate). Mars ignores
+# `seed_memories`/`task_class` for execution; they are documentation + the AutoDev
+# seeding contract.
+#
+# Keys parsed by Mars per task: id, suite_id, name, task_prompt, repo, issue_url,
+# setup_commands, test_commands, acceptance_criteria, allowed_files,
+# forbidden_files, gold{target_memory, relevant_memories, contradictory_memories}.
+
+tasks:
+  # --- 1. Repo evolution: follow an established architecture decision -------- #
+  - id: repo-evo-uuid-pk
+    task_class: repo_evolution
+    repo: <owner>/<repo>
+    issue_url: https://github.com/<owner>/<repo>/issues/REPLACE_ME
+    name: Add an `audit_log` table following the established PK convention
+    task_prompt: >
+      Add an `audit_log` table and its migration. Follow the repository's
+      established primary-key convention and migration policy.
+    setup_commands: ["uv pip install -e ."]
+    test_commands: ["pytest -q tests/test_audit_log.py"]
+    acceptance_criteria:
+      - "audit_log uses UUID primary keys (per the March architecture decision)"
+      - "migration ships a tested down-migration"
+    allowed_files: ["src/**", "migrations/**", "tests/**"]
+    forbidden_files: [".github/**", "src/legacy/**"]
+    gold:
+      target_memory: mem-uuid-decision
+      relevant_memories: [mem-downmigration-rule]
+      contradictory_memories: [mem-integer-id-legacy]
+    seed_memories:
+      - {id: mem-uuid-decision, kind: run_summary, importance: 0.95,
+         content: "Decision (March): all new tables use UUID primary keys; integer IDs are legacy."}
+      - {id: mem-downmigration-rule, kind: repo_heuristic, importance: 0.70,
+         content: "Every schema migration must ship a tested down-migration."}
+      - {id: mem-integer-id-legacy, kind: repo_heuristic, importance: 0.20, recent: true,
+         content: "Older note: use integer auto-increment primary keys for new tables."}
+
+  # --- 2. Repo evolution: reuse a prior implementation pattern --------------- #
+  - id: repo-evo-retry-helper
+    task_class: repo_evolution
+    repo: <owner>/<repo>
+    issue_url: https://github.com/<owner>/<repo>/issues/REPLACE_ME
+    name: Add retries to the payments client using the existing retry helper
+    task_prompt: >
+      Make the payments client retry transient failures. Reuse the existing
+      retry utility rather than introducing a new dependency.
+    setup_commands: ["uv pip install -e ."]
+    test_commands: ["pytest -q tests/test_payments_retry.py"]
+    acceptance_criteria:
+      - "Uses the existing utils.retry.with_backoff helper"
+      - "No new third-party retry dependency added"
+    allowed_files: ["src/payments/**", "tests/**"]
+    forbidden_files: ["pyproject.toml", "requirements*.txt"]
+    gold:
+      target_memory: mem-retry-helper-pattern
+      relevant_memories: []
+      contradictory_memories: [mem-tenacity-suggestion]
+    seed_memories:
+      - {id: mem-retry-helper-pattern, kind: repo_heuristic, importance: 0.90,
+         content: "Pattern: use utils.retry.with_backoff for transient retries; do not add new retry libs."}
+      - {id: mem-tenacity-suggestion, kind: run_summary, importance: 0.25, recent: true,
+         content: "Old spike: added the `tenacity` library for retries."}
+
+  # --- 3. Historical decision: obey previous migration guidance ------------- #
+  - id: hist-decision-no-sync-migrations
+    task_class: historical_decision
+    repo: <owner>/<repo>
+    issue_url: https://github.com/<owner>/<repo>/issues/REPLACE_ME
+    name: Backfill `users.locale` without a blocking migration
+    task_prompt: >
+      Backfill the new users.locale column for existing rows. Follow the team's
+      decision about how large backfills must be performed.
+    setup_commands: ["uv pip install -e ."]
+    test_commands: ["pytest -q tests/test_locale_backfill.py"]
+    acceptance_criteria:
+      - "Backfill runs in batches (no single blocking UPDATE), per the post-incident decision"
+    allowed_files: ["src/**", "migrations/**", "tests/**"]
+    forbidden_files: [".github/**"]
+    gold:
+      target_memory: mem-batched-backfill-decision
+      relevant_memories: []
+      contradictory_memories: [mem-single-update-habit]
+    seed_memories:
+      - {id: mem-batched-backfill-decision, kind: run_summary, importance: 0.95,
+         content: "Post-incident decision: large backfills MUST be batched; a single blocking UPDATE caused the April outage."}
+      - {id: mem-single-update-habit, kind: repo_heuristic, importance: 0.30, recent: true,
+         content: "Quick approach: one UPDATE statement to set the column for all rows."}
+
+  # --- 4. Contradiction resolution: superseded guidance --------------------- #
+  - id: contradiction-auth-jwt-vs-session
+    task_class: contradiction
+    repo: <owner>/<repo>
+    issue_url: https://github.com/<owner>/<repo>/issues/REPLACE_ME
+    name: Add auth to the new admin endpoint
+    task_prompt: >
+      Protect the new /admin/reports endpoint with the project's CURRENT auth
+      mechanism. Note: documentation may be out of date.
+    setup_commands: ["uv pip install -e ."]
+    test_commands: ["pytest -q tests/test_admin_auth.py"]
+    acceptance_criteria:
+      - "Uses JWT bearer auth (the current scheme), not the deprecated session-cookie auth"
+    allowed_files: ["src/admin/**", "src/auth/**", "tests/**"]
+    forbidden_files: ["docs/**"]
+    gold:
+      target_memory: mem-jwt-migration-complete
+      relevant_memories: []
+      contradictory_memories: [mem-session-cookie-doc]
+    seed_memories:
+      - {id: mem-jwt-migration-complete, kind: run_summary, importance: 0.92,
+         content: "Migration complete: all endpoints now use JWT bearer auth; session-cookie auth is removed."}
+      - {id: mem-session-cookie-doc, kind: repo_heuristic, importance: 0.55, recent: false,
+         content: "Docs (stale): authenticate admin routes with the session cookie middleware."}
+
+  # --- 5. Contradiction resolution: superseded implementation --------------- #
+  - id: contradiction-config-loader
+    task_class: contradiction
+    repo: <owner>/<repo>
+    issue_url: https://github.com/<owner>/<repo>/issues/REPLACE_ME
+    name: Read the new FEATURE_X flag from config
+    task_prompt: >
+      Add a FEATURE_X feature flag and read it through the project's CURRENT
+      configuration system.
+    setup_commands: ["uv pip install -e ."]
+    test_commands: ["pytest -q tests/test_feature_x_flag.py"]
+    acceptance_criteria:
+      - "Reads config via settings.Settings (pydantic), not the deprecated os.environ helper"
+    allowed_files: ["src/**", "tests/**"]
+    forbidden_files: []
+    gold:
+      target_memory: mem-pydantic-settings
+      relevant_memories: []
+      contradictory_memories: [mem-os-environ-legacy]
+    seed_memories:
+      - {id: mem-pydantic-settings, kind: run_summary, importance: 0.90,
+         content: "Config is now centralized in settings.Settings (pydantic-settings); read all config there."}
+      - {id: mem-os-environ-legacy, kind: repo_heuristic, importance: 0.30, recent: true,
+         content: "Legacy helper config.get_env() reads os.environ directly."}
+
+  # --- 6. Long-horizon: prior decisions constrain the implementation -------- #
+  - id: long-horizon-event-schema
+    task_class: long_horizon
+    repo: <owner>/<repo>
+    issue_url: https://github.com/<owner>/<repo>/issues/REPLACE_ME
+    name: Emit an `order.refunded` event
+    task_prompt: >
+      Emit an `order.refunded` domain event when a refund completes. The event
+      envelope and versioning must match prior decisions across the event system.
+    setup_commands: ["uv pip install -e ."]
+    test_commands: ["pytest -q tests/test_order_refunded_event.py"]
+    acceptance_criteria:
+      - "Event includes a schema_version field (per the versioning decision)"
+      - "Published via the existing EventBus.publish, not a direct broker call"
+    allowed_files: ["src/orders/**", "src/events/**", "tests/**"]
+    forbidden_files: ["infra/**"]
+    gold:
+      target_memory: mem-event-versioning-decision
+      relevant_memories: [mem-eventbus-pattern]
+      contradictory_memories: [mem-direct-broker-spike]
+    seed_memories:
+      - {id: mem-event-versioning-decision, kind: run_summary, importance: 0.93,
+         content: "Decision: every domain event carries a schema_version field for forward-compat."}
+      - {id: mem-eventbus-pattern, kind: repo_heuristic, importance: 0.75,
+         content: "All events are published through EventBus.publish (never the broker SDK directly)."}
+      - {id: mem-direct-broker-spike, kind: run_summary, importance: 0.25, recent: true,
+         content: "Spike: published an event by calling the Kafka producer directly."}

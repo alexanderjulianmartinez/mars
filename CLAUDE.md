@@ -66,11 +66,31 @@ existing `AutoDevMCPProvider` + `AutoDevExecutionImpactAdapter` when `MARS_AUTOD
 (connectivity verified: `--real-autodev --dry-run --connectivity-check` returns a real `run_id`, zero
 LLM); `evidential=true` only when a real agent is invoked; default **honest-stops** with a precise
 availability report; `--simulate` is non-evidential apparatus validation (mock success is *defined* by
-retrieval → circular). **Honest blocker for the A/B/C comparison:** `autodev_start_run` takes `issue_url`
-only (no context-injection arg), so Mars cannot vary per-arm retrieval inside a real run (arm is
-provenance only) — needs AutoDev to expose a context/retrieval-mode parameter. Wiring guide:
-`docs/AUTODEV_EXECUTION_IMPACT_WIRING.md`. Verdict: execution impact of Salience v2 is **untested/open**;
-don't claim it improves agent outcomes yet. Details: `docs/AGENTIC_EVALS.md`, `docs/SALIENCE_MEMORY_V1.md`,
+retrieval → circular). **v2 (context injection RESOLVED):** AutoDev now exposes `retrieval_strategy` +
+`context_package_id` on `start_run` (strategies `similarity_only`/`sim_importance`/`salience_v2` =
+arms A/B/C); Mars injects them by default on `--real-autodev` and applies a **Phase-3 divergence gate**
+(`arms_distinct`→`valid_comparison`) that refuses the A/B/C comparison unless the arms inject different
+contexts. Arms verified to diverge at the retrieval layer (AutoDev's `score_records`).
+**Experiment 5.1 — RUN (first evidential result, 2026-06-21):** a purpose-built memory-dependent
+benchmark (`experiments/execution_impact_5_1/issues.yaml`, 6 tasks, each with an isolated controlled
+5-record store: one high-importance/old/low-overlap *corrective* record + recent high-overlap
+distractors that echo the repo's stale docs) was driven through **18 real AutoDev runs** (6 tasks × 3
+arms, dry-run, `retrieval_limit=3`; `evidential=true`, `valid_comparison=true`, ≈$1.3). Mars gained:
+full task-spec on `start_run`, per-arm `retrieval_limit` (critical — at the default 5 every arm injects
+the whole store), **oracle-restoration before validation** (the agent rewrites the forbidden test file,
+which faked a 0% floor), per-task reseeding, and an offline divergence proof
+(`experiments/verify_exec_impact_5_1_divergence.py`). **Finding = Outcome B + behavioural twist:**
+salience-aware retrieval clearly improved retrieval (importance arms surface the corrective record the
+similarity arm never sees — target-found 0.83 vs 0.00, MRR 0.56 vs 0.00) and **steered the agent's
+approach** (right-approach 1.00 for B/C vs 0.83 for A; on `bench-4` the similarity arm followed the
+stale doc → session cookie while B/C used JWT) — **but task-success did not move** (0.333 every arm,
+same 2/6 tasks pass; recall↔success Pearson −0.32). Verdict: **Salience improves retrieval and changes
+agent behaviour, but did NOT raise downstream task-success on this benchmark — do not claim a downstream
+execution win.** Caveats: single trial, 4/6 tasks floored at `max_iterations=3`, B≈C (recency adds
+nothing), `review_passed` unusable (forbidden-file edits) so success = restored-oracle validation.
+Wiring guide: `docs/AUTODEV_EXECUTION_IMPACT_WIRING.md`; results:
+`docs/reports/SALIENCE_MEMORY_EXECUTION_IMPACT_5_1_RESULTS.md` (+ v2:
+`…_EXECUTION_IMPACT_RESULTS.md`). Details: `docs/AGENTIC_EVALS.md`, `docs/SALIENCE_MEMORY_V1.md`,
 `docs/SALIENCE_MEMORY_V1_EXPANDED.md`, `docs/SALIENCE_MEMORY_NOISY_IMPORTANCE.md`,
 `docs/SALIENCE_MEMORY_TEMPORAL_SALIENCE.md`, `docs/SALIENCE_MEMORY_CONFIDENCE_AND_CONTRADICTION.md`,
 `docs/SALIENCE_MEMORY_EXECUTION_IMPACT.md`, `docs/AUTODEV_EXECUTION_IMPACT_WIRING.md`,

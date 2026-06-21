@@ -226,3 +226,6 @@ mars-experiments/
 
 # Generated gold labels from live corpus seeding
 experiments/corpus/*.gold.json
+
+# operator-specific live task suite (example is committed)
+experiments/issues.yaml

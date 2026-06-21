@@ -1,5 +1,9 @@
 # Salience Memory — Noisy-Importance Study (Track 1)
 
+> All results are reported against Salience Memory Benchmark v1.0.0
+> (`salience-memory-benchmark-v1`). See
+> [SALIENCE_MEMORY_BENCHMARK_V1.md](SALIENCE_MEMORY_BENCHMARK_V1.md).
+
 How much of the Salience Memory v1 win survives when the importance signal is
 **noisy** rather than a clean oracle? v1 measured salience-weighted retrieval with
 importance authored as ground truth (relevant memories high, distractors low), so

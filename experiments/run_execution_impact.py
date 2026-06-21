@@ -47,24 +47,58 @@ def _arg(flag: str, default=None):
     return sys.argv[sys.argv.index(flag) + 1] if flag in sys.argv else default
 
 
-def _load_issue_cases(path: Path, limit: int | None):
+def _gold_from_task(t: dict) -> dict | None:
+    """Per-task gold for retrieval metrics, from an optional ``gold:`` block.
+
+    ``{target_memory, relevant_memories, contradictory_memories}`` → Mars's
+    ``{target_id, relevant_ids, contradictory_ids}``. The ids must match the seeded
+    memory ids AutoDev reports in ``get_run``'s ``retrieved_context``.
+    """
+    g = t.get("gold")
+    if not g:
+        return None
+    target = g.get("target_memory")
+    relevant = set(g.get("relevant_memories", []))
+    if target:
+        relevant.add(target)
+    return {
+        "target_id": target,
+        "relevant_ids": relevant,
+        "contradictory_ids": set(g.get("contradictory_memories", [])),
+        "task_class": t.get("task_class", "real"),
+    }
+
+
+def _load_issue_cases(path: Path, limit: int | None, only: set[str] | None = None):
     import yaml
 
     from mars.models import EvalCase
 
     data = yaml.safe_load(path.read_text()) or {}
     raw = data.get("tasks") or data.get("cases") or []
-    cases = []
+    if only:
+        raw = [t for t in raw if t.get("id") in only]
+    cases, gold_map = [], {}
     for t in raw[: limit or None]:
+        # Accept both the 5.1 fixture field names (validation_commands / title) and
+        # the older ones (test_commands / name).
+        validation = t.get("validation_commands") or t.get("test_commands", [])
         cases.append(EvalCase(
             id=t["id"], suite_id=t.get("suite_id", "execution-impact"),
-            name=t.get("name", t["id"]), task_prompt=t.get("task_prompt", t.get("name", t["id"])),
+            name=t.get("title", t.get("name", t["id"])),
+            task_prompt=t.get("task_prompt", t.get("body", t.get("title", t.get("name", t["id"])))),
             repo=t.get("repo", ""), issue_url=t.get("issue_url"),
-            setup_commands=t.get("setup_commands", []), test_commands=t.get("test_commands", []),
+            setup_commands=t.get("setup_commands", []), test_commands=validation,
             acceptance_criteria=t.get("acceptance_criteria", []),
-            allowed_files=t.get("allowed_files", []), forbidden_files=t.get("forbidden_files", []),
+            acceptance_checks=t.get("acceptance_checks", []),
+            expected_files=t.get("expected_files", []),
+            allowed_files=t.get("allowed_files", []),
+            forbidden_files=t.get("forbidden_files", []),
         ))
-    return cases
+        gold = _gold_from_task(t)
+        if gold:
+            gold_map[t["id"]] = gold
+    return cases, gold_map
 
 
 def _connectivity_check() -> int:
@@ -117,25 +151,30 @@ def main() -> int:
 
         if not issues_file:
             print(
-                "\nREAL agentic run needs issue-backed tasks (the AutoDev `start_run` "
-                "contract takes `issue_url` only). Provide --issues-file <yaml> with "
-                "tasks [{id, issue_url, repo, setup_commands, acceptance_criteria, "
-                "test_commands}].\n\n"
-                "NOTE: `start_run` has no context-injection parameter yet, so by default "
-                "the per-arm retrieval (A/B/C) is provenance only. Mars is wired to inject "
-                "it the moment AutoDev accepts the arg — add --send-retrieval "
-                "[--retrieval-arg-name NAME] to send it (and real per-arm retrieval "
-                "metrics come back via get_run's retrieved_context).\n"
+                "\nREAL agentic run needs issue-backed tasks. Provide --issues-file "
+                "<yaml> with tasks [{id, issue_url, repo, setup_commands, "
+                "acceptance_criteria, test_commands}] — and a model API key + "
+                "GITHUB_TOKEN for AutoDev to actually run the agent.\n\n"
+                "AutoDev now exposes retrieval_strategy + context_package_id on "
+                "start_run, so the per-arm retrieval (A/B/C → similarity_only / "
+                "sim_importance / salience_v2) IS injected by default (disable with "
+                "--no-send-retrieval). The Phase-3 gate refuses to claim a comparison "
+                "unless the injected contexts actually differ at run time.\n"
                 "Run --connectivity-check to verify wiring without spend.",
                 file=sys.stderr,
             )
             return 3
 
-        cases = _load_issue_cases(Path(issues_file), limit_tasks)
+        only_tasks = _arg("--only-tasks")
+        only = set(only_tasks.split(",")) if only_tasks else None
+        cases, gold_map = _load_issue_cases(Path(issues_file), limit_tasks, only)
         if not cases:
             print(f"No tasks found in {issues_file}.", file=sys.stderr)
             return 3
-        send_retrieval = "--send-retrieval" in sys.argv  # only once AutoDev accepts the arg
+        # AutoDev's StartRunRequest accepts retrieval_strategy + context_package_id
+        # ("Expose retrieval control on the MCP surface"), so injection is ON by
+        # default; --no-send-retrieval disables it (e.g. against an older server).
+        send_retrieval = "--no-send-retrieval" not in sys.argv
         retrieval_arg_name = _arg("--retrieval-arg-name", "retrieval_strategy")
         # arm.name -> AutoDev retrieval value (the experimental variable, once injectable)
         arm_retrieval = {
@@ -143,31 +182,77 @@ def main() -> int:
             "B_sim_importance": "sim_importance",
             "C_salience_v2": "salience_v2",
         }
+        # Top-k injected. Default 3 so the similarity arm EXCLUDES the buried
+        # high-importance record from the controlled 5-record store (the whole
+        # point of the contrast); 0 = let AutoDev use its default.
+        retrieval_limit = int(_arg("--retrieval-limit", 3)) or None
         from mars.providers.autodev_mcp import AutoDevMCPProvider
         autodev = AutoDevMCPProvider.from_env(
             agentic=True, dry_run=dry_run, model=model,
             retrieval_arg_name=retrieval_arg_name, send_retrieval=send_retrieval,
+            retrieval_limit=retrieval_limit,
         )
         adapter = AutoDevExecutionImpactAdapter(
             autodev, dry_run=dry_run, arm_retrieval=arm_retrieval, send_retrieval=send_retrieval,
         )
         if send_retrieval:
-            inject = (f"Per-arm retrieval INJECTED via start_run '{retrieval_arg_name}' "
-                      f"(A/B/C are real different retrievals).")
+            inject = (f"Per-arm retrieval INJECTED via start_run '{retrieval_arg_name}'="
+                      "{similarity_only|sim_importance|salience_v2} + context_package_id "
+                      "(A/B/C are real different retrievals). Phase-3 gate checks the "
+                      "injected contexts actually differ before claiming a comparison.")
         else:
-            inject = ("Per-arm retrieval NOT injected (start_run has no context arg yet); "
-                      "arm is provenance only. Enable with --send-retrieval once AutoDev "
-                      "accepts the parameter.")
+            inject = "Per-arm retrieval NOT injected (--no-send-retrieval); arm is provenance only."
         notes = [
             f"REAL AutoDev agentic run (dry_run={dry_run}); model={model}.",
+            f"retrieval_limit={retrieval_limit} (top-k injected; <store size so the "
+            "similarity arm excludes the buried high-importance record).",
             inject,
             "Execution metrics are real; token usage / review / retrieved context are "
             "used when AutoDev returns them, else marked missing (never fabricated).",
         ]
-        arms = retrieval_arms()[: limit_arms or None]
-        if limit_arms:
-            notes.append(f"limited to {len(arms)} arm(s).")
-        result = run_execution_impact_real(adapter, cases, trials=1, notes=notes)
+        arms = retrieval_arms()
+        only_arms = _arg("--only-arms")
+        if only_arms:
+            wanted = {x.strip().lower() for x in only_arms.split(",")}
+            arms = [a for a in arms
+                    if a.name.lower() in wanted or a.name.split("_")[0].lower() in wanted]
+        arms = arms[: limit_arms or None]
+        if only_arms or limit_arms:
+            notes.append(f"limited to arm(s): {', '.join(a.name for a in arms)}.")
+        if gold_map:
+            notes.append(f"{len(gold_map)} task(s) carry gold → real retrieval metrics "
+                         "+ ContradictionAvoidanceRate computed from get_run retrieved_context.")
+
+        # Re-seed the controlled memory set before EACH run: AutoDev persists run
+        # summaries back to the repo namespace after a run, which would otherwise
+        # pollute later arms' retrieval and break the controlled comparison.
+        reseed = "--no-reseed" not in sys.argv
+        before_each = None
+        if reseed:
+            import subprocess
+            seed_py = _arg("--seed-python", str(Path.home() / "git/autodev/.venv/bin/python"))
+            seed_workdir = _arg("--seed-workdir", str(Path.home() / ".autodev/mcp"))
+            seeder = str(Path(__file__).with_name("seed_autodev_memory.py"))
+
+            def before_each(arm, case, trial):  # noqa: ARG001
+                # Reseed ONLY this task's records → an isolated, controlled store so
+                # other tasks' memories don't pollute retrieval, and AutoDev's
+                # post-run writeback is wiped before the next arm.
+                subprocess.run(
+                    [seed_py, seeder, "--issues-file", issues_file,
+                     "--work-dir", seed_workdir, "--task-id", case.id],
+                    check=True, capture_output=True,
+                )
+            notes.append("per-task memory re-seeded before each run (isolated controlled "
+                         "store; AutoDev writeback isolated).")
+
+        trials = int(_arg("--trials", 1))
+        result = run_execution_impact_real(
+            adapter, cases, trials=trials, notes=notes,
+            gold_for=lambda case: gold_map.get(case.id),
+            before_each=before_each, arms=arms,
+            experiment=_arg("--experiment", "salience-memory-execution-impact"),
+        )
         try:
             autodev.close()
         except Exception:  # noqa: BLE001

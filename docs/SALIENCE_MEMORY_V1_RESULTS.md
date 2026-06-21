@@ -1,5 +1,9 @@
 # Salience Memory v1 — Results (Expanded Benchmark)
 
+> All results are reported against Salience Memory Benchmark v1.0.0
+> (`salience-memory-benchmark-v1`). See
+> [SALIENCE_MEMORY_BENCHMARK_V1.md](SALIENCE_MEMORY_BENCHMARK_V1.md).
+
 First statistically meaningful run of the Salience Memory experiment: real Cortex
 semantic retrieval (Voyage embeddings) over the 552-memory expanded benchmark,
 mock execution, retrieval-only evaluation.

@@ -30,8 +30,14 @@ inkscape figure4_exp1_results.svg --export-type=png --export-width=1600
 | `figure8_execution_impact.svg` | Execution impact (Outcome B) | 5.1 |
 | `figure9_ranking_example.svg` | Migration-query re-ranking | 1 (mechanism) |
 
-## Specs only (diagrams — draw in a vector tool)
+## Diagram figures (TikZ source)
 Figures 1 (System Architecture), 2 (Retrieval Pipeline), and 10 (Research Program
-Overview) are schematic diagrams; see `../FIGURE_PLAN.md` for their full
-specifications. They are intentionally not auto-generated to avoid low-quality
-box-drawing; produce them in Figma/draw.io/TikZ from the specs.
+Overview) are schematic diagrams authored in `diagrams.tex` (one figure per page).
+
+```bash
+pdflatex diagrams.tex        # -> diagrams.pdf (3 pages: Fig 1, Fig 2, Fig 10)
+```
+
+Crop/export per page for inclusion (e.g. `pdfseparate`, or import the page into the
+paper directly). `diagrams.pdf` is the rendered output; `diagrams.tex` is the source of
+truth. Full specs are in `../FIGURE_PLAN.md`.

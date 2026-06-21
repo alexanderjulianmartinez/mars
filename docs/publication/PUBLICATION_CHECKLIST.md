@@ -25,7 +25,7 @@ Status legend: **DONE** · **IN PROGRESS** · **BLOCKED** · **MISSING**
 | Paper draft v1 (Exp 1 only) | **DONE** | `docs/papers/salience_weighted_memory_retrieval_v1.md`. |
 | v1 reviewer notes | **DONE** | Same dir, `_review_notes.md`. |
 | Consolidated arXiv outline (Exp 1–5) | **DONE** | `docs/papers/arxiv_v2_outline.md`. |
-| **Consolidated paper draft (Exp 1–5) written** | **MISSING** | Outline exists; the full v2 draft is the main remaining writing task. |
+| **Consolidated paper draft (Exp 1–5) written** | **DONE** | `docs/papers/salience_weighted_memory_retrieval_v2.md` — promotes Exp 2–5 to results; references Tables 1–7 and Figures 1–10. |
 | Objection→experiment map | **DONE** | In the outline. |
 
 ### Figures
@@ -35,14 +35,14 @@ Status legend: **DONE** · **IN PROGRESS** · **BLOCKED** · **MISSING**
 | Data figures 3,4,5,6,7,8,9 (SVG) | **DONE** | `docs/papers/figures/*.svg`, generated from source-of-truth numbers; valid XML. |
 | Figure generator (reproducible, no deps) | **DONE** | `generate_figures.py` (pure stdlib). |
 | PNG rasterization | **IN PROGRESS** | No rasterizer in env; command documented (rsvg/cairosvg/inkscape/browser). User runs one line. |
-| Diagram figures 1,2,10 | **MISSING** | Specs written; need drawing in a vector tool (Figma/draw.io/TikZ). |
+| Diagram figures 1,2,10 | **DONE** | `docs/papers/figures/diagrams.tex` → `diagrams.pdf` (compiles clean, 3 pages). |
 
 ### Tables & appendices
 | Item | Status | Notes |
 | --- | --- | --- |
 | Table plan + publication-ready tables | **DONE** | `docs/papers/TABLE_PLAN.md` (7 tables, final markdown). |
 | Appendix plan | **DONE** | `docs/papers/APPENDIX_PLAN.md` (A–I). |
-| Appendix content assembled into paper | **MISSING** | Sources all exist; assembly happens with the v2 draft. |
+| Appendix content assembled into paper | **DONE** | Appendices A–I inlined into `salience_weighted_memory_retrieval_v2.md`. |
 
 ### Open source
 Decisions (2026-06-21): personal-name copyright (**Alexander Julian Martinez**) ·
@@ -63,7 +63,7 @@ Decisions (2026-06-21): personal-name copyright (**Alexander Julian Martinez**) 
 | Item | Status | Notes |
 | --- | --- | --- |
 | Research blog outline | **DONE** | `docs/publication/RESEARCH_BLOG_OUTLINE.md`. |
-| Research blog draft | **MISSING** | Write from outline. |
+| Research blog draft | **DONE** | `docs/publication/research_blog_draft.md` — ~1,500 words, 7 figures placed, leads with the honest null. |
 | Interview packet | **DONE** | `docs/interview/RESEARCH_INTERVIEW_PACKET.md`. |
 | Publication readiness audit | **DONE** | `docs/publication/PUBLICATION_READINESS.md`. |
 
@@ -74,9 +74,9 @@ Decisions (2026-06-21): personal-name copyright (**Alexander Julian Martinez**) 
 | Track | Readiness | Gating items |
 | --- | --- | --- |
 | **Technical Report** | **Ready (100%)** | None. Releasable now. |
-| **Research Blog** | **~85%** | Draft from the (done) outline; embed the 7 figures. |
+| **Research Blog** | **~95%** | Draft done; remaining: export the 7 figure SVGs→PNG for the publishing platform and a light copy-edit pass. |
 | **Open Source Release** | **~95%** | Licenses, NOTICE, scrub, README, CITATION done. Only remaining: commit+push release files, then flip visibility to public. |
-| **arXiv** | **~70%** | Write the consolidated v2 draft from the (done) outline; draw diagram figures 1/2/10; assemble appendices. No new research. |
+| **arXiv** | **~95%** | v2 draft written; diagram figures 1/2/10 compiled (TikZ→PDF); appendices A–I inlined. Remaining: pick a venue and do the LaTeX template + bibliography/formatting pass. No new research. |
 | **Interview** | **Ready (100%)** | Packet complete; rehearse the 5/15-minute versions. |
 
 ---

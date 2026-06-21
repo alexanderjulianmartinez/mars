@@ -1,0 +1,37 @@
+Mars — evaluation layer for AI software engineering agents
+Copyright 2026 Alexander Julian Martinez
+
+This repository is released under two licenses, by artifact type:
+
+1. SOURCE CODE — Apache License 2.0 (see LICENSE)
+   Applies to:
+       mars/                  (the Mars package: framework, providers, scoring,
+                               memory/retrieval strategies, metrics, Apollo)
+       experiments/*.py       (experiment runners and the corpus generator)
+       tests/
+       suites/
+       and all other source code in this repository unless noted below.
+
+2. DATA & RESEARCH ARTIFACTS — Creative Commons Attribution 4.0 (see LICENSE-DATA)
+   Applies to:
+       experiments/corpus/    (Salience Memory Benchmark corpus, gold labels,
+                               manifest)
+       experiments/cache/     (committed retrieval cache)
+       mars-experiments/      (experiment result JSON artifacts)
+       docs/                  (reports, papers, figures — research text/figures)
+
+ATTRIBUTION
+    If you use Mars (code), the benchmark (data), or the results, please cite
+    the work — see CITATION.cff.
+
+THIRD-PARTY SYSTEMS
+    Mars consumes Cortex (memory/retrieval), AutoDev (agent execution), and
+    reserves extension points for Sentinel (governance). These are separate
+    systems; only their PROVIDER INTERFACES and mock implementations are included
+    here. The real Cortex/AutoDev implementations are not part of this release.
+
+NO CREDENTIALS
+    This repository contains no API keys, tokens, or service endpoints.
+    Reproduction that requires external services (e.g. Voyage embeddings, a real
+    AutoDev MCP server) reads them from environment variables documented in the
+    reports; the offline tier (committed cache) requires none.

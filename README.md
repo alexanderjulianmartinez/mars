@@ -114,6 +114,51 @@ All salience-memory results (Experiments 1–5) are reported against **Salience
 Memory Benchmark v1.0.0** (`salience-memory-benchmark-v1`), a frozen, hash-pinned
 research artifact — see [docs/SALIENCE_MEMORY_BENCHMARK_V1.md](docs/SALIENCE_MEMORY_BENCHMARK_V1.md).
 
+## Research: Salience-Weighted Memory Retrieval
+
+This repository also hosts a research program studying whether **salience signals**
+(authored importance and confidence) improve memory retrieval for long-horizon
+agents over similarity-only ranking. Headline result on the frozen benchmark:
+importance-weighted retrieval lifts recall@5 from 0.237 → 0.672 and MRR from 0.31 →
+0.97 (paired bootstrap, CIs exclude zero). The effect is an **upper bound** under
+authored importance, and improved retrieval has **not** been shown to raise agent
+task-success — both stated plainly in the report.
+
+- Technical report: [docs/reports/SALIENCE_WEIGHTED_MEMORY_RETRIEVAL_TECHNICAL_REPORT.md](docs/reports/SALIENCE_WEIGHTED_MEMORY_RETRIEVAL_TECHNICAL_REPORT.md)
+- Paper draft + figures: [docs/papers/](docs/papers/)
+
+### Reproduce
+
+Three tiers — only the first needs no credentials:
+
+```bash
+# 1. Offline (no credentials): tests, benchmark integrity, Exp 2–4 via committed cache
+pytest
+mars corpus verify-frozen salience-memory-benchmark-v1
+python experiments/run_noisy_importance.py --cache-only        # Exp 2
+python experiments/run_temporal_salience.py                    # Exp 3
+python experiments/run_confidence_contradiction.py             # Exp 4
+
+# 2. Semantic baseline (needs a Voyage embeddings key): Exp 1
+mars experiments run salience-memory-v1
+
+# 3. Real agent execution (needs MARS_AUTODEV_MCP_*, paid ~$1.3): Exp 5.1
+#    see docs/AUTODEV_EXECUTION_IMPACT_WIRING.md
+```
+
+## License
+
+Dual-licensed by artifact type (see [NOTICE](NOTICE)):
+
+- **Source code** (`mars/`, scripts, tests) — Apache-2.0 ([LICENSE](LICENSE))
+- **Benchmark corpus & result artifacts** (`experiments/corpus/`,
+  `experiments/cache/`, `mars-experiments/`) — CC-BY-4.0 ([LICENSE-DATA](LICENSE-DATA))
+
+## Citation
+
+If you use Mars, the benchmark, or the results, please cite via
+[CITATION.cff](CITATION.cff).
+
 ## Mission
 
 Build the evaluation layer for AI software engineering.

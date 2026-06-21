@@ -1,0 +1,52 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='880' height='460' viewBox='0 0 880 460' role='img' aria-label='Figure 4 — Experiment 1: Salience vs Similarity Retrieval'>
+<rect width='880' height='460' fill='white'/>
+<text x='70' y='34' font-family='Helvetica,Arial,sans-serif' font-size='18' font-weight='bold' text-anchor='start' fill='#111827'>Figure 4 — Experiment 1: Salience vs Similarity Retrieval</text>
+<line x1='70' y1='350.0' x2='850' y2='350.0' stroke='#e5e7eb'/>
+<text x='62' y='354.0' font-family='Helvetica,Arial,sans-serif' font-size='11' font-weight='normal' text-anchor='end' fill='#374151'>0</text>
+<line x1='70' y1='294.0' x2='850' y2='294.0' stroke='#e5e7eb'/>
+<text x='62' y='298.0' font-family='Helvetica,Arial,sans-serif' font-size='11' font-weight='normal' text-anchor='end' fill='#374151'>0.2</text>
+<line x1='70' y1='238.0' x2='850' y2='238.0' stroke='#e5e7eb'/>
+<text x='62' y='242.0' font-family='Helvetica,Arial,sans-serif' font-size='11' font-weight='normal' text-anchor='end' fill='#374151'>0.4</text>
+<line x1='70' y1='182.0' x2='850' y2='182.0' stroke='#e5e7eb'/>
+<text x='62' y='186.0' font-family='Helvetica,Arial,sans-serif' font-size='11' font-weight='normal' text-anchor='end' fill='#374151'>0.6</text>
+<line x1='70' y1='126.0' x2='850' y2='126.0' stroke='#e5e7eb'/>
+<text x='62' y='130.0' font-family='Helvetica,Arial,sans-serif' font-size='11' font-weight='normal' text-anchor='end' fill='#374151'>0.8</text>
+<line x1='70' y1='70.0' x2='850' y2='70.0' stroke='#e5e7eb'/>
+<text x='62' y='74.0' font-family='Helvetica,Arial,sans-serif' font-size='11' font-weight='normal' text-anchor='end' fill='#374151'>1</text>
+<rect x='83.0' y='283.6' width='47.8' height='66.4' fill='#9aa3af'/>
+<text x='106.92' y='278.64' font-family='Helvetica,Arial,sans-serif' font-size='10' font-weight='normal' text-anchor='middle' fill='#374151'>0.237</text>
+<rect x='135.0' y='161.8' width='47.8' height='188.2' fill='#2563eb'/>
+<text x='158.92000000000002' y='156.83999999999997' font-family='Helvetica,Arial,sans-serif' font-size='10' font-weight='normal' text-anchor='middle' fill='#374151'>0.672</text>
+<text x='135.0' y='368' font-family='Helvetica,Arial,sans-serif' font-size='12' font-weight='normal' text-anchor='middle' fill='#111827'>recall@5</text>
+<rect x='213.0' y='136.9' width='47.8' height='213.1' fill='#9aa3af'/>
+<text x='236.92000000000002' y='131.92' font-family='Helvetica,Arial,sans-serif' font-size='10' font-weight='normal' text-anchor='middle' fill='#374151'>0.761</text>
+<rect x='265.0' y='89.3' width='47.8' height='260.7' fill='#2563eb'/>
+<text x='288.92' y='84.32' font-family='Helvetica,Arial,sans-serif' font-size='10' font-weight='normal' text-anchor='middle' fill='#374151'>0.931</text>
+<text x='265.0' y='368' font-family='Helvetica,Arial,sans-serif' font-size='12' font-weight='normal' text-anchor='middle' fill='#111827'>recall@10</text>
+<rect x='343.0' y='262.4' width='47.8' height='87.6' fill='#9aa3af'/>
+<text x='366.92' y='257.36' font-family='Helvetica,Arial,sans-serif' font-size='10' font-weight='normal' text-anchor='middle' fill='#374151'>0.313</text>
+<rect x='395.0' y='79.2' width='47.8' height='270.8' fill='#2563eb'/>
+<text x='418.92' y='74.24000000000001' font-family='Helvetica,Arial,sans-serif' font-size='10' font-weight='normal' text-anchor='middle' fill='#374151'>0.967</text>
+<text x='395.0' y='368' font-family='Helvetica,Arial,sans-serif' font-size='12' font-weight='normal' text-anchor='middle' fill='#111827'>MRR</text>
+<rect x='473.0' y='298.5' width='47.8' height='51.5' fill='#9aa3af'/>
+<text x='496.92' y='293.48' font-family='Helvetica,Arial,sans-serif' font-size='10' font-weight='normal' text-anchor='middle' fill='#374151'>0.184</text>
+<rect x='525.0' y='150.1' width='47.8' height='199.9' fill='#2563eb'/>
+<text x='548.92' y='145.08' font-family='Helvetica,Arial,sans-serif' font-size='10' font-weight='normal' text-anchor='middle' fill='#374151'>0.714</text>
+<text x='525.0' y='368' font-family='Helvetica,Arial,sans-serif' font-size='12' font-weight='normal' text-anchor='middle' fill='#111827'>nDCG@5</text>
+<rect x='603.0' y='247.2' width='47.8' height='102.8' fill='#9aa3af'/>
+<text x='626.92' y='242.24' font-family='Helvetica,Arial,sans-serif' font-size='10' font-weight='normal' text-anchor='middle' fill='#374151'>0.367</text>
+<rect x='655.0' y='70.0' width='47.8' height='280.0' fill='#2563eb'/>
+<text x='678.92' y='65.0' font-family='Helvetica,Arial,sans-serif' font-size='10' font-weight='normal' text-anchor='middle' fill='#374151'>1.000</text>
+<text x='655.0' y='368' font-family='Helvetica,Arial,sans-serif' font-size='12' font-weight='normal' text-anchor='middle' fill='#111827'>TgtFound@3</text>
+<rect x='733.0' y='294.0' width='47.8' height='56.0' fill='#9aa3af'/>
+<text x='756.92' y='289.0' font-family='Helvetica,Arial,sans-serif' font-size='10' font-weight='normal' text-anchor='middle' fill='#374151'>0.200</text>
+<rect x='785.0' y='191.2' width='47.8' height='158.8' fill='#2563eb'/>
+<text x='808.92' y='186.24' font-family='Helvetica,Arial,sans-serif' font-size='10' font-weight='normal' text-anchor='middle' fill='#374151'>0.567</text>
+<text x='785.0' y='368' font-family='Helvetica,Arial,sans-serif' font-size='12' font-weight='normal' text-anchor='middle' fill='#111827'>CtxEff@5</text>
+<line x1='70' y1='350' x2='850' y2='350' stroke='#374151'/>
+<rect x='70' y='400' width='14' height='14' fill='#9aa3af'/>
+<text x='90' y='412' font-family='Helvetica,Arial,sans-serif' font-size='12' font-weight='normal' text-anchor='start' fill='#111827'>similarity_only</text>
+<rect x='235' y='400' width='14' height='14' fill='#2563eb'/>
+<text x='255' y='412' font-family='Helvetica,Arial,sans-serif' font-size='12' font-weight='normal' text-anchor='start' fill='#111827'>salience_weighted_v1</text>
+<text x='70' y='442' font-family='Helvetica,Arial,sans-serif' font-size='11' font-weight='normal' text-anchor='start' fill='#374151'>Real Cortex retrieval (Voyage voyage-3-lite). recall@5 +0.435, MRR 0.31→0.97. Effect size is an upper bound (authored importance).</text>
+</svg>

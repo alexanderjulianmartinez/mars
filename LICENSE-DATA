@@ -1,0 +1,46 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright 2026 Alexander Julian Martinez
+
+The data and research artifacts in this repository — specifically the contents of:
+
+    experiments/corpus/      (the Salience Memory Benchmark corpus, gold labels,
+                              manifest, and generator)
+    experiments/cache/       (committed retrieval cache)
+    mars-experiments/        (experiment result JSON artifacts)
+
+are licensed under the Creative Commons Attribution 4.0 International License
+("CC BY 4.0").
+
+You are free to:
+  - Share — copy and redistribute the material in any medium or format
+  - Adapt — remix, transform, and build upon the material for any purpose,
+    even commercially
+
+Under the following terms:
+  - Attribution — You must give appropriate credit, provide a link to the
+    license, and indicate if changes were made. You may do so in any reasonable
+    manner, but not in any way that suggests the licensor endorses you or your
+    use.
+  - No additional restrictions — You may not apply legal terms or technological
+    measures that legally restrict others from doing anything the license
+    permits.
+
+THE DATA IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND. The corpus is
+synthetic and hand-authored; see the technical report and per-experiment
+limitations for its intended scope and known biases.
+
+The full legal text of CC BY 4.0 is available at:
+    https://creativecommons.org/licenses/by/4.0/legalcode
+
+A human-readable summary is available at:
+    https://creativecommons.org/licenses/by/4.0/
+
+Suggested attribution:
+    Salience Memory Benchmark v1.0.0 (SHA256
+    a464085c3daa64c97d2764c47f8758931b2a51c2adc1e143fcfc98d9faa74d59),
+    Alexander Julian Martinez, 2026, CC BY 4.0.
+
+NOTE: Source code in this repository (the `mars/` package, scripts, and tests)
+is NOT covered by this file; it is licensed separately under Apache-2.0. See
+LICENSE and NOTICE.

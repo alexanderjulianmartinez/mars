@@ -55,9 +55,11 @@ Full strategy in `OPEN_SOURCE_RELEASE_PLAN.md`; this is the go/no-go checklist.
 - **Framework:** SemVer; first public tag `v1.0.0-rc1` (then `v1.0.0` after a soak).
 - **Benchmark:** independent, hash-pinned `v1.0.0` (bytes immutable; bugfix → `v1.0.x`,
   redesign → `v2`).
-- **Software version in metadata:** `CITATION.cff` and `pyproject` report `0.1.0`;
-  reconcile to the tag at release (recommend bumping metadata to match `1.0.0-rc1` or
-  documenting the framework-vs-release-tag distinction in the release notes).
+- **Software version in metadata (RESOLVED — Option B):** `CITATION.cff` and `pyproject`
+  keep `0.1.0` as the **Mars framework package** version (early-stage library; `name =
+  "mars"`). The research-release tag `v1.0.0-rc1` and the benchmark `v1.0.0` are separate
+  axes; the package is intentionally *not* bumped, and the distinction is documented in
+  the release notes and `POST_TAG_STATUS.md`. No version-field edits were required.
 
 ## Release notes
 
@@ -73,8 +75,12 @@ Full strategy in `OPEN_SOURCE_RELEASE_PLAN.md`; this is the go/no-go checklist.
 | Licenses + citation present | **GO** |
 | Secret scan clean | **GO** |
 | Reproducibility verified | **GO** |
-| **Remaining (user actions):** merge PR #28 → tag `v1.0.0-rc1` → flip visibility public | **PENDING** |
+| Merge PR #28 | **DONE** (merge commit `c4ee136`) |
+| Tag `v1.0.0-rc1` | **DONE** (pushed) |
+| GitHub prerelease | **DONE** (`--prerelease` from the tag) |
+| Version metadata reconciliation | **DONE** (Option B; documented, no bump) |
+| **Remaining (user action):** flip visibility public | **PENDING** |
 
-**No content or legal blockers remain.** The release is gated only on the three
-deliberate, user-owned mechanical steps above. Recommend reconciling the framework
-version metadata (`0.1.0`) with the release tag as part of cutting `v1.0.0-rc1`.
+**No content or legal blockers remain.** The release is gated only on the single
+remaining user-owned step: flipping repository visibility to public (see
+`PUBLIC_VISIBILITY_CHECKLIST.md`).

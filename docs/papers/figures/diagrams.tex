@@ -48,7 +48,6 @@
     {Mars consumes Cortex and AutoDev through \emph{provider interfaces}
      (mock + real MCP); it never generates context or executes tasks.
      Hard ownership boundary between systems.};
-  \node[font=\small\bfseries, above=4mm of $(cortex)!0.5!(autodev)$] {Figure 1 — System Architecture};
 \end{tikzpicture}
 
 % =====================================================================
@@ -74,7 +73,6 @@
   \node[note, below=8mm of pool, text width=104mm]
     {Both ranking strategies re-rank the \textbf{same} per-query pool, isolating the
      ranking function from first-stage embedding recall.};
-  \node[font=\small\bfseries, above=9mm of pool] {Figure 2 — Retrieval Pipeline};
 \end{tikzpicture}
 
 % =====================================================================
@@ -97,8 +95,6 @@
     {\textbf{Salience v2 core signals:} semantic similarity $+$ importance $+$ gated
      confidence (\,$\text{effective\_importance}=\text{importance}\times\text{confidence}$\,).
      \quad \textbf{Not promoted:} raw recency.};
-
-  \node[font=\small\bfseries, above=4mm of $(e1)!0.5!(e5)$] {Figure 10 — Research Program Overview};
 \end{tikzpicture}
 
 \end{document}

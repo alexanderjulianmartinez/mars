@@ -229,3 +229,7 @@ experiments/corpus/*.gold.json
 
 # operator-specific live task suite (example is committed)
 experiments/issues.yaml
+
+# macOS
+.DS_Store
+**/.DS_Store

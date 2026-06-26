@@ -69,9 +69,10 @@ record and a ranker can consume. We isolate **importance** as the primary signal
 **confidence** as a gating signal, and treat **recency** as a candidate signal that we
 test and ultimately reject.
 
-This paper consolidates a five-experiment program. The narrative is deliberately
-self-critical: each experiment after the first exists to attack a weakness of the
-result before it.
+This paper consolidates a five-experiment program in which each experiment after the
+first probes a specific weakness of the result before it: the authored importance
+labels (§6), the role of time (§7), the case where an important memory is wrong (§8),
+and whether any of it reaches a real agent (§9).
 
 > Importance helps retrieval (§5) → and survives noise (§6) → recency does not earn a
 > place (§7) → confidence rescues contradictions (§8) → and inside a real agent,

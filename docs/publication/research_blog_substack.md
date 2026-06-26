@@ -8,7 +8,7 @@
 
 ---
 
-An AI agent that maintains a software system over weeks builds up a pile of memory: design decisions, incident postmortems, naming conventions, and documentation that slowly goes stale. When it sits down to do the next task, it can't fit all of that into its context window, so something has to choose which memories to surface. That choice is a retrieval problem, and the standard answer is simple: rank every memory by how *semantically similar* it is to the task, and take the top few.
+An AI agent that maintains a software system over weeks builds up a pile of memory: design decisions, incident postmortems, naming conventions, and documentation that slowly goes stale. When it sits down to do the next task, it can't fit all of that into its context window, so something has to choose which memories to surface — and the standard answer is simple: rank every memory by how *semantically similar* it is to the task, and take the top few.
 
 We ran a research program testing whether that default is good enough — and whether adding one extra signal, **how important a memory is**, makes it better.
 
@@ -55,7 +55,7 @@ The corpus is **frozen and hash-pinned** (SHA-256 `a464085c…`). The bytes neve
 
 ## What we ran, and what we found
 
-Five experiments. The structure is deliberately self-critical: each one after the first exists to attack a weakness in the result before it.
+Five experiments. Each one after the first exists to test a specific weakness in the result before it — the authored labels, the role of time, the case where an important memory is wrong, and finally whether any of it reaches a real agent.
 
 ### 1. Importance helps — a lot
 
@@ -120,17 +120,7 @@ The retrieval arms behaved exactly as the offline studies predicted. The similar
 
 So the result is **Outcome B: retrieval improved, behavior changed, task-success didn't.** We do not claim salience improves task-success. It steered the agent toward the right convention; on this benchmark that wasn't enough to pass.
 
----
-
-## Lessons
-
-A few things generalize beyond this specific study:
-
-- **Design benchmarks that can fail.** A saturated benchmark hides everything. Most of the value here came from building an adversarial corpus where similarity *loses*.
-- **Ablate your own signals and cut the ones that don't earn it.** Recency seemed obviously useful and wasn't. Reporting that is as valuable as reporting the wins.
-- **The form of a signal matters.** Confidence as a multiplicative gate worked; confidence as an additive term didn't. "Add the signal" is underspecified.
-- **Separate proxy metrics from outcome metrics, and never let a proxy stand in for an outcome.** Retrieval quality is a proxy; task-success is the outcome. Keeping them apart — and admitting when only the proxy moved — is the whole game in honest agent evaluation.
-- **Reproducibility infrastructure is what makes a small-*n* result trustworthy.** A frozen hash and a committed cache are why we believe the numbers.
+This is the discipline the whole study is built around: retrieval quality is a *proxy*, task-success is the *outcome*, and the two came apart here. It would have been easy to report the retrieval and behavior wins and let a reader infer the rest — most agent results blur exactly this line. Keeping it sharp, and saying plainly when only the proxy moved, is the point.
 
 ---
 
